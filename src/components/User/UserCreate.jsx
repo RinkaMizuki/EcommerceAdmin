@@ -4,7 +4,6 @@ export const UserCreate = () => (
   <Create>
     <SimpleForm>
       <TextInput source="userName" label="User Name" validate={required()} />
-      <TextInput source="userName" label="User Name" validate={required()} />
       <TextInput source="email" label="Email Address" validate={required()} />
       <TextInput source="phone" label="Phone Number" />
       <SelectInput source="role" choices={[

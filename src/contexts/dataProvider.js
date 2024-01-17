@@ -3,7 +3,6 @@ import { fetchUtils, addRefreshAuthToDataProvider } from "react-admin";
 import { refreshTokenService } from "../services/refreshTokenService";
 import { tokenService } from "../services/tokenService";
 import { jwtDecode } from "jwt-decode"
-import avatar from "../assets/images/avatar.jpeg"
 
 const httpClient = (url, options = {}) => {
   const token = tokenService.getToken();
@@ -52,7 +51,7 @@ const customDataProvider = {
     if (resource === "users") {
       const formData = createPostFormData(params);
       return fetchUtils
-        .fetchJson(`${import.meta.env.VITE_ECOMMERCE_BASE_URL}/Admin/${resource}/${params.id}`, {
+        .fetchJson(`${import.meta.env.VITE_ECOMMERCE_BASE_URL}/Admin/${resource}/update/${params.id}`, {
           method: "PUT",
           body: formData,
           credentials: "include",
@@ -72,6 +71,32 @@ const customDataProvider = {
     }
     return baseDataProvider.update(resource, params);
   },
+  delete: async (resource, params) => {
+    if (resource == "users") {
+      return baseDataProvider.delete(`${resource}/delete`, params);
+    }
+  },
+  create: async (resource, params) => {
+    if (resource == "users") {
+      return baseDataProvider.create(`${resource}/post`, params);
+    }
+  },
+  getList: async (resource, params) => {
+    if (resource == "segments") {
+      return fetchUtils
+        .fetchJson(`${import.meta.env.VITE_ECOMMERCE_BASE_URL}/Admin/${resource}`, {
+          method: "GET",
+          credentials: "include",
+          headers: new Headers({
+            Authorization: `Bearer ${tokenService.getToken()}`
+          })
+        })
+        .then(({ json }) => {
+          return { data: json, total: json.length }
+        });
+    }
+    return baseDataProvider.getList(resource, params);
+  }
 }
 
 export const dataProvider = addRefreshAuthToDataProvider(customDataProvider, refreshAuth)
