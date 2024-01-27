@@ -7,6 +7,7 @@ import { AvatarField } from './AvatarField';
 export const UserNameField = (props) => {
   const { size } = props;
   const record = useRecordContext();
+
   return record ? (
     <Typography
       variant="body2"

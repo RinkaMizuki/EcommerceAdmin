@@ -3,7 +3,7 @@ import { useMediaQuery } from "@mui/material";
 import UserBulkActionButtons from "../BulkActionButtons/UserBulkActionButtons";
 import "./User.css"
 import { UserNameField } from "../Field/UserNameField";
-import { UserFilterSidebar } from '../Filter/UserFilter';
+import { UserFilterSidebar } from './UserFilter';
 
 
 export const UserList = () => {
@@ -13,7 +13,7 @@ export const UserList = () => {
     <List aside={<UserFilterSidebar />} perPage={6} pagination={<Pagination rowsPerPageOptions={[6, 12, 24, 30]} />} >
       {!isSmall ?
         <Datagrid rowClick="show" bulkActionButtons={<UserBulkActionButtons />}>
-          <UserNameField label="User"></UserNameField>
+          <UserNameField label="Users"></UserNameField>
           <EmailField source="email" />
           <TextField source="role" />
           <BooleanField source="emailConfirm" />

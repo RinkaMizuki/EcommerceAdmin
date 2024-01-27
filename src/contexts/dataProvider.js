@@ -69,20 +69,16 @@ const customDataProvider = {
           return { data: json }
         });
     }
-    return baseDataProvider.update(resource, params);
+    return baseDataProvider.update(`${resource}/update`, params);
   },
   delete: async (resource, params) => {
-    if (resource == "users") {
-      return baseDataProvider.delete(`${resource}/delete`, params);
-    }
+    return baseDataProvider.delete(`${resource}/delete`, params);
   },
   create: async (resource, params) => {
-    if (resource == "users") {
-      return baseDataProvider.create(`${resource}/post`, params);
-    }
+    return baseDataProvider.create(`${resource}/post`, params);
   },
   getList: async (resource, params) => {
-    if (resource == "segments") {
+    if (resource == "segments" || resource == "categories") {
       return fetchUtils
         .fetchJson(`${import.meta.env.VITE_ECOMMERCE_BASE_URL}/Admin/${resource}`, {
           method: "GET",

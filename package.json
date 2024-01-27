@@ -12,6 +12,7 @@
   "dependencies": {
     "@mui/icons-material": "^5.15.2",
     "@mui/material": "^5.15.1",
+    "inflection": "^3.0.0",
     "jwt-decode": "^4.0.0",
     "material-ui-color": "^1.2.0",
     "material-ui-popup-state": "^5.0.10",
