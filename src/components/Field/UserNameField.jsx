@@ -5,6 +5,7 @@ import { useRecordContext } from 'react-admin';
 import { AvatarField } from './AvatarField';
 
 export const UserNameField = (props) => {
+  
   const { size } = props;
   const record = useRecordContext();
 

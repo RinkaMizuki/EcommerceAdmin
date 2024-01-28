@@ -19,19 +19,27 @@ const RejectButton = () => {
   const record = useRecordContext();
 
   const [reject, { isLoading }] = useUpdate(
-    'reviews',
-    { id: record.id, data: { status: 'rejected' }, previousData: record },
+    'rates',
+    {
+      id: record.id,
+      data: {
+        status: 'rejected',
+        content: record.content,
+        star: record.star,
+      },
+      previousData: record
+    },
     {
       mutationMode: 'undoable',
       onSuccess: () => {
-        notify('resources.reviews.notification.rejected_success', {
+        notify('Rejected success', {
           type: 'info',
           undoable: true,
         });
-        redirectTo('/reviews');
+        redirectTo('/rates');
       },
       onError: () => {
-        notify('resources.reviews.notification.rejected_error', {
+        notify('Rejected error', {
           type: 'error',
         });
       },

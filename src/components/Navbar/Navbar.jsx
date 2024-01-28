@@ -3,7 +3,7 @@ import { AvatarField } from '../Field/AvatarField';
 import { tokenService } from '../../services/tokenService';
 import Logo from './Logo';
 import { Box, useMediaQuery } from '@mui/material';
-
+import { AppBarToolbar } from '../Layout/AppBarToolbar';
 const Profile = () => {
   const data = tokenService.getUser();
   return (
@@ -20,7 +20,11 @@ export const Navbar = () => {
     theme.breakpoints.up('sm')
   );
   return (
-    <AppBar color="secondary" userMenu={<UserProfile />}>
+    <AppBar
+      color="primary"
+      userMenu={<UserProfile />}
+      toolbar={<AppBarToolbar />}
+    >
       <TitlePortal />
       {isLargeEnough && <Logo />}
       {isLargeEnough && <Box component="span" sx={{ flex: 1 }} />}

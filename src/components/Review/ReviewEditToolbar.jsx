@@ -38,12 +38,12 @@ const ReviewEditToolbar = (props) => {
           <SaveButton
             mutationOptions={{
               onSuccess: () => {
-                notify('ra.notification.updated', {
+                notify('Updated success', {
                   type: 'info',
                   messageArgs: { smart_count: 1 },
                   undoable: true,
                 });
-                redirect('list', 'reviews');
+                redirect('list', 'rates');
               },
             }}
             type="button"

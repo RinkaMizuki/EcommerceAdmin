@@ -1,4 +1,4 @@
-import { Datagrid, EmailField, List, TextField, SimpleList, EditButton, Pagination, BooleanField, ArrayField, SingleFieldList, ChipField } from "react-admin"
+import { EmailField, List, TextField, SimpleList, EditButton, Pagination, BooleanField, ArrayField, SingleFieldList, ChipField, TopToolbar, CreateButton, ExportButton, SelectColumnsButton, DateField, DatagridConfigurable } from "react-admin"
 import { useMediaQuery } from "@mui/material";
 import UserBulkActionButtons from "../BulkActionButtons/UserBulkActionButtons";
 import "./User.css"
@@ -7,12 +7,28 @@ import { UserFilterSidebar } from './UserFilter';
 
 
 export const UserList = () => {
+
   const isSmall = useMediaQuery((theme) => theme.breakpoints.down("sm"))
 
+  const UsersListActions = () => (
+    <TopToolbar>
+      <CreateButton />
+      <SelectColumnsButton />
+      <ExportButton />
+    </TopToolbar>
+  );
   return (
-    <List aside={<UserFilterSidebar />} perPage={6} pagination={<Pagination rowsPerPageOptions={[6, 12, 24, 30]} />} >
+    <List
+      aside={<UserFilterSidebar />}
+      perPage={6}
+      pagination={<Pagination
+        rowsPerPageOptions={[6, 12, 24, 30]} />}
+      actions={<UsersListActions />}
+    >
       {!isSmall ?
-        <Datagrid rowClick="show" bulkActionButtons={<UserBulkActionButtons />}>
+        <DatagridConfigurable rowClick="show" bulkActionButtons={<UserBulkActionButtons />}>
+          <TextField source="id" />
+          <DateField source="birthDate" />
           <UserNameField label="Users"></UserNameField>
           <EmailField source="email" />
           <TextField source="role" />
@@ -24,7 +40,7 @@ export const UserList = () => {
             </SingleFieldList>
           </ArrayField>
           <EditButton />
-        </Datagrid> :
+        </DatagridConfigurable> :
         <SimpleList
           primaryText={(record) => record.userName}
           tertiaryText={(record) => record.email}

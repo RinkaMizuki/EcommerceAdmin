@@ -19,19 +19,27 @@ const AcceptButton = () => {
   const record = useRecordContext();
 
   const [approve, { isLoading }] = useUpdate(
-    'reviews',
-    { id: record.id, data: { status: 'accepted' }, previousData: record },
+    'rates',
+    {
+      id: record.id,
+      data: {
+        status: 'accepted',
+        content: record.content,
+        star: record.star,
+      },
+      previousData: record
+    },
     {
       mutationMode: 'undoable',
       onSuccess: () => {
-        notify('resources.reviews.notification.approved_success', {
+        notify('Approved success', {
           type: 'info',
           undoable: true,
         });
-        redirectTo('/reviews');
+        redirectTo('/rates');
       },
       onError: () => {
-        notify('resources.reviews.notification.approved_error', {
+        notify('Approved error', {
           type: 'error',
         });
       },

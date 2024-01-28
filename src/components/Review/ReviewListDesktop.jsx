@@ -42,7 +42,7 @@ const ReviewListDesktop = ({ selectedRow }) => (
       },
     }}
   >
-    <DateField source="createdAt"/>
+    <DateField source="createdAt" />
     <WrapperField source="Users">
       <UserReferenceField link={false} />
     </WrapperField>
@@ -52,8 +52,8 @@ const ReviewListDesktop = ({ selectedRow }) => (
     <WrapperField source="Stars">
       <StarRatingField size="small" />
     </WrapperField>
-    <TextField source="content" />
-    <TextField source="status" />
+    <TextField source="content" sortable={false} />
+    <TextField source="status" sortable={false} />
   </DatagridConfigurable>
 );
 

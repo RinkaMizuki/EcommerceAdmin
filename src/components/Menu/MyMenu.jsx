@@ -1,6 +1,6 @@
 import { Menu, MenuItemLink, useSidebarState } from 'react-admin';
 import LabelIcon from '@mui/icons-material/Label';
-import BookmarkIcon from '@mui/icons-material/Bookmark';
+import CategoryIcon from '@mui/icons-material/Category';
 import ProductionQuantityLimitsIcon from '@mui/icons-material/ProductionQuantityLimits';
 import ReviewsIcon from '@mui/icons-material/Reviews';
 import GroupIcon from '@mui/icons-material/Group';
@@ -53,7 +53,7 @@ export const MyMenu = ({ dense = false }) => {
           to="/categories"
           state={{ _scrollToTop: true }}
           primaryText="Categories"
-          leftIcon={<BookmarkIcon />}
+          leftIcon={<CategoryIcon />}
           dense={dense}
         />
       </SubMenu>
@@ -79,7 +79,7 @@ export const MyMenu = ({ dense = false }) => {
           dense={dense}
         />
       </SubMenu>
-      <Menu.Item to="/rates" primaryText="Rates" leftIcon={<ReviewsIcon />} />
+      <Menu.Item to="/rates" primaryText="Reviews" leftIcon={<ReviewsIcon />} />
 
     </Box>
   )

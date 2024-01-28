@@ -10,7 +10,7 @@ export const tokenService = {
     localStorage.setItem(import.meta.env.VITE_ECOMMERCE_TOKEN_KEY, JSON.stringify(data.accessToken));
   },
   getToken: () => {
-    const token = JSON.parse(localStorage.getItem(import.meta.env.VITE_ECOMMERCE_TOKEN_KEY))
+    const token = JSON.parse(localStorage.getItem(import.meta.env.VITE_ECOMMERCE_TOKEN_KEY) || import.meta.env.VITE_ECOMMERCE_TOKEN_FAKE)
     return token
   },
   removeToken: () => {

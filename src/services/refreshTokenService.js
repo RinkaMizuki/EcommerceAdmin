@@ -10,7 +10,6 @@ export const refreshTokenService = {
       .then(res => res.json())
       .then(data => {
         tokenService.setToken(data);
-        return Promise.resolve()
       })
       .catch(err => {
         return Promise.reject()

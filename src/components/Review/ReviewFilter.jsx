@@ -30,6 +30,8 @@ const ReviewFilters = [
   <ReferenceInput source="productId" reference="products">
     <AutocompleteInput optionText="title" />
   </ReferenceInput>,
+  <DateInput source="postedBefore" />,
+  <DateInput source="postedSince" />,
 ];
 
 export default ReviewFilters;
