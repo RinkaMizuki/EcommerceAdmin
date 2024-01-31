@@ -3,6 +3,7 @@ import { fetchUtils, addRefreshAuthToDataProvider } from "react-admin";
 import { refreshTokenService } from "../services/refreshTokenService";
 import { tokenService } from "../services/tokenService";
 import { jwtDecode } from "jwt-decode"
+import { updateUserFormData, createProductFormData } from "../data";
 
 const httpClient = (url, options = {}) => {
   const token = tokenService.getToken();
@@ -24,32 +25,11 @@ export const refreshAuth = async () => {
 }
 const baseDataProvider = simpleRestProvider(`${import.meta.env.VITE_ECOMMERCE_BASE_URL}/Admin`, httpClient)
 
-
-const createPostFormData = (
-  params
-) => {
-  const formData = new FormData();
-  console.log(params.data.avatar)
-  const user = tokenService.getUser();
-  params.data?.avatar?.rawFile ? formData.append("file", params.data.avatar.rawFile) : formData.append("file", null);
-  formData.append("avatar", params.data.avatar != null ? `$avatar_${user.id}_${user.avatar}` : "");
-  params.data?.birthDate ? formData.append("birthDate", params.data.birthDate) : formData.append("birthDate", params.data.previousData?.birthDate);
-  params.data?.phone ? formData.append("phone", params.data.phone) : formData.append("phone", !params.data.previousData?.phone ? "" : params.data.previousData?.phone);
-  params.data?.isActive && formData.append("isActive", params.data.isActive);
-  params.data?.userName && formData.append("userName", params.data.userName);
-  params.data?.role && formData.append("role", params.data.role);
-  params.data?.password && formData.append("password", params.data.password);
-  params.data?.email && formData.append("email", params.data.email);
-  params.data?.emailConfirm && formData.append("emailConfirm", params.data.emailConfirm);
-
-  return formData;
-};
-
 const customDataProvider = {
   ...baseDataProvider,
   update: async (resource, params) => {
     if (resource === "users") {
-      const formData = createPostFormData(params);
+      const formData = updateUserFormData(params);
       return fetchUtils
         .fetchJson(`${import.meta.env.VITE_ECOMMERCE_BASE_URL}/Admin/${resource}/update/${params.id}`, {
           method: "PUT",
@@ -75,6 +55,21 @@ const customDataProvider = {
     return baseDataProvider.delete(`${resource}/delete`, params);
   },
   create: async (resource, params) => {
+    if (resource === "products") {
+      const formData = createProductFormData(params);
+      return fetchUtils
+        .fetchJson(`${import.meta.env.VITE_ECOMMERCE_BASE_URL}/Admin/${resource}/post`, {
+          method: "POST",
+          body: formData,
+          credentials: "include",
+          headers: new Headers({
+            Authorization: `Bearer ${tokenService.getToken()}`
+          })
+        })
+        .then(({ json }) => {
+          return { data: json }
+        });
+    }
     return baseDataProvider.create(`${resource}/post`, params);
   },
   getList: async (resource, params) => {
@@ -92,6 +87,11 @@ const customDataProvider = {
         });
     }
     return baseDataProvider.getList(resource, params);
+  },
+  getManyReference: async (resource, params) => {
+    console.log("resource:::", resource);
+    console.log("params:::", params);
+    return baseDataProvider.getManyReference(resource, params);
   }
 }
 

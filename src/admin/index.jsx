@@ -1,4 +1,4 @@
-import { Admin, Resource, useStore } from "react-admin"
+import { Admin, Resource, houseDarkTheme, houseLightTheme } from "react-admin"
 import { UserList } from "../components/User/UserList"
 import { dataProvider } from "../contexts/dataProvider"
 import { authProvider } from "../contexts/authProvider"
@@ -14,14 +14,12 @@ import { LayoutDefault } from "../components/Layout/LayoutDefault";
 import CategoryEdit from "../components/Categories/CategoryEdit";
 import ReviewList from "../components/Review/ReviewList";
 import ReviewCreate from "../components/Review/ReviewCreate";
-import { themes } from "../themes/themes";
+import ProductCreate from "../components/Product/ProductCreate";
+import ProductEdit from "../components/Product/ProductEdit";
+import Dashboard from "../components/Dashboard/Dashboard";
 
 
 const AdminPanel = () => {
-
-  const [themeName] = useStore('themeName', 'soft');
-  const lightTheme = themes.find(theme => theme.name === themeName)?.light;
-  const darkTheme = themes.find(theme => theme.name === themeName)?.dark;
 
   return (
     <Admin
@@ -29,8 +27,9 @@ const AdminPanel = () => {
       dataProvider={dataProvider}
       authProvider={authProvider}
       loginPage={LoginPage}
-      lightTheme={lightTheme}
-      // darkTheme={darkTheme}
+      lightTheme={houseLightTheme}
+      darkTheme={houseDarkTheme}
+      dashboard={Dashboard}
     >
       <Resource
         name="users"
@@ -52,6 +51,8 @@ const AdminPanel = () => {
       <Resource
         name="products"
         list={ProductList}
+        create={ProductCreate}
+        edit={ProductEdit}
       ></Resource>
       <Resource
         name="rates"

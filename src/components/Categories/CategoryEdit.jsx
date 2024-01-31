@@ -1,4 +1,4 @@
-import * as React from 'react';
+import { useParams } from 'react-router';
 import {
   Datagrid,
   Edit,
@@ -16,6 +16,7 @@ import {
   ArrayField,
   ReferenceInput,
   SelectInput,
+  useGetList,
 } from 'react-admin';
 import { RichTextInput } from 'ra-input-rich-text';
 import { Stack } from '@mui/material';
@@ -81,8 +82,9 @@ const CategoryTitle = () => {
   ) : null;
 };
 const Categories = () => {
-
+  const { data, isLoading } = useGetList('categories');
   const record = useRecordContext();
+  const params = useParams();
 
   return !record.parentCategoryId ? (
     <Edit>
@@ -105,6 +107,17 @@ const Categories = () => {
       optionValue="id"
       source="id"
       resettable
+      choices={data?.map(obj => {
+        // Kiểm tra xem cate có là id trùng với id trong parent cate
+        if (obj.id == params.id) {
+          // Sử dụng Object.assign để sao chép object và thêm key-value mới
+          return Object.assign({}, obj, { "not_available": true });
+        }
+        // Trả về cate không thay đổi nếu không phải là cate cần thay đổi
+        return obj;
+      })}
+      disableValue='not_available'
+      isLoading={isLoading}
     />
   </ReferenceInput>;
 };

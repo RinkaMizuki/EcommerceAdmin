@@ -21,10 +21,6 @@ const ReviewCreate = () => {
   const redirect = useRedirect();
   const location = useLocation();
 
-  const recordContext = useRecordContext();
-
-  console.log(recordContext);
-
   const onSuccess = (_) => {
     const record = getRecordFromLocation(location);
     notify('Created success');
@@ -37,11 +33,22 @@ const ReviewCreate = () => {
 
   return (
     <Create mutationOptions={{ onSuccess }}>
-      <SimpleForm defaultValues={{ status: 'pending' }}>
-        <ReferenceInput source="userId" reference="users">
-          <AutocompleteInput validate={required()} optionText="userName" />
+      <SimpleForm
+        defaultValues={{ status: 'pending' }}
+      >
+        <ReferenceInput
+          source="userId"
+          reference="users"
+        >
+          <AutocompleteInput
+            validate={required()}
+            optionText="userName"
+          />
         </ReferenceInput>
-        <ReferenceInput source="productId" reference="products">
+        <ReferenceInput
+          source="productId"
+          reference="products"
+        >
           <AutocompleteInput
             optionText="title"
             validate={required()}

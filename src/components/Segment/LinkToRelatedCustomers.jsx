@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { Button } from '@mui/material';
 import { Link } from 'react-router-dom';
-import { stringify } from 'query-string';
+import queryString from 'query-string';
 import { useRecordContext } from 'react-admin';
 import GroupIcon from '@mui/icons-material/Group';
 
@@ -14,7 +14,7 @@ const LinkToRelatedCustomers = () => {
       component={Link}
       to={{
         pathname: '/users',
-        search: stringify({
+        search: queryString.stringify({
           displayedFilters: JSON.stringify({}),
           filter: JSON.stringify({ segments: [record.title.toLowerCase()] }),
         }),

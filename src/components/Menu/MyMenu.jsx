@@ -32,6 +32,18 @@ export const MyMenu = ({ dense = false }) => {
             easing: theme.transitions.easing.sharp,
             duration: theme.transitions.duration.leavingScreen,
           }),
+        '& .MuiButtonBase-root': {
+          gap: "3px",
+        },
+        '& .css-qklaqr-MuiListItemIcon-root': {
+          marginLeft: "-5px",
+        },
+        '& .MuiSvgIcon-root': {
+          marginLeft: "-5px",
+        },
+        '& .css-ofnsqv-MuiButtonBase-root-MuiMenuItem-root-RaMenuItemLink-root': {
+          marginRight: "4px"
+        }
       }}
     >
       <Menu.DashboardItem />

@@ -8,9 +8,11 @@ export const LayoutDefault = props => <Layout
   appBar={Navbar}
   menu={MyMenu}
   sx={{
-    '& .MuiAppBar-positionFixed': {
-      left: "-1px",
-      top: "-1px"
+    '& .css-12r8yl0-MuiDrawer-docked-RaSidebar-root .MuiPaper-root': {
+      width: "200px"
+    },
+    '& .css-83fbe1-MuiDrawer-docked-RaSidebar-root .MuiPaper-root': {
+      width: "200px"
     }
   }}
 />;

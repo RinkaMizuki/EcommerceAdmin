@@ -1,8 +1,7 @@
 import {
-  Edit, SimpleForm, TextInput, DateInput, required, SelectInput, PasswordInput, BooleanInput, Toolbar, DeleteButton, SaveButton, NullableBooleanInput
+  Edit, SimpleForm, TextInput, DateInput, PasswordInput, BooleanInput
 } from 'react-admin';
 import PreviewAvatarField from '../Field/PreviewAvatarField';
-import { MuiColorInput } from 'mui-color-input'
 import { Box, Grid } from '@mui/material';
 
 export const UserEdit = () => {
@@ -57,7 +56,7 @@ export const UserEdit = () => {
                 </Box>
                 <Box flex={1} ml={{ xs: 0, sm: '0.5em' }}>
                   <PasswordInput
-                    source="confirm_password"
+                    source="confirmPassword"
                     fullWidth
                   />
                 </Box>

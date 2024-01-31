@@ -1,7 +1,7 @@
 import Button from '@mui/material/Button';
 import { Link } from 'react-router-dom';
 import { useRecordContext } from 'react-admin';
-import { stringify } from 'query-string';
+import queryString from 'query-string';
 
 import ProductIcon from '@mui/icons-material/Collections';
 
@@ -17,7 +17,7 @@ const LinkToRelatedProducts = () => {
       component={Link}
       to={{
         pathname: '/products',
-        search: stringify({
+        search: queryString.stringify({
           filter: JSON.stringify({ category: record.id }),
         }),
       }}
