@@ -2,7 +2,7 @@ import { Admin, Resource, houseDarkTheme, houseLightTheme } from "react-admin"
 import { UserList } from "../components/User/UserList"
 import { dataProvider } from "../contexts/dataProvider"
 import { authProvider } from "../contexts/authProvider"
-import LoginPage from "../pages/LoginPage";
+import LoginPage from "../components/Layout/LoginPage";
 import { UserCreate } from "../components/User/UserCreate";
 import { UserEdit } from "../components/User/UserEdit";
 import { UserDetail } from "../components/User/UserDetail";

@@ -105,6 +105,7 @@ const Categories = () => {
       style={{ width: "15%" }}
       optionText="title"
       optionValue="id"
+      label="Parent category"
       source="id"
       resettable
       choices={data?.map(obj => {

@@ -1,9 +1,9 @@
 import simpleRestProvider from "ra-data-simple-rest"
 import { fetchUtils, addRefreshAuthToDataProvider } from "react-admin";
-import { refreshTokenService } from "../services/refreshTokenService";
-import { tokenService } from "../services/tokenService";
+import { refreshTokenService } from "../services/refreshTokenService.js";
+import { tokenService } from "../services/tokenService.js";
 import { jwtDecode } from "jwt-decode"
-import { updateUserFormData, createProductFormData } from "../data";
+import { updateUserFormData, createProductFormData, handleGetFiles } from "../data/index.js";
 
 const httpClient = (url, options = {}) => {
   const token = tokenService.getToken();
@@ -28,7 +28,14 @@ const baseDataProvider = simpleRestProvider(`${import.meta.env.VITE_ECOMMERCE_BA
 const customDataProvider = {
   ...baseDataProvider,
   update: async (resource, params) => {
-    if (resource === "users") {
+    if (resource === "users" || resource === "products") {
+
+      const files = await handleGetFiles(params);
+      console.log("params:::", params);
+      console.log(files);
+      console.log("duoc goi la cook");
+
+      return;
       const formData = updateUserFormData(params);
       return fetchUtils
         .fetchJson(`${import.meta.env.VITE_ECOMMERCE_BASE_URL}/Admin/${resource}/update/${params.id}`, {
@@ -89,8 +96,6 @@ const customDataProvider = {
     return baseDataProvider.getList(resource, params);
   },
   getManyReference: async (resource, params) => {
-    console.log("resource:::", resource);
-    console.log("params:::", params);
     return baseDataProvider.getManyReference(resource, params);
   }
 }

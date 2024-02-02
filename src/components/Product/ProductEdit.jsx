@@ -19,6 +19,8 @@ import { ProductEditDetail } from './ProductEditDetail';
 import UserReferenceField from '../User/UserReferenceField';
 import StarRatingField from '../Review/StarRatingField';
 import CreateRelatedReviewButton from './CreateRelatedReviewButton';
+import ThumbnailProductInput from '../Field/ThumbnailProductInput';
+import PreviewProductPhoto from '../Field/PreviewProductPhoto';
 
 const RichTextInput = React.lazy(() =>
   import('ra-input-rich-text').then(module => ({
@@ -36,9 +38,16 @@ const ProductEdit = () => (
     <TabbedForm>
       <TabbedForm.Tab
         label="Image"
-        sx={{ maxWidth: '40em' }}
+        sx={{
+          "& .css-1x7atgs-MuiStack-root-RaLabeled-root-RaFileInput-root-RaImageInput-root .RaFileInput-removeButton button, & .css-nrohbu-MuiStack-root-RaLabeled-root-RaFileInput-root-RaImageInput-root .RaFileInput-removeButton button, & .css-chtx3r-MuiStack-root-RaLabeled-root-RaFileInput-root-RaImageInput-root .RaFileInput-removeButton button": {
+            top: "-18px",
+            right: "-18px",
+            zIndex: "999"
+          },
+        }}
       >
-        <TextInput source="image" fullWidth validate={req} />
+        <ThumbnailProductInput />
+        <PreviewProductPhoto />
       </TabbedForm.Tab>
       <TabbedForm.Tab
         label="Details"

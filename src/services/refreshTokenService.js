@@ -1,4 +1,4 @@
-import { tokenService } from "./tokenService"
+import { tokenService } from "./tokenService.js"
 
 export const refreshTokenService = {
   refreshToken: async () => {

@@ -3,14 +3,14 @@ export const tokenService = {
     localStorage.setItem(import.meta.env.VITE_ECOMMERCE_USER_KEY, JSON.stringify(data.user))
   },
   getUser: () => {
-    const user = JSON.parse(localStorage.getItem(import.meta.env.VITE_ECOMMERCE_USER_KEY)) || {}
+    const user = JSON.parse(localStorage.getItem(import.meta.env.VITE_ECOMMERCE_USER_KEY) || JSON.stringify({}))
     return user
   },
   setToken: (data) => {
     localStorage.setItem(import.meta.env.VITE_ECOMMERCE_TOKEN_KEY, JSON.stringify(data.accessToken));
   },
   getToken: () => {
-    const token = JSON.parse(localStorage.getItem(import.meta.env.VITE_ECOMMERCE_TOKEN_KEY) || import.meta.env.VITE_ECOMMERCE_TOKEN_FAKE)
+    const token = JSON.parse(localStorage.getItem(import.meta.env.VITE_ECOMMERCE_TOKEN_KEY) || JSON.stringify(""))
     return token
   },
   removeToken: () => {

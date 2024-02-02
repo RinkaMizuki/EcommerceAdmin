@@ -10,24 +10,27 @@ export const authProvider = {
       credentials: "include"
     });
     return fetch(request)
-      .then(res => res.json())
-      .then(data => {
-        tokenService.setUser(data)
-        tokenService.setToken(data)
-        return Promise.resolve();
+      .then(response => {
+        if (response.status < 200 || response.status >= 300) {
+          throw new Error(response.statusText);
+        }
+        return response.json();
+      })
+      .then(auth => {
+        tokenService.setUser(auth)
+        tokenService.setToken(auth)
       })
       .catch(err => {
-        throw new Error(err.message)
+        throw new Error(err);
       })
   },
   //mỗi khi user navigate page sẽ gọi lại hàm này để check ràng user thực sự vẫn còn authen
   checkAuth: async () => {
-    const user = tokenService.getUser();
-    if (user) return Promise.resolve()
+    const token = tokenService.getToken();
+    if (token) return Promise.resolve()
     return Promise.reject() // khi bị rejected sẽ gọi hàm logout và nếu checkAuth có chuyển hướng thì nó sẽ được ưu tiên thay vì phải theo logout
   },
   checkError: async (error) => {
-    // console.log(error)
   },
   getPermissions: async () => { },
   logout: async () => {

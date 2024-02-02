@@ -48,7 +48,38 @@ const createProductFormData = (
   return formData;
 };
 
+const handleGetFiles = async (params) => {
+
+  const data = [];
+
+  for (const obj of params.data.productImages) {
+    if (obj?.url) {
+      // Chuyển fetch thành một hàm async
+      const fetchImage = async () => {
+        try {
+          const response = await fetch(obj.url);
+          const blob = await response.blob();
+          const file = new File([blob], obj.image, { type: blob.type });
+          file["path"] = obj.image;
+          data.push(file);
+        } catch (error) {
+          console.error('Error fetching image:', error);
+        }
+      };
+
+      // Gọi hàm fetch bằng await để đảm bảo rằng nó hoàn thành trước khi qua vòng lặp tiếp theo
+      await fetchImage();
+    }
+    else {
+      data.push(obj.rawFile)
+    }
+  }
+  return data;
+}
+
+
 export {
   updateUserFormData,
-  createProductFormData
+  createProductFormData,
+  handleGetFiles
 }
