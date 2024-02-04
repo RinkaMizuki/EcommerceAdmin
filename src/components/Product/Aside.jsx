@@ -12,10 +12,7 @@ import BarChartIcon from '@mui/icons-material/BarChart';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 
 const Aside = () => {
-  const { data } = useGetList('categories', {
-    pagination: { page: 1, perPage: 100 },
-    sort: { field: 'name', order: 'ASC' },
-  });
+  const { data } = useGetList('categories');
 
   return (
     <Card sx={{ order: -1, mr: 2, width: 220 }}>
@@ -66,18 +63,13 @@ const Aside = () => {
           icon={<LocalOfferIcon />}
           label="Categories"
         >
-          <FilterListItem
-            label="Laptop"
-            value={{ category: 1 }}
-          />
-          <FilterListItem
-            label="Personal computer"
-            value={{ category: 2 }}
-          />
-          <FilterListItem
-            label="Mobile"
-            value={{ category: 3 }}
-          />
+          {data?.map(cate => (
+            <FilterListItem
+              key={cate.id}
+              label={cate.title}
+              value={{ category: cate.id }}
+            />
+          ))}
         </FilterList>
       </CardContent>
     </Card>

@@ -7,7 +7,7 @@ export const tokenService = {
     return user
   },
   setToken: (data) => {
-    localStorage.setItem(import.meta.env.VITE_ECOMMERCE_TOKEN_KEY, JSON.stringify(data.accessToken));
+    localStorage.setItem(import.meta.env.VITE_ECOMMERCE_TOKEN_KEY, JSON.stringify(data.accessToken || ""));
   },
   getToken: () => {
     const token = JSON.parse(localStorage.getItem(import.meta.env.VITE_ECOMMERCE_TOKEN_KEY) || JSON.stringify(""))

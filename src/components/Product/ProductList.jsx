@@ -9,7 +9,6 @@ import {
   ListBase,
   Pagination,
   ReferenceInput,
-  SearchInput,
   SelectInput,
   SortButton,
   TopToolbar,
@@ -25,7 +24,7 @@ export const ProductList = () => {
   return (
     <>
       <Title title="Products"></Title>
-      <ListBase perPage={12} sort={{ field: 'reference', order: 'ASC' }} >
+      <ListBase perPage={12} sort={{ field: 'stock', order: 'ASC' }} >
         <FilterContext.Provider value={productFilters}>
           <ListActions isSmall={isSmall} />
           {isSmall && (
@@ -47,20 +46,22 @@ export const ProductList = () => {
 };
 
 export const productFilters = [
-  <SearchInput source="q" alwaysOn />,
   <ReferenceInput
-    source="category_id"
+    source="categoryId"
     reference="categories"
     sort={{ field: 'id', order: 'ASC' }}
   >
-    <SelectInput source="name" />
+    <SelectInput
+      optionText="title"
+      optionValue="id"
+    />
   </ReferenceInput>,
 ];
 
 const ListActions = ({ isSmall }) => (
   <TopToolbar>
     {isSmall && <FilterButton />}
-    <SortButton fields={['reference', 'sales', 'stock']} />
+    <SortButton fields={['sales', 'stock']} />
     <CreateButton />
     <ExportButton />
   </TopToolbar>

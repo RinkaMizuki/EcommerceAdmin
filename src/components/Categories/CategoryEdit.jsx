@@ -87,15 +87,17 @@ const Categories = () => {
   const params = useParams();
 
   return !record.parentCategoryId ? (
-    <Edit>
-      <ArrayField source="listProductCategoryChild">
-        <Datagrid bulkActionButtons={false}>
-          <TextField source="id" />
-          <TextField source="title" />
-          <EditButton />
-        </Datagrid>
-      </ArrayField>
-    </Edit>
+    <Labeled label="Child categories">
+      <Edit>
+        <ArrayField source="listProductCategoryChild">
+          <Datagrid bulkActionButtons={false}>
+            <TextField source="id" />
+            <TextField source="title" />
+            <EditButton />
+          </Datagrid>
+        </ArrayField>
+      </Edit>
+    </Labeled>
   ) : <ReferenceInput
     label="Parent category"
     source="parentCategoryId"

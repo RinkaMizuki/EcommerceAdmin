@@ -7,16 +7,52 @@ import {
   required,
   SelectInput,
   TextInput,
+  useRecordContext,
 } from 'react-admin';
 import { InputAdornment, Grid } from '@mui/material';
-import { useState } from 'react';
-import { ColorInput } from 'react-admin-color-picker';
+import { useEffect, useState } from 'react';
 import AddCircleIcon from '@mui/icons-material/AddCircle';
+import ColorPickerInput from "./ColorPickerInput";
+import { useImperativeHandle, forwardRef } from 'react';
+import { v4 as uuidv4 } from 'uuid';
 
+export const ProductEditDetail = forwardRef(({ onSaveable }, ref) => {
+  const record = useRecordContext();
+  const [colorPickers, setColorPickers] = useState([]);
 
-export const ProductEditDetail = () => {
+  useEffect(() => {
+    setColorPickers(record?.productColors || [])
+  }, [record?.productColors])
 
-  const [colorPickerCount, setColorPickerCount] = useState(1);
+  const handleColorChange = (colorId, newColor) => {
+    setColorPickers((prevColorPickers) =>
+      prevColorPickers.map((picker) =>
+        picker.colorId === colorId ? { ...picker, colorCode: newColor } : picker
+      )
+    );
+    onSaveable(true);
+  };
+  const handleSaveColorChange = () => {
+    localStorage.setItem('colors_save', JSON.stringify(colorPickers))
+  };
+
+  // Sử dụng useImperativeHandle để chỉ định các phương thức mà ref sẽ có thể gọi
+  useImperativeHandle(ref, () => ({
+    handleSaveColorChange: handleSaveColorChange
+  }));
+
+  const handleRemoveColorPicker = (colorId) => {
+    setColorPickers((prevColorPickers) =>
+      prevColorPickers.filter((picker) => picker.colorId !== colorId)
+    );
+    onSaveable(true);
+  };
+
+  const handleAddColorPicker = () => {
+    const newColorPicker = { colorId: uuidv4(), colorCode: Math.floor(Math.random() * 16777215).toString(16) };
+    setColorPickers((prevColorPickers) => [...prevColorPickers, newColorPicker]);
+    onSaveable(true);
+  };
 
   return (
     <Grid container columnSpacing={2}>
@@ -75,37 +111,32 @@ export const ProductEditDetail = () => {
         <NumberInput source="quantity" validate={req} fullWidth />
       </Grid>
       <Grid item xs={0} sm={4}></Grid>
-      <Grid item xs={12} sm={4} sx={{ marginBottom: "15px" }}>
-        {Array(colorPickerCount)
-          .fill(true)
-          .map((_, i) => (
-            <ColorInput
-              label="Product color"
-              key={i}
-              variant="filled"
-              source={`colorCode${i}`}
-              picker="Sketch"
-              options={{
-                disableAlpha: true,
-              }}
-            />
-          ))
+      <Grid item xs={12} sm={4} sx={{
+        marginBottom: "15px",
+        "& .css-8l66u2-MuiStack-root-RaLabeled-root": {
+          marginRight: "10px"
         }
-        <Labeled label="Add color">
+      }}>
+        <>
+          <Labeled label="Colors">
+            <>
+              {colorPickers?.map((picker) => (
+                <ColorPickerInput
+                  key={picker.colorId}
+                  colorId={picker.colorId}
+                  defaultColor={picker.colorCode}
+                  onColorChange={handleColorChange}
+                  onRemove={handleRemoveColorPicker}
+                />
+              ))}
+            </>
+          </Labeled>
           <Button
-            sx={{
-              '& .MuiButton-startIcon': {
-                marginRight: "0"
-              }
-            }}
-            color='secondary'
-            size='medium'
-            children={<AddCircleIcon />}
-            alignIcon='left'
-            onClick={() => setColorPickerCount(colorPickerCount + 1)}
-          >
-          </Button>
-        </Labeled>
+            label="Add color"
+            onClick={handleAddColorPicker}
+            startIcon={<AddCircleIcon />}
+          />
+        </>
       </Grid>
 
       <Grid item xs={0} sm={6}></Grid>
@@ -124,6 +155,6 @@ export const ProductEditDetail = () => {
       </Grid>
     </Grid >
   )
-};
+});
 
 const req = [required()];

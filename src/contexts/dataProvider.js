@@ -3,7 +3,7 @@ import { fetchUtils, addRefreshAuthToDataProvider } from "react-admin";
 import { refreshTokenService } from "../services/refreshTokenService.js";
 import { tokenService } from "../services/tokenService.js";
 import { jwtDecode } from "jwt-decode"
-import { updateUserFormData, createProductFormData, handleGetFiles } from "../data/index.js";
+import { updateUserFormData, productFormData, handleGetFiles } from "../data/index.js";
 
 const httpClient = (url, options = {}) => {
   const token = tokenService.getToken();
@@ -31,12 +31,7 @@ const customDataProvider = {
     if (resource === "users" || resource === "products") {
 
       const files = await handleGetFiles(params);
-      console.log("params:::", params);
-      console.log(files);
-      console.log("duoc goi la cook");
-
-      return;
-      const formData = updateUserFormData(params);
+      const formData = resource === "users" ? updateUserFormData(params) : productFormData(params, files);
       return fetchUtils
         .fetchJson(`${import.meta.env.VITE_ECOMMERCE_BASE_URL}/Admin/${resource}/update/${params.id}`, {
           method: "PUT",
@@ -47,11 +42,13 @@ const customDataProvider = {
           })
         })
         .then(({ json }) => {
-          const getIdLoginUser = tokenService.getUser().id;
-          if (getIdLoginUser == json.id) {
-            tokenService.setUser({
-              user: json,
-            });
+          if (resource === "users") {
+            const getIdLoginUser = tokenService.getUser().id;
+            if (getIdLoginUser == json.id) {
+              tokenService.setUser({
+                user: json,
+              });
+            }
           }
           return { data: json }
         });
@@ -63,7 +60,7 @@ const customDataProvider = {
   },
   create: async (resource, params) => {
     if (resource === "products") {
-      const formData = createProductFormData(params);
+      const formData = productFormData(params);
       return fetchUtils
         .fetchJson(`${import.meta.env.VITE_ECOMMERCE_BASE_URL}/Admin/${resource}/post`, {
           method: "POST",

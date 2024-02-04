@@ -1,4 +1,3 @@
-import * as React from 'react';
 import {
   Datagrid,
   DateField,
@@ -6,15 +5,14 @@ import {
   EditButton,
   Pagination,
   ReferenceManyField,
-  ReferenceManyCount,
   required,
   TabbedForm,
   TextField,
-  TextInput,
   useRecordContext,
-  Labeled,
+  SaveButton,
+  Toolbar,
 } from 'react-admin';
-
+import React, { useRef, useState } from "react";
 import { ProductEditDetail } from './ProductEditDetail';
 import UserReferenceField from '../User/UserReferenceField';
 import StarRatingField from '../Review/StarRatingField';
@@ -30,78 +28,92 @@ const RichTextInput = React.lazy(() =>
 
 const ProductTitle = () => {
   const record = useRecordContext();
-  return record ? <span>Product "{record.reference}"</span> : null;
+  return record ? <span>Product "{record.title}"</span> : null;
 };
 
-const ProductEdit = () => (
-  <Edit title={<ProductTitle />}>
-    <TabbedForm>
-      <TabbedForm.Tab
-        label="Image"
-        sx={{
-          "& .css-1x7atgs-MuiStack-root-RaLabeled-root-RaFileInput-root-RaImageInput-root .RaFileInput-removeButton button, & .css-nrohbu-MuiStack-root-RaLabeled-root-RaFileInput-root-RaImageInput-root .RaFileInput-removeButton button, & .css-chtx3r-MuiStack-root-RaLabeled-root-RaFileInput-root-RaImageInput-root .RaFileInput-removeButton button": {
-            top: "-18px",
-            right: "-18px",
-            zIndex: "999"
-          },
-        }}
-      >
-        <ThumbnailProductInput />
-        <PreviewProductPhoto />
-      </TabbedForm.Tab>
-      <TabbedForm.Tab
-        label="Details"
-        path="details"
-        sx={{ maxWidth: '40em' }}
-      >
-        <ProductEditDetail />
-      </TabbedForm.Tab>
-      <TabbedForm.Tab
-        label="Description"
-        path="description"
-        sx={{ maxWidth: '40em' }}
-      >
-        <RichTextInput source="description" label="" validate={req} />
-      </TabbedForm.Tab>
-      <TabbedForm.Tab
-        label="Reviews"
-        path="reviews"
-      >
-        <ReferenceManyField
-          reference="rates"
-          target="productId"
-          pagination={<Pagination />}
-        >
-          <Datagrid
-            sx={{
-              width: '100%',
-              '& .column-comment': {
-                maxWidth: '20em',
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                whiteSpace: 'nowrap',
-              },
-            }}
-          >
-            <DateField source="createdAt" />
-            <UserReferenceField />
-            <StarRatingField />
-            <TextField source="content" />
-            <TextField source="status" />
-            <EditButton />
-          </Datagrid>
-          <CreateRelatedReviewButton />
-        </ReferenceManyField>
-      </TabbedForm.Tab>
-    </TabbedForm>
-  </Edit>
+const SaveToolbar = ({ saveable, onSaveColor }) => (
+  <Toolbar>
+    <SaveButton alwaysEnable={saveable} onClick={onSaveColor} />
+  </Toolbar>
 );
 
-const CounterRate = () => {
-  const record = useRecordContext();
+const ProductEdit = () => {
 
-  return <span>{record.productRates.length}</span>
-}
+  const [isSaveale, setIsSaveable] = useState(false);
+  const editDetailRef = useRef();
+
+  const handleSaveColorChange = () => {
+    editDetailRef.current?.handleSaveColorChange();
+  };
+
+  return (
+    <Edit
+      title={<ProductTitle />}
+    >
+      <TabbedForm
+        toolbar={<SaveToolbar saveable={isSaveale} onSaveColor={handleSaveColorChange} />}
+      >
+        <TabbedForm.Tab
+          label="Image"
+          sx={{
+            "& .css-1x7atgs-MuiStack-root-RaLabeled-root-RaFileInput-root-RaImageInput-root .RaFileInput-removeButton button, & .css-nrohbu-MuiStack-root-RaLabeled-root-RaFileInput-root-RaImageInput-root .RaFileInput-removeButton button, & .css-chtx3r-MuiStack-root-RaLabeled-root-RaFileInput-root-RaImageInput-root .RaFileInput-removeButton button": {
+              top: "-18px",
+              right: "-18px",
+              zIndex: "999"
+            },
+          }}
+        >
+          <ThumbnailProductInput />
+          <PreviewProductPhoto />
+        </TabbedForm.Tab>
+        <TabbedForm.Tab
+          label="Details"
+          path="details"
+          sx={{ maxWidth: '40em' }}
+        >
+          <ProductEditDetail onSaveable={setIsSaveable} ref={editDetailRef} />
+        </TabbedForm.Tab>
+        <TabbedForm.Tab
+          label="Description"
+          path="description"
+          sx={{ maxWidth: '40em' }}
+        >
+          <RichTextInput source="description" label="" validate={req} />
+        </TabbedForm.Tab>
+        <TabbedForm.Tab
+          label="Reviews"
+          path="reviews"
+        >
+          <ReferenceManyField
+            reference="rates"
+            target="productId"
+            pagination={<Pagination />}
+          >
+            <Datagrid
+              sx={{
+                width: '100%',
+                '& .column-comment': {
+                  maxWidth: '20em',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                },
+              }}
+            >
+              <DateField source="createdAt" />
+              <UserReferenceField />
+              <StarRatingField />
+              <TextField source="content" />
+              <TextField source="status" />
+              <EditButton />
+            </Datagrid>
+            <CreateRelatedReviewButton />
+          </ReferenceManyField>
+        </TabbedForm.Tab>
+      </TabbedForm>
+    </Edit>
+  )
+};
 
 const req = [required()];
 

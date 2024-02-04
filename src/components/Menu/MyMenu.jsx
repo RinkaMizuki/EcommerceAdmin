@@ -2,6 +2,7 @@ import { Menu, MenuItemLink, useSidebarState } from 'react-admin';
 import LabelIcon from '@mui/icons-material/Label';
 import CategoryIcon from '@mui/icons-material/Category';
 import ProductionQuantityLimitsIcon from '@mui/icons-material/ProductionQuantityLimits';
+import ConfirmationNumberIcon from '@mui/icons-material/ConfirmationNumber';
 import ReviewsIcon from '@mui/icons-material/Reviews';
 import GroupIcon from '@mui/icons-material/Group';
 import { Box } from '@mui/material';
@@ -66,6 +67,13 @@ export const MyMenu = ({ dense = false }) => {
           state={{ _scrollToTop: true }}
           primaryText="Categories"
           leftIcon={<CategoryIcon />}
+          dense={dense}
+        />
+        <MenuItemLink
+          to="/coupons"
+          state={{ _scrollToTop: true }}
+          primaryText="Coupons"
+          leftIcon={<ConfirmationNumberIcon />}
           dense={dense}
         />
       </SubMenu>

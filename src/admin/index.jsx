@@ -17,7 +17,10 @@ import ReviewCreate from "../components/Review/ReviewCreate";
 import ProductCreate from "../components/Product/ProductCreate";
 import ProductEdit from "../components/Product/ProductEdit";
 import Dashboard from "../components/Dashboard/Dashboard";
-
+import { CategoryCreate } from "../components/Categories/CategoryCreate";
+import { CouponList } from "../components/Coupon/CouponList";
+import { CouponEdit } from "../components/Coupon/CouponEdit";
+import { CouponCreate } from "../components/Coupon/CouponCreate";
 
 const AdminPanel = () => {
 
@@ -47,12 +50,19 @@ const AdminPanel = () => {
         name="categories"
         list={CategoryList}
         edit={CategoryEdit}
+        create={CategoryCreate}
       ></Resource>
       <Resource
         name="products"
         list={ProductList}
         create={ProductCreate}
         edit={ProductEdit}
+      ></Resource>
+      <Resource
+        name="coupons"
+        list={CouponList}
+        edit={CouponEdit}
+        create={CouponCreate}
       ></Resource>
       <Resource
         name="rates"

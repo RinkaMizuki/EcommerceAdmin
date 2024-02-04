@@ -1,8 +1,10 @@
+import { tokenService } from "../services/tokenService";
+
 const updateUserFormData = (
   params
 ) => {
   const formData = new FormData();
-  console.log(params.data.avatar)
+
   const user = tokenService.getUser();
   params.data?.avatar?.rawFile ? formData.append("file", params.data.avatar.rawFile) : formData.append("file", null);
   formData.append("avatar", params.data.avatar != null ? `$avatar_${user.id}_${user.avatar}` : "");
@@ -18,20 +20,29 @@ const updateUserFormData = (
   return formData;
 };
 
-const createProductFormData = (
-  params
+const productFormData = (
+  params, files = []
 ) => {
   const formData = new FormData();
   const data = params.data;
 
-  var allColorKey = Object.keys(data).filter(key => key.includes("colorCode"));
+  const colors = JSON.parse(localStorage.getItem("colors_save") || []);
 
-  const colorCodes = allColorKey.map(key => data[key]);
+  const colorCodes = colors.map(c => c.colorCode);
 
-  for (let index = 0; index < data.files.length; index++) {
-    const image = data.files[index].rawFile;
-    formData.append("files", image);
+  if (data?.files) {
+    for (let index = 0; index < data.files.length; index++) {
+      const image = data.files[index].rawFile;
+      formData.append("files", image);
+    }
   }
+  else {
+    for (let index = 0; index < files.length; index++) {
+      const image = files[index];
+      formData.append("files", image);
+    }
+  }
+  
   formData.append("categoryId", data.categoryId);
   formData.append("title", data.title);
   formData.append("description", data.description);
@@ -45,14 +56,28 @@ const createProductFormData = (
   formData.append("status", data.status);
   formData.append("upComing", data.upComing);
 
+  localStorage.removeItem("colors_save")
+
   return formData;
 };
 
 const handleGetFiles = async (params) => {
 
   const data = [];
+  const images = params.data.productImages;
 
-  for (const obj of params.data.productImages) {
+  if (params.data.url?.rawFile) {
+    data.unshift(params.data.url?.rawFile);
+  }
+  else {
+    //old thumbnail
+    const response = await fetch(params.url);
+    const blob = await response.blob();
+    const file = new File([blob], params.data.image, { type: blob.type });
+    file["path"] = params.data.image;
+    data.unshift(file);
+  }
+  for (const obj of images) {
     if (obj?.url) {
       // Chuyển fetch thành một hàm async
       const fetchImage = async () => {
@@ -80,6 +105,6 @@ const handleGetFiles = async (params) => {
 
 export {
   updateUserFormData,
-  createProductFormData,
+  productFormData,
   handleGetFiles
 }

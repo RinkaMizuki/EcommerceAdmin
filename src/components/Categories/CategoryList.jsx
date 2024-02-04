@@ -1,7 +1,9 @@
 import {
+  CreateButton,
   EditButton,
   List,
   RecordContextProvider,
+  TopToolbar,
   useListContext,
 } from 'react-admin';
 import {
@@ -21,12 +23,16 @@ export const CategoryList = () => (
     perPage={20}
     pagination={false}
     component="div"
-    actions={false}
+    actions={<ListActions />}
   >
     <CategoryGrid />
   </List>
 );
-
+const ListActions = () => (
+  <TopToolbar>
+    <CreateButton />
+  </TopToolbar>
+);
 const CategoryGrid = () => {
   const { data, isLoading } = useListContext();
   if (isLoading) {
@@ -48,7 +54,7 @@ const CategoryGrid = () => {
           >
             <Card>
               <CardMedia
-                image={record.product.url}
+                image={record.product?.url}
                 sx={{ height: 140 }}
               />
               <CardContent sx={{ paddingBottom: '0.5em' }}>

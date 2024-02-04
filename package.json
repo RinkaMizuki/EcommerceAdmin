@@ -15,19 +15,16 @@
     "date-fns": "^3.3.1",
     "inflection": "^3.0.0",
     "jwt-decode": "^4.0.0",
-    "material-ui-color": "^1.2.0",
-    "material-ui-popup-state": "^5.0.10",
-    "mui-color-input": "^2.0.1",
+    "primereact": "^10.4.0",
     "prop-types": "^15.8.1",
     "query-string": "^8.1.0",
-    "ra-data-json-server": "^4.16.3",
     "ra-data-simple-rest": "^4.16.3",
     "ra-input-rich-text": "^4.16.4",
     "react": "^18.2.0",
     "react-admin": "^4.16.4",
-    "react-admin-color-picker": "^1.0.3",
     "react-dom": "^18.2.0",
-    "recharts": "^2.11.0"
+    "recharts": "^2.11.0",
+    "uuid": "^9.0.1"
   },
   "devDependencies": {
     "@types/react": "^18.2.43",

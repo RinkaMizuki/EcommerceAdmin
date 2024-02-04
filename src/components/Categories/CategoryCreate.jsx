@@ -1,6 +1,7 @@
-import * as React from 'react';
-import { Create, ImageField, ImageInput, TabbedForm } from 'react-admin';
-import { ProductEditDetail } from './ProductEditDetail';
+import { Box } from '@mui/material';
+import React from 'react';
+import { Create, SimpleForm, TextInput, BooleanInput, SelectInput, required, ReferenceInput, useGetList } from 'react-admin';
+
 
 const RichTextInput = React.lazy(() =>
   import('ra-input-rich-text').then(module => ({
@@ -8,40 +9,51 @@ const RichTextInput = React.lazy(() =>
   }))
 );
 
-const CategoryCreate = () => (
-  <Create>
-    <TabbedForm>
-      <TabbedForm.Tab
-        label="Image"
-        sx={{ maxWidth: '40em' }}
-      >
-        <ImageInput
-          label="Product photos"
-          accept="image/png,image/svg+xml,image/jpg,image/jpeg"
-          source="files"
-          multiple
-        >
-          <ImageField
-            source="src"
-            title="title"
-          />
-        </ImageInput>
-      </TabbedForm.Tab>
-      <TabbedForm.Tab
-        label="Details"
-        path="details"
-        sx={{ maxWidth: '40em' }}
-      >
-        <ProductEditDetail />
-      </TabbedForm.Tab>
-      <TabbedForm.Tab
-        label="Description"
-        path="description"
-      >
-        <RichTextInput source="description" label="" />
-      </TabbedForm.Tab>
-    </TabbedForm>
-  </Create>
-);
+export const CategoryCreate = () => {
 
-export default ProductCreate;
+  const { data, isLoading } = useGetList('categories');
+
+  return (
+    <Create>
+      <SimpleForm>
+        <Box sx={{
+          display: "flex",
+          gap: "30px",
+          "& .css-1xyy4xb-MuiFormControl-root-MuiTextField-root-RaResettableTextField-root": {
+            width: "100%"
+          }
+        }}>
+          <TextInput source="title" label="Title" validate={required()} />
+          <ReferenceInput
+            label="Parent category"
+            source="parentCategoryId"
+            reference="categories"
+          >
+            <SelectInput
+              style={{ width: "15%" }}
+              optionText="title"
+              optionValue="id"
+              label="Parent category"
+              source="parentCategoryId"
+              resettable
+              emptyText="No parent category"
+              emptyValue="-1"
+              choices={data?.map(obj => {
+                if (!obj.parentCategoryId) {
+                  return obj;
+                }
+              })}
+              disableValue='not_available'
+              isLoading={isLoading}
+            />
+          </ReferenceInput>
+        </Box>
+        <RichTextInput source="description" label="Description" validate={req} />
+
+        <BooleanInput label="Status" source="status" />
+        <BooleanInput label="Hot" source="hot" />
+      </SimpleForm>
+    </Create>
+  )
+};
+const req = [required()];
