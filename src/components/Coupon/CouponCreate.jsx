@@ -6,7 +6,7 @@ import { Box, Grid, InputAdornment } from '@mui/material';
 export const CouponCreate = () => {
 
   return (
-    <Create title="Coupon">
+    <Create title="Coupons">
       <SimpleForm>
         <div>
           <Grid container width={{ xs: '100%', xl: 800 }} spacing={2}>
