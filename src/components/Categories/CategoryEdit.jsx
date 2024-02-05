@@ -21,9 +21,6 @@ import {
 import { RichTextInput } from 'ra-input-rich-text';
 import { Stack } from '@mui/material';
 
-// import ThumbnailField from '../products/ThumbnailField';
-// import ProductRefField from '../products/ProductRefField';
-
 const CategoryEdit = () => (
   <Edit title={<CategoryTitle />}>
     <SimpleForm>

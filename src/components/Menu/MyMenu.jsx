@@ -35,16 +35,14 @@ export const MyMenu = ({ dense = false }) => {
           }),
         '& .MuiButtonBase-root': {
           gap: "3px",
+          marginRight: "4px"
         },
-        '& .css-qklaqr-MuiListItemIcon-root': {
+        '& .RaMenuItemLink-icon': {
           marginLeft: "-5px",
         },
         '& .MuiSvgIcon-root': {
           marginLeft: "-5px",
         },
-        '& .css-ofnsqv-MuiButtonBase-root-MuiMenuItem-root-RaMenuItemLink-root': {
-          marginRight: "4px"
-        }
       }}
     >
       <Menu.DashboardItem />

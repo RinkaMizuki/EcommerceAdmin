@@ -56,9 +56,9 @@ const ProductEdit = () => {
         <TabbedForm.Tab
           label="Image"
           sx={{
-            "& .css-1x7atgs-MuiStack-root-RaLabeled-root-RaFileInput-root-RaImageInput-root .RaFileInput-removeButton button, & .css-nrohbu-MuiStack-root-RaLabeled-root-RaFileInput-root-RaImageInput-root .RaFileInput-removeButton button, & .css-chtx3r-MuiStack-root-RaLabeled-root-RaFileInput-root-RaImageInput-root .RaFileInput-removeButton button": {
-              top: "-18px",
-              right: "-18px",
+            "& .RaFileInput-removeButton button": {
+              top: "-18px !important",
+              right: "-18px !important",
               zIndex: "999"
             },
           }}

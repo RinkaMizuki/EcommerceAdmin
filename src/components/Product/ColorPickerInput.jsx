@@ -21,10 +21,10 @@ const ColorPickerInput = ({ colorId, defaultColor, onColorChange, onRemove }) =>
   return (
     <Box sx={{
       display: "flex", gap: "20px", marginBottom: "15px",
-      "& .css-a8j9v5-MuiButtonBase-root-MuiButton-root-RaButton-root": {
+      "& .MuiButton-sizeSmall": {
         minWidth: "unset",
       },
-      "& .css-y6rp3m-MuiButton-startIcon": {
+      "& .MuiButton-startIcon": {
         marginRight: "0px",
         marginLeft: "0px"
       }

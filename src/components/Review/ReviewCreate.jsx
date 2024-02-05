@@ -10,7 +10,6 @@ import {
   useNotify,
   useRedirect,
   getRecordFromLocation,
-  useRecordContext,
 } from 'react-admin';
 import { useLocation } from 'react-router';
 

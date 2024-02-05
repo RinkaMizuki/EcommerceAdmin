@@ -19,9 +19,6 @@ export const CategoryCreate = () => {
         <Box sx={{
           display: "flex",
           gap: "30px",
-          "& .css-1xyy4xb-MuiFormControl-root-MuiTextField-root-RaResettableTextField-root": {
-            width: "100%"
-          }
         }}>
           <TextInput source="title" label="Title" validate={required()} />
           <ReferenceInput

@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { ImageField, ImageInput, useRecordContext } from "react-admin";
+import { ImageInput, useRecordContext } from "react-admin";
 import { ProductPhotoField } from "./ProductPhotoField";
 
 const ThumbnailProductInput = () => {

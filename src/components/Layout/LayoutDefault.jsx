@@ -8,11 +8,8 @@ export const LayoutDefault = props => <Layout
   appBar={Navbar}
   menu={MyMenu}
   sx={{
-    '& .css-12r8yl0-MuiDrawer-docked-RaSidebar-root .MuiPaper-root': {
-      width: "200px"
+    '& .MuiBox-root': {
+      marginLeft: "5px",
     },
-    '& .css-83fbe1-MuiDrawer-docked-RaSidebar-root .MuiPaper-root': {
-      width: "200px"
-    }
   }}
 />;
