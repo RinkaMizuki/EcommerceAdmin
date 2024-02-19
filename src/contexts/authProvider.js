@@ -31,6 +31,7 @@ export const authProvider = {
     return Promise.reject() // khi bị rejected sẽ gọi hàm logout và nếu checkAuth có chuyển hướng thì nó sẽ được ưu tiên thay vì phải theo logout
   },
   checkError: async (error) => {
+    console.log(error);
   },
   getPermissions: async () => { },
   logout: async () => {

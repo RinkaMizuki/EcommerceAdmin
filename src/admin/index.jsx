@@ -5,7 +5,6 @@ import { authProvider } from "../contexts/authProvider"
 import LoginPage from "../components/Layout/LoginPage";
 import { UserCreate } from "../components/User/UserCreate";
 import { UserEdit } from "../components/User/UserEdit";
-import { UserDetail } from "../components/User/UserDetail";
 import { SegmentList } from "../components/Segment/SegmentList";
 import { CategoryList } from "../components/Categories/CategoryList";
 import { ProductList } from "../components/Product/ProductList";
@@ -37,7 +36,6 @@ const AdminPanel = () => {
       <Resource
         name="users"
         list={UserList}
-        show={UserDetail}
         create={UserCreate}
         edit={UserEdit}
         icon={UserIcon}

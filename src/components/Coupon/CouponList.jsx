@@ -5,7 +5,7 @@ import { useMediaQuery } from "@mui/material";
 export const CouponList = () => {
 
   const isSmall = useMediaQuery((theme) => theme.breakpoints.down("sm"))
-  
+
   const CouponListActions = () => (
     <TopToolbar>
       <CreateButton />

@@ -1,9 +1,24 @@
 import {
-  SimpleForm, TextInput, BooleanInput, NumberInput, ArrayInput, SimpleFormIterator, Create
+  SimpleForm, TextInput, BooleanInput, NumberInput, ArrayInput, SimpleFormIterator, Create, required, SelectInput
 } from 'react-admin';
 import { Box, Grid, InputAdornment } from '@mui/material';
 
 export const CouponCreate = () => {
+
+  const conditionsType = [
+    {
+      key: "max_amount",
+      title: "Max amount",
+    },
+    {
+      key: "min_amount",
+      title: "Min amount",
+    },
+    {
+      key: "max_discount",
+      title: "Max discount",
+    }
+  ];
 
   return (
     <Create title="Coupons">
@@ -11,7 +26,6 @@ export const CouponCreate = () => {
         <div>
           <Grid container width={{ xs: '100%', xl: 800 }} spacing={2}>
             <Grid item xs={12} md={8}>
-
               <Box display={{ xs: 'block', sm: 'flex' }}>
                 <Box flex={1} mr={{ xs: 0, sm: '0.5em' }}>
                   <TextInput
@@ -30,9 +44,10 @@ export const CouponCreate = () => {
                   alignItems: "center"
                 }}
               >
-                <Box flex={1} mr={{ xs: 0, sm: '0.5em' }}>
+                <Box flex={2} mr={{ xs: 0, sm: '0.5em' }}>
                   <NumberInput
                     source="discountPercent"
+                    validate={required()}
                     InputProps={{
                       endAdornment: (
                         <InputAdornment position="start">%</InputAdornment>
@@ -48,11 +63,34 @@ export const CouponCreate = () => {
                 />
               </Box>
               <Box flex={3} mr={{ xs: 0, sm: '0.5em' }} ml={{ xs: "10px" }}>
-                <ArrayInput source="otherCondition">
-                  <SimpleFormIterator inline>
-                    <TextInput source="otherAttribute" helperText={false} />
-                    <TextInput source="otherOperator" helperText={false} />
-                    <NumberInput source="otherValue" helperText={false} />
+                <ArrayInput
+                  source="otherCondition"
+                  label="Conditions"
+                >
+                  <SimpleFormIterator
+                    inline
+                  >
+                    <SelectInput
+                      choices={conditionsType}
+                      validate={required()}
+                      optionText="title"
+                      optionValue="key"
+                      source="otherAttribute"
+                      label="Condition type"
+                      resettable
+                    />
+                    <TextInput
+                      source="otherOperator"
+                      helperText={false}
+                      label="Condition operator"
+                      validate={required()}
+                    />
+                    <NumberInput
+                      source="otherValue"
+                      helperText={false}
+                      label="Condition value"
+                      validate={required()}
+                    />
                   </SimpleFormIterator>
                 </ArrayInput>
               </Box>

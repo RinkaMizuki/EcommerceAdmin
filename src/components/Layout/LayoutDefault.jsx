@@ -9,7 +9,10 @@ export const LayoutDefault = props => <Layout
   menu={MyMenu}
   sx={{
     '& .MuiBox-root': {
-      marginLeft: "5px",
+      marginLeft: "5px"
     },
+    '& .MuiPaper-rounded': {
+      overflow: "hidden"
+    }
   }}
 />;

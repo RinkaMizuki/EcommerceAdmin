@@ -26,7 +26,7 @@ export const UserList = () => {
       actions={<UsersListActions />}
     >
       {!isSmall ?
-        <DatagridConfigurable rowClick="show" bulkActionButtons={<UserBulkActionButtons />}>
+        <DatagridConfigurable rowClick="edit" bulkActionButtons={<UserBulkActionButtons />}>
           <TextField source="id" />
           <DateField source="birthDate" />
           <UserNameField label="Users"></UserNameField>

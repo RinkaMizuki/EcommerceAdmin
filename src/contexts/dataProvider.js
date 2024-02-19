@@ -28,10 +28,11 @@ const baseDataProvider = simpleRestProvider(`${import.meta.env.VITE_ECOMMERCE_BA
 const customDataProvider = {
   ...baseDataProvider,
   update: async (resource, params) => {
-    if (resource === "users" || resource === "products") {
+    const isUsers = resource === "users";
+    if (isUsers || resource === "products") {
 
-      const files = await handleGetFiles(params);
-      const formData = resource === "users" ? updateUserFormData(params) : productFormData(params, files);
+      const files = !isUsers && await handleGetFiles(params);
+      const formData = isUsers ? updateUserFormData(params) : productFormData(params, files);
       return fetchUtils
         .fetchJson(`${import.meta.env.VITE_ECOMMERCE_BASE_URL}/Admin/${resource}/update/${params.id}`, {
           method: "PUT",
