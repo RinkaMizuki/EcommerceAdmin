@@ -2,26 +2,12 @@ import {
   SimpleForm, TextInput, BooleanInput, NumberInput, ArrayInput, SimpleFormIterator, Create, required, SelectInput
 } from 'react-admin';
 import { Box, Grid, InputAdornment } from '@mui/material';
+import CouponInput from './CouponInput';
 
 export const CouponCreate = () => {
 
-  const conditionsType = [
-    {
-      key: "max_amount",
-      title: "Max amount",
-    },
-    {
-      key: "min_amount",
-      title: "Min amount",
-    },
-    {
-      key: "max_discount",
-      title: "Max discount",
-    }
-  ];
-
   return (
-    <Create title="Coupons">
+    <Create title="Coupons" redirect="list">
       <SimpleForm>
         <div>
           <Grid container width={{ xs: '100%', xl: 800 }} spacing={2}>
@@ -46,6 +32,9 @@ export const CouponCreate = () => {
               >
                 <Box flex={2} mr={{ xs: 0, sm: '0.5em' }}>
                   <NumberInput
+                    min={1}
+                    max={100}
+                    step={1}
                     source="discountPercent"
                     validate={required()}
                     InputProps={{
@@ -63,36 +52,7 @@ export const CouponCreate = () => {
                 />
               </Box>
               <Box flex={3} mr={{ xs: 0, sm: '0.5em' }} ml={{ xs: "10px" }}>
-                <ArrayInput
-                  source="otherCondition"
-                  label="Conditions"
-                >
-                  <SimpleFormIterator
-                    inline
-                  >
-                    <SelectInput
-                      choices={conditionsType}
-                      validate={required()}
-                      optionText="title"
-                      optionValue="key"
-                      source="otherAttribute"
-                      label="Condition type"
-                      resettable
-                    />
-                    <TextInput
-                      source="otherOperator"
-                      helperText={false}
-                      label="Condition operator"
-                      validate={required()}
-                    />
-                    <NumberInput
-                      source="otherValue"
-                      helperText={false}
-                      label="Condition value"
-                      validate={required()}
-                    />
-                  </SimpleFormIterator>
-                </ArrayInput>
+                <CouponInput />
               </Box>
             </Grid>
           </Grid>

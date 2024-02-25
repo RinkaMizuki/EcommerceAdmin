@@ -11,6 +11,7 @@ import {
   useRecordContext,
   SaveButton,
   Toolbar,
+  WrapperField,
 } from 'react-admin';
 import React, { useRef, useState } from "react";
 import { ProductEditDetail } from './ProductEditDetail';
@@ -100,9 +101,13 @@ const ProductEdit = () => {
                 },
               }}
             >
-              <DateField source="createdAt" />
-              <UserReferenceField />
-              <StarRatingField />
+              <DateField source="createdAt" locales="fr-FR" />
+              <WrapperField source="Users">
+                <UserReferenceField />
+              </WrapperField>
+              <WrapperField source="Stars">
+                <StarRatingField />
+              </WrapperField>
               <TextField source="content" />
               <TextField source="status" />
               <EditButton />

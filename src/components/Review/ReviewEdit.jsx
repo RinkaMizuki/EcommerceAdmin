@@ -48,7 +48,7 @@ const ReviewEdit = ({ id, onCancel }) => {
             </Grid>
             <Grid item xs={6}>
               <Labeled>
-                <DateField source="createdAt" />
+                <DateField source="createdAt" locales="fr-FR" />
               </Labeled>
             </Grid>
             <Grid item xs={6}>

@@ -9,7 +9,7 @@ import {
   TextInput,
   useRecordContext,
 } from 'react-admin';
-import { InputAdornment, Grid } from '@mui/material';
+import { InputAdornment, Grid, Box } from '@mui/material';
 import { useEffect, useState } from 'react';
 import AddCircleIcon from '@mui/icons-material/AddCircle';
 import ColorPickerInput from "./ColorPickerInput";
@@ -19,6 +19,10 @@ import { v4 as uuidv4 } from 'uuid';
 export const ProductEditDetail = forwardRef(({ onSaveable }, ref) => {
   const record = useRecordContext();
   const [colorPickers, setColorPickers] = useState([]);
+  const [isDisabled, setIsDisabled] = useState(false);
+  const [isDisabledHotSale, setIsDisabledHotSale] = useState(false);
+  const [isHot, setIsHot] = useState(record?.hot);
+  const [isSale, setIsSale] = useState(record?.flashSale);
 
   useEffect(() => {
     setColorPickers(record?.productColors || [])
@@ -54,6 +58,26 @@ export const ProductEditDetail = forwardRef(({ onSaveable }, ref) => {
     onSaveable(true);
   };
 
+  const handleChangeSale = (e) => {
+    setIsSale(e.target.checked)
+
+  }
+  const handleChangeHot = (e) => {
+    setIsHot(e.target.checked)
+  }
+  const handleChangeUp = (e) => {
+    setIsDisabledHotSale(e.target.checked)
+  }
+
+  useEffect(() => {
+    if (isHot || isSale) {
+      setIsDisabled(true)
+    }
+    else {
+      setIsDisabled(false)
+    }
+  }, [isHot, isSale])
+
   return (
     <Grid container columnSpacing={2}>
       <Grid item xs={12} sm={8}>
@@ -73,6 +97,9 @@ export const ProductEditDetail = forwardRef(({ onSaveable }, ref) => {
       </Grid>
       <Grid item xs={12} sm={4}>
         <NumberInput
+          min={1}
+          max={100}
+          step={1}
           source="discount"
           InputProps={{
             endAdornment: (
@@ -84,6 +111,9 @@ export const ProductEditDetail = forwardRef(({ onSaveable }, ref) => {
       </Grid>
       <Grid item xs={12} sm={4}>
         <NumberInput
+          min={1}
+          max={31}
+          step={1}
           source="return"
           InputProps={{
             endAdornment: (
@@ -96,6 +126,8 @@ export const ProductEditDetail = forwardRef(({ onSaveable }, ref) => {
       <Grid item xs={0} sm={4}></Grid>
       <Grid item xs={12} sm={4}>
         <NumberInput
+          min={1000}
+          step={1000}
           source="price"
           InputProps={{
             startAdornment: (
@@ -140,19 +172,28 @@ export const ProductEditDetail = forwardRef(({ onSaveable }, ref) => {
       </Grid>
 
       <Grid item xs={0} sm={6}></Grid>
-      <Grid item xs={12} sm={4}>
-        <BooleanInput source="status" />
-      </Grid>
-      <Grid item xs={12} sm={4}>
-        <BooleanInput source="hot" />
-      </Grid>
-      <Grid item xs={0} sm={4}></Grid>
-      <Grid item xs={12} sm={4}>
-        <BooleanInput source="flashSale" />
-      </Grid>
-      <Grid item xs={12} sm={4}>
-        <BooleanInput source="upComing" />
-      </Grid>
+      <Labeled label="Status"
+        sx={{ marginLeft: "19px" }}
+      >
+        <Box sx={{
+          display: "flex",
+          gap: "10px",
+          flexWrap: "wrap"
+        }}>
+          <Grid item xs={12} sm={4}>
+            <BooleanInput source="status" label="Visiable" />
+          </Grid>
+          <Grid item xs={12} sm={4}>
+            <BooleanInput source="hot" disabled={isDisabledHotSale} onChange={handleChangeHot} />
+          </Grid>
+          <Grid item xs={12} sm={4}>
+            <BooleanInput source="flashSale" disabled={isDisabledHotSale} onChange={handleChangeSale} />
+          </Grid>
+          <Grid item xs={12} sm={4}>
+            <BooleanInput source="upcoming" disabled={isDisabled} onChange={handleChangeUp} />
+          </Grid>
+        </Box>
+      </Labeled>
     </Grid >
   )
 });

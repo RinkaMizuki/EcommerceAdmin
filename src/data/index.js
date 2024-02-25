@@ -54,7 +54,7 @@ const productFormData = (
   formData.append("quantity", data.quantity);
   formData.append("return", data.return);
   formData.append("status", data.status);
-  formData.append("upComing", data.upComing);
+  formData.append("upComing", data.upcoming);
 
   localStorage.removeItem("colors_save")
 

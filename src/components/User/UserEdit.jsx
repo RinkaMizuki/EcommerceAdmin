@@ -1,5 +1,5 @@
 import {
-  Edit, SimpleForm, TextInput, DateInput, PasswordInput, BooleanInput
+  Edit, SimpleForm, TextInput, DateInput, PasswordInput, BooleanInput, useRecordContext
 } from 'react-admin';
 import PreviewAvatarField from '../Field/PreviewAvatarField';
 import { Box, Grid } from '@mui/material';
@@ -7,7 +7,7 @@ import { Box, Grid } from '@mui/material';
 export const UserEdit = () => {
 
   return (
-    <Edit>
+    <Edit title={<UserTitle />}>
       <SimpleForm>
         <div>
           <Grid container width={{ xs: '100%', xl: 800 }} spacing={2}>
@@ -18,16 +18,14 @@ export const UserEdit = () => {
                   <TextInput
                     source="userName"
                     isRequired
-                    fullWidth
                   />
                 </Box>
+                <TextInput
+                  type="email"
+                  source="email"
+                  isRequired
+                />
               </Box>
-              <TextInput
-                type="email"
-                source="email"
-                isRequired
-                fullWidth
-              />
               <Box display={{ xs: 'block', sm: 'flex' }}>
                 <Box flex={1} mr={{ xs: 0, sm: '0.5em' }}>
                   <DateInput
@@ -74,3 +72,8 @@ export const UserEdit = () => {
     </Edit>
   );
 }
+
+const UserTitle = () => {
+  const record = useRecordContext();
+  return record ? <span>User "{record.userName}"</span> : null;
+};

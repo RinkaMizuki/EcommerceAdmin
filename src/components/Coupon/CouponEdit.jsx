@@ -1,5 +1,5 @@
 import {
-  Edit, SimpleForm, TextInput, BooleanInput, NumberInput, ArrayInput, SimpleFormIterator, useRecordContext
+  Edit, SimpleForm, TextInput, BooleanInput, NumberInput, ArrayInput, SimpleFormIterator, required, useRecordContext
 } from 'react-admin';
 import { Box, Grid, InputAdornment } from '@mui/material';
 
@@ -32,6 +32,9 @@ export const CouponEdit = () => {
               >
                 <Box flex={1} mr={{ xs: 0, sm: '0.5em' }}>
                   <NumberInput
+                    min={1}
+                    max={100}
+                    step={1}
                     source="discountPercent"
                     InputProps={{
                       endAdornment: (
@@ -48,11 +51,31 @@ export const CouponEdit = () => {
                 />
               </Box>
               <Box flex={3} mr={{ xs: 0, sm: '0.5em' }} ml={{ xs: "10px" }}>
-                <ArrayInput source="couponConditions">
-                  <SimpleFormIterator inline>
-                    <TextInput source="condition.attribute" helperText={false} />
-                    <TextInput source="condition.operator" helperText={false} />
-                    <NumberInput source="value" helperText={false} />
+                <ArrayInput
+                  source="couponConditions"
+                  label="Conditions"
+                  disabled
+                >
+                  <SimpleFormIterator
+                    inline
+                  >
+                    <TextInput
+                      source="condition.attribute"
+                      helperText={false}
+                      label="Type"
+                      validate={required()}
+                    />
+                    <TextInput
+                      source="condition.operator"
+                      helperText={false}
+                      label="Operator"
+                      validate={required()}
+                    />
+                    <NumberInput
+                      source="value"
+                      helperText={false}
+                      min={1}
+                    />
                   </SimpleFormIterator>
                 </ArrayInput>
               </Box>
@@ -66,7 +89,6 @@ export const CouponEdit = () => {
 
 const CouponTitle = () => {
   const record = useRecordContext();
-
   return (
     <span>Coupon "{record?.couponCode || null}"</span>
   )

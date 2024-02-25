@@ -42,7 +42,7 @@ const ReviewListDesktop = ({ selectedRow }) => (
       },
     }}
   >
-    <DateField source="createdAt" />
+    <DateField source="createdAt" locales="fr-FR" />
     <WrapperField source="Users">
       <UserReferenceField link={false} />
     </WrapperField>

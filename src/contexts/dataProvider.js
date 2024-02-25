@@ -59,6 +59,9 @@ const customDataProvider = {
   delete: async (resource, params) => {
     return baseDataProvider.delete(`${resource}/delete`, params);
   },
+  deleteMany: async (resource, params) => {
+    return baseDataProvider.deleteMany(`${resource}/delete`, params);
+  },
   create: async (resource, params) => {
     if (resource === "products") {
       const formData = productFormData(params);

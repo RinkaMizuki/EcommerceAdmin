@@ -74,7 +74,7 @@ const CategoryTitle = () => {
 
   return record ? (
     <span>
-      {record.title}
+      Category "{record.title || null}"
     </span>
   ) : null;
 };
@@ -107,15 +107,6 @@ const Categories = () => {
       label="Parent category"
       source="id"
       resettable
-      choices={data?.map(obj => {
-        // Kiểm tra xem cate có là id trùng với id trong parent cate
-        if (obj.id == params.id) {
-          // Sử dụng Object.assign để sao chép object và thêm key-value mới
-          return Object.assign({}, obj, { "not_available": true });
-        }
-        // Trả về cate không thay đổi nếu không phải là cate cần thay đổi
-        return obj;
-      })}
       disableValue='not_available'
       isLoading={isLoading}
     />
