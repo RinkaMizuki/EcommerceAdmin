@@ -81,7 +81,7 @@ const customDataProvider = {
     return baseDataProvider.create(`${resource}/post`, params);
   },
   getList: async (resource, params) => {
-    if (resource == "segments" || resource == "categories") {
+    if (resource == "segments" || resource == "categories" || resource == "sliders") {
       return fetchUtils
         .fetchJson(`${import.meta.env.VITE_ECOMMERCE_BASE_URL}/Admin/${resource}`, {
           method: "GET",

@@ -1,10 +1,10 @@
 import * as React from 'react';
 import { useTheme, useMediaQuery } from '@mui/material';
 import { Box, ImageList, ImageListItem, ImageListItemBar } from '@mui/material';
-import { useCreatePath, NumberField, useListContext } from 'react-admin';
+import { useCreatePath, useListContext, TextField } from 'react-admin';
 import { Link } from 'react-router-dom';
 
-const GridList = () => {
+const SliderGrid = () => {
   const { isLoading } = useListContext();
   return isLoading ? <LoadingGridList /> : <LoadedGridList />;
 };
@@ -28,10 +28,9 @@ const times = (nbChildren, fn) =>
 
 const LoadingGridList = () => {
   const { perPage } = useListContext();
-  const cols = useColsForWidth();
   return (
-    <ImageList rowHeight={180} cols={cols} sx={{ m: 0 }}>
-      {times(perPage, key => (
+    <ImageList rowHeight={300} cols={3} sx={{ m: 0 }}>
+      {times(perPage - 6, key => (
         <ImageListItem key={key}>
           <Box bgcolor="grey.300" height="100%" />
         </ImageListItem>
@@ -42,29 +41,27 @@ const LoadingGridList = () => {
 
 const LoadedGridList = () => {
   const { data } = useListContext();
-  const cols = useColsForWidth();
   const createPath = useCreatePath();
   if (!data) return null;
 
   return (
-    <ImageList rowHeight={180} cols={cols} sx={{ m: 0 }}>
+    <ImageList rowHeight={300} cols={3} sx={{ m: 0, marginTop: "30px" }}>
       {data.map(record => (
         <ImageListItem
           component={Link}
           key={record.id}
           to={createPath({
-            resource: 'products',
+            resource: 'sliders',
             id: record.id,
             type: 'edit',
           })}
         >
-          <img src={record.url} alt={record.image} style={{height: "100%"}}/>
+          <img src={record.url} alt={record.image} style={{ height: "100%" }} />
           <ImageListItemBar
             title={record.title}
             subtitle={
               <span>
-                <NumberField
-                  source="price"
+                <TextField
                   record={record}
                   color="inherit"
                   sx={{
@@ -72,12 +69,8 @@ const LoadedGridList = () => {
                     fontSize: '1em',
                     textAlign: 'center'
                   }}
-                  locales="fr-FR"
-                  options={{
-                    style: 'currency',
-                    currency: 'VND',
-                  }}
-                />
+                  source="description"
+                ></TextField>
               </span>
             }
             sx={{
@@ -91,4 +84,4 @@ const LoadedGridList = () => {
   );
 };
 
-export default GridList;
+export default SliderGrid;

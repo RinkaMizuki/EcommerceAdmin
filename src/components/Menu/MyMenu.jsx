@@ -2,12 +2,14 @@ import { Menu, MenuItemLink, useSidebarState } from 'react-admin';
 import LabelIcon from '@mui/icons-material/Label';
 import CategoryIcon from '@mui/icons-material/Category';
 import ProductionQuantityLimitsIcon from '@mui/icons-material/ProductionQuantityLimits';
+import SlideshowIcon from '@mui/icons-material/Slideshow';
 import ConfirmationNumberIcon from '@mui/icons-material/ConfirmationNumber';
 import ReviewsIcon from '@mui/icons-material/Reviews';
 import GroupIcon from '@mui/icons-material/Group';
 import { Box } from '@mui/material';
 import { useState } from 'react';
 import SubMenu from './SubMenu';
+
 export const MyMenu = ({ dense = false }) => {
 
   const [state, setState] = useState({
@@ -98,7 +100,7 @@ export const MyMenu = ({ dense = false }) => {
         />
       </SubMenu>
       <Menu.Item to="/rates" primaryText="Reviews" leftIcon={<ReviewsIcon />} />
-
+      <Menu.Item to="/sliders" primaryText="Sliders" leftIcon={<SlideshowIcon />} />
     </Box>
   )
 };

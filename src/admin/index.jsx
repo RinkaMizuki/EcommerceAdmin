@@ -20,6 +20,7 @@ import { CategoryCreate } from "../components/Categories/CategoryCreate";
 import { CouponList } from "../components/Coupon/CouponList";
 import { CouponEdit } from "../components/Coupon/CouponEdit";
 import { CouponCreate } from "../components/Coupon/CouponCreate";
+import { SliderList } from "../components/Slider/SliderList";
 
 const AdminPanel = () => {
 
@@ -66,6 +67,11 @@ const AdminPanel = () => {
         name="rates"
         list={ReviewList}
         create={ReviewCreate}
+      ></Resource>
+      <Resource
+        name="sliders"
+        list={SliderList}
+        // create={ReviewCreate}
       ></Resource>
     </Admin >
   )

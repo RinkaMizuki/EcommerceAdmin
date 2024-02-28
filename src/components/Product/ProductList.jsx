@@ -16,7 +16,7 @@ import {
 } from 'react-admin';
 
 
-import ImageList from './GridList';
+import GridList from './GridList';
 import Aside from './Aside';
 
 export const ProductList = () => {
@@ -36,7 +36,7 @@ export const ProductList = () => {
         <Box display="flex">
           <Aside />
           <Box width={isSmall ? 'auto' : 'calc(100% - 16em)'}>
-            <ImageList />
+            <GridList />
             <Pagination rowsPerPageOptions={[12, 24, 48, 72]} />
           </Box>
         </Box>
