@@ -24,7 +24,7 @@ export const ProductList = () => {
   return (
     <>
       <Title title="Products"></Title>
-      <ListBase perPage={12} sort={{ field: 'stock', order: 'ASC' }} >
+      <ListBase perPage={12} sort={{ field: "productId", order: "ASC" }}>
         <FilterContext.Provider value={productFilters}>
           <ListActions isSmall={isSmall} />
           {isSmall && (
@@ -61,7 +61,7 @@ export const productFilters = [
 const ListActions = ({ isSmall }) => (
   <TopToolbar>
     {isSmall && <FilterButton />}
-    <SortButton fields={['sales', 'stock']} />
+    <SortButton fields={['Quantity', 'Price', 'Title']} />
     <CreateButton />
     <ExportButton />
   </TopToolbar>

@@ -3,7 +3,7 @@ import { ImageInput, useRecordContext } from "react-admin";
 import { ProductPhotoField } from "./ProductPhotoField";
 
 const PreviewProductPhoto = () => {
-  const [isChanage, setIsChange] = useState(false)
+  const [isChange, setIsChange] = useState(false)
   const record = useRecordContext()
   const handleAvatarChange = (e) => {
     setIsChange(true);
@@ -11,7 +11,7 @@ const PreviewProductPhoto = () => {
 
   return (
     <>
-      {isChanage ? <ImageInput
+      {isChange ? <ImageInput
         source="productImages"
         label="Photos"
         accept="image/png,image/svg+xml,image/jpg,image/jpeg"

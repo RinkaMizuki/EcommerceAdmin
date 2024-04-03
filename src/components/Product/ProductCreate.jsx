@@ -23,7 +23,7 @@ const ProductCreate = () => {
   };
 
   return (
-    <Create>
+    <Create redirect="list">
       <TabbedForm
         toolbar={<SaveToolbar saveable={isSaveale} onSaveColor={handleSaveColorChange} />}
       >

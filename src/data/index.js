@@ -42,7 +42,7 @@ const productFormData = (
       formData.append("files", image);
     }
   }
-  
+
   formData.append("categoryId", data.categoryId);
   formData.append("title", data.title);
   formData.append("description", data.description);
@@ -60,6 +60,16 @@ const productFormData = (
 
   return formData;
 };
+
+const sliderFormData = (params) => {
+  const formData = new FormData();
+  const data = params.data;
+
+  formData.append("title", data.title);
+  formData.append("description", data.description);
+  formData.append("formFile", data.url.rawFile);
+  return formData;
+}
 
 const handleGetFiles = async (params) => {
 
@@ -106,5 +116,6 @@ const handleGetFiles = async (params) => {
 export {
   updateUserFormData,
   productFormData,
-  handleGetFiles
+  sliderFormData,
+  handleGetFiles,
 }

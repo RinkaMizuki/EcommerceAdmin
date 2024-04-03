@@ -1,8 +1,9 @@
-import { useState } from "react"
 import { ImageInput, useRecordContext } from "react-admin";
-import { ProductPhotoField } from "./ProductPhotoField";
+import { SliderImageField } from "../Field/SliderImageField";
+import { useState } from "react";
 
-const ThumbnailProductInput = () => {
+
+const SlideImageInput = () => {
   const [isChange, setIsChange] = useState(false)
   const record = useRecordContext()
 
@@ -14,19 +15,19 @@ const ThumbnailProductInput = () => {
     <>
       {isChange ? <ImageInput
         source="url"
-        label="Thumbnail"
+        label="Slide Show"
         accept="image/png,image/svg+xml,image/jpg,image/jpeg"
         maxSize={300000} >
-        <ProductPhotoField data={record} size="220" />
+        <SliderImageField data={record} size="220" />
       </ImageInput> : <ImageInput
         source="url"
-        label="Thumbnail"
+        label="Slide Show"
         accept="image/png,image/svg+xml,image/jpg,image/jpeg"
         onChange={handleAvatarChange} >
-        <ProductPhotoField data={record} size="220" />
+        <SliderImageField data={record} size="220" />
       </ImageInput>}
     </>
   )
 };
 
-export default ThumbnailProductInput;
+export default SlideImageInput;

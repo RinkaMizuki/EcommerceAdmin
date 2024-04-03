@@ -3,7 +3,8 @@ import { fetchUtils, addRefreshAuthToDataProvider } from "react-admin";
 import { refreshTokenService } from "../services/refreshTokenService.js";
 import { tokenService } from "../services/tokenService.js";
 import { jwtDecode } from "jwt-decode"
-import { updateUserFormData, productFormData, handleGetFiles } from "../data/index.js";
+import { updateUserFormData, productFormData, handleGetFiles, sliderFormData } from "../data/index.js";
+import queryString from "query-string";
 
 const httpClient = (url, options = {}) => {
   const token = tokenService.getToken();
@@ -29,10 +30,13 @@ const customDataProvider = {
   ...baseDataProvider,
   update: async (resource, params) => {
     const isUsers = resource === "users";
-    if (isUsers || resource === "products") {
+    const isSliders = resource === "sliders";
+    const isProducts = resource === "products";
+    if (isUsers || isProducts || isSliders) {
+      console.log(params);
+      const files = isProducts && await handleGetFiles(params);
+      const formData = isUsers ? updateUserFormData(params) : isProducts ? productFormData(params, files) : sliderFormData(params);
 
-      const files = !isUsers && await handleGetFiles(params);
-      const formData = isUsers ? updateUserFormData(params) : productFormData(params, files);
       return fetchUtils
         .fetchJson(`${import.meta.env.VITE_ECOMMERCE_BASE_URL}/Admin/${resource}/update/${params.id}`, {
           method: "PUT",
@@ -63,8 +67,8 @@ const customDataProvider = {
     return baseDataProvider.deleteMany(`${resource}/delete`, params);
   },
   create: async (resource, params) => {
-    if (resource === "products") {
-      const formData = productFormData(params);
+    if (resource === "products" || resource === "sliders") {
+      const formData = resource === "products" ? productFormData(params) : sliderFormData(params);
       return fetchUtils
         .fetchJson(`${import.meta.env.VITE_ECOMMERCE_BASE_URL}/Admin/${resource}/post`, {
           method: "POST",
@@ -82,8 +86,13 @@ const customDataProvider = {
   },
   getList: async (resource, params) => {
     if (resource == "segments" || resource == "categories" || resource == "sliders") {
+      const hasFilter = Object.keys(params.filter).length !== 0;
+      const queryStringData = queryString.stringify({ filter: JSON.stringify(params.filter) })
+
+      const filterValue = hasFilter ? `?${queryStringData}` : "";
+
       return fetchUtils
-        .fetchJson(`${import.meta.env.VITE_ECOMMERCE_BASE_URL}/Admin/${resource}`, {
+        .fetchJson(`${import.meta.env.VITE_ECOMMERCE_BASE_URL}/Admin/${resource}${filterValue}`, {
           method: "GET",
           credentials: "include",
           headers: new Headers({

@@ -31,6 +31,7 @@ const PendingReviews = () => {
     sort: { field: 'createdAt', order: 'DESC' },
     pagination: { page: 1, perPage: 100 },
   });
+
   const isCustomerDataLoaded = useIsDataLoaded(
     ['users', 'getMany', { ids: [String(reviews?.[0]?.userId)] }],
     { enabled: !isLoading && reviews && reviews.length > 0 }

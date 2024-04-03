@@ -21,6 +21,8 @@ import { CouponList } from "../components/Coupon/CouponList";
 import { CouponEdit } from "../components/Coupon/CouponEdit";
 import { CouponCreate } from "../components/Coupon/CouponCreate";
 import { SliderList } from "../components/Slider/SliderList";
+import SliderEdit from "../components/Slider/SliderEdit";
+import SliderCreate from "../components/Slider/SliderCreate";
 
 const AdminPanel = () => {
 
@@ -71,7 +73,8 @@ const AdminPanel = () => {
       <Resource
         name="sliders"
         list={SliderList}
-        // create={ReviewCreate}
+        create={SliderCreate}
+        edit={SliderEdit}
       ></Resource>
     </Admin >
   )

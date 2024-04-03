@@ -31,11 +31,11 @@ export const authProvider = {
     return Promise.reject() // khi bị rejected sẽ gọi hàm logout và nếu checkAuth có chuyển hướng thì nó sẽ được ưu tiên thay vì phải theo logout
   },
   checkError: async (error) => {
-    console.log(error);
+    // return Promise.reject();
   },
   getPermissions: async () => { },
   logout: async () => {
-    let userId = tokenService.getUser()?.userId
+    let userId = tokenService.getUser()?.id
     if (!userId) userId = 0
     await logoutService.logout(userId)
     return Promise.resolve();

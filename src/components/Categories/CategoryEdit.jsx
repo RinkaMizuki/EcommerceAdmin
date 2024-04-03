@@ -1,4 +1,3 @@
-import { useParams } from 'react-router';
 import {
   Datagrid,
   Edit,
@@ -16,7 +15,6 @@ import {
   ArrayField,
   ReferenceInput,
   SelectInput,
-  useGetList,
 } from 'react-admin';
 import { RichTextInput } from 'ra-input-rich-text';
 import { Stack } from '@mui/material';
@@ -79,10 +77,7 @@ const CategoryTitle = () => {
   ) : null;
 };
 const Categories = () => {
-  const { data, isLoading } = useGetList('categories');
   const record = useRecordContext();
-  const params = useParams();
-
   return !record.parentCategoryId ? (
     <Labeled label="Child categories">
       <Edit>
@@ -108,7 +103,6 @@ const Categories = () => {
       source="id"
       resettable
       disableValue='not_available'
-      isLoading={isLoading}
     />
   </ReferenceInput>;
 };

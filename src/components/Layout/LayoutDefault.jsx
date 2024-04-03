@@ -8,7 +8,10 @@ export const LayoutDefault = props => <Layout
   appBar={Navbar}
   menu={MyMenu}
   sx={{
-    '& .MuiBox-root': {
+    '& .RaLayout-appFrame': {
+      marginTop: "47px",
+    },
+    '& .RaSidebar-fixed': {
       marginLeft: "5px"
     },
     '& .MuiPaper-rounded': {
@@ -17,7 +20,7 @@ export const LayoutDefault = props => <Layout
     '& .MuiTypography-h6 > .RaConfigurable-root:nth-of-type(2)': {
       display: "none"
     },
-    '& .MuiStack-root > .MuiTypography-body2' : {
+    '& .MuiStack-root > .MuiTypography-body2': {
       marginTop: "2px"
     }
   }}

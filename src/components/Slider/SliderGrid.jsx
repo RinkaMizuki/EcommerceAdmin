@@ -3,6 +3,9 @@ import { useTheme, useMediaQuery } from '@mui/material';
 import { Box, ImageList, ImageListItem, ImageListItemBar } from '@mui/material';
 import { useCreatePath, useListContext, TextField } from 'react-admin';
 import { Link } from 'react-router-dom';
+import loadingAvatar from "../../assets/images/avatar.jpeg"
+import { LazyLoadImage } from 'react-lazy-load-image-component';
+import "react-lazy-load-image-component/src/effects/blur.css"
 
 const SliderGrid = () => {
   const { isLoading } = useListContext();
@@ -45,7 +48,7 @@ const LoadedGridList = () => {
   if (!data) return null;
 
   return (
-    <ImageList rowHeight={300} cols={3} sx={{ m: 0, marginTop: "30px" }}>
+    <ImageList rowHeight={300} cols={3} sx={{ m: 0 }}>
       {data.map(record => (
         <ImageListItem
           component={Link}
@@ -55,8 +58,23 @@ const LoadedGridList = () => {
             id: record.id,
             type: 'edit',
           })}
+          sx={{
+            "& > .lazy-load-image-background": {
+              height: "100%"
+            }
+          }}
         >
-          <img src={record.url} alt={record.image} style={{ height: "100%" }} />
+          <LazyLoadImage
+            src={record.url || loadingAvatar}
+            alt={record.image}
+            style={{
+              objectFit: "cover",
+              width: "100%",
+              height: "100%",
+              display: "block"
+            }}
+            effect='blur'
+          />
           <ImageListItemBar
             title={record.title}
             subtitle={

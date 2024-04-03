@@ -84,7 +84,11 @@ export const ProductEditDetail = forwardRef(({ onSaveable }, ref) => {
         <TextInput source="title" fullWidth validate={req} />
       </Grid>
       <Grid item xs={12} sm={4}>
-        <ReferenceInput source="categoryId" reference="categories">
+        <ReferenceInput
+          source="categoryId"
+          reference="categories"
+          filter={{ all_category: true }}
+        >
           <SelectInput
             validate={req}
             fullWidth

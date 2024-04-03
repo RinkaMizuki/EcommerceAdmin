@@ -3,7 +3,7 @@ import { ImageField, ImageInput, useRecordContext } from "react-admin";
 import { AvatarField } from "./AvatarField";
 
 const PreviewAvatarField = () => {
-  const [isChanage, setIsChange] = useState(false)
+  const [isChange, setIsChange] = useState(false)
   const record = useRecordContext()
 
   const handleAvatarChange = () => {
@@ -12,7 +12,7 @@ const PreviewAvatarField = () => {
 
   return (
     <>
-      {isChanage ? <ImageInput source="avatar" accept="image/png,image/svg+xml,image/jpg,image/jpeg" maxSize={300000}>
+      {isChange ? <ImageInput source="avatar" accept="image/png,image/svg+xml,image/jpg,image/jpeg" maxSize={300000}>
         <ImageField source="src" title="avatar" />
       </ImageInput> : <ImageInput source="avatar" accept="image/png,image/svg+xml,image/jpg,image/jpeg" onChange={handleAvatarChange}>
         <AvatarField data={record} size="220" />
