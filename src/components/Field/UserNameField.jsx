@@ -5,7 +5,7 @@ import { useRecordContext } from 'react-admin';
 import { AvatarField } from './AvatarField';
 
 export const UserNameField = (props) => {
-  
+
   const { size } = props;
   const record = useRecordContext();
   return record ? (
@@ -16,7 +16,12 @@ export const UserNameField = (props) => {
       gap="10px"
       alignItems="center"
       component="div"
-      sx={props.sx}
+      sx={{
+        ...props.sx,
+        maxWidth: '200px',
+        textOverflow: 'ellipsis',
+        whiteSpace: 'nowrap',
+      }}
     >
       <AvatarField
         record={record}
@@ -27,7 +32,7 @@ export const UserNameField = (props) => {
           mb: -0.5,
         }}
       />
-      {record.userName}
+      {record.userName?.length > 11 ? record.userName.slice(0, 11) + '...' : record.userName}
     </Typography>
   ) : null;
 };

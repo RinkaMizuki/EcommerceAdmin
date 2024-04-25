@@ -1,9 +1,8 @@
 import { tokenService } from "../services/tokenService";
-import { logoutService } from "../services/logoutService"
 
 export const authProvider = {
   login: async (params) => {
-    const request = new Request(`${import.meta.env.VITE_ECOMMERCE_BASE_URL}/Auth/login`, {
+    const request = new Request(`${import.meta.env.VITE_ECOMMERCE_SSO_BASE_URL}/auth/login`, {
       method: "POST",
       body: JSON.stringify(params),
       headers: new Headers({ "Content-Type": "application/json" }),
@@ -18,26 +17,47 @@ export const authProvider = {
       })
       .then(auth => {
         tokenService.setUser(auth)
-        tokenService.setToken(auth)
       })
       .catch(err => {
-        throw new Error(err);
+        throw new Error(err.message);
       })
   },
   //mỗi khi user navigate page sẽ gọi lại hàm này để check ràng user thực sự vẫn còn authen
   checkAuth: async () => {
-    const token = tokenService.getToken();
-    if (token) return Promise.resolve()
-    return Promise.reject() // khi bị rejected sẽ gọi hàm logout và nếu checkAuth có chuyển hướng thì nó sẽ được ưu tiên thay vì phải theo logout
+    return Promise.resolve()
+    // khi bị rejected sẽ gọi hàm logout và nếu checkAuth có chuyển hướng thì nó sẽ được ưu tiên thay vì phải theo logout
   },
   checkError: async (error) => {
-    // return Promise.reject();
+    const status = error.status;
+    if (status === 401) {
+      //logic refresh token
+      return Promise.reject(error);
+    }
+    console.log(status);
+    return Promise.reject(error);
   },
   getPermissions: async () => { },
   logout: async () => {
-    let userId = tokenService.getUser()?.id
-    if (!userId) userId = 0
-    await logoutService.logout(userId)
-    return Promise.resolve();
+    const userId = tokenService.getUser()?.id
+    const request = new Request(`${import.meta.env.VITE_ECOMMERCE_SSO_BASE_URL}/auth/logout`, {
+      method: "POST",
+      credentials: "include",
+      body: JSON.stringify({
+        userId,
+      }),
+      headers: {
+        'Content-Type': 'application/json'
+      },
+    })
+    return fetch(request)
+      .then(res => res.json())
+      .then(data => {
+        console.log(data);
+        tokenService.removeUser();
+        return Promise.resolve();
+      })
+      .catch(err => {
+        throw new Error(err.message)
+      })
   },
 }

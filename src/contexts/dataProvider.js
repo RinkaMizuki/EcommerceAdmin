@@ -1,28 +1,28 @@
 import simpleRestProvider from "ra-data-simple-rest"
 import { fetchUtils, addRefreshAuthToDataProvider } from "react-admin";
-import { refreshTokenService } from "../services/refreshTokenService.js";
 import { tokenService } from "../services/tokenService.js";
-import { jwtDecode } from "jwt-decode"
 import { updateUserFormData, productFormData, handleGetFiles, sliderFormData } from "../data/index.js";
 import queryString from "query-string";
 
-const httpClient = (url, options = {}) => {
-  const token = tokenService.getToken();
-  const user = { token: `Bearer ${token}`, authenticated: !!token };
-  return fetchUtils.fetchJson(url, { ...options, user, credentials: "include" });
+const httpClient = async (url, options = {}) => {
+  return fetchUtils.fetchJson(url, { ...options, credentials: "include" })
 }
-
-export const refreshAuth = async () => {
-  const accessToken = tokenService.getToken()
-  if (!accessToken) {
-    return Promise.reject()
-  }
-  const accessTokenDecode = jwtDecode(accessToken);
-  const dateNow = new Date().getTime()
-  if (accessTokenDecode.exp < dateNow / 1000) { //token expired
-    await refreshTokenService.refreshToken();
-  }
-  return Promise.resolve();
+const refreshAuth = async () => {
+  const request = new Request(`${import.meta.env.VITE_ECOMMERCE_SSO_BASE_URL}/auth/refresh-token?type=default`, {
+    method: "GET",
+    credentials: "include",
+    headers: {
+      'Content-Type': 'application/json'
+    },
+  })
+  return fetch(request)
+    .then(res => res.json())
+    .then(data => {
+      if (data.statusCode === 403) {
+        throw new Error("Access denied.")
+      }
+      return Promise.resolve(data);
+    })
 }
 const baseDataProvider = simpleRestProvider(`${import.meta.env.VITE_ECOMMERCE_BASE_URL}/Admin`, httpClient)
 
@@ -33,7 +33,6 @@ const customDataProvider = {
     const isSliders = resource === "sliders";
     const isProducts = resource === "products";
     if (isUsers || isProducts || isSliders) {
-      console.log(params);
       const files = isProducts && await handleGetFiles(params);
       const formData = isUsers ? updateUserFormData(params) : isProducts ? productFormData(params, files) : sliderFormData(params);
 
@@ -42,9 +41,6 @@ const customDataProvider = {
           method: "PUT",
           body: formData,
           credentials: "include",
-          headers: new Headers({
-            Authorization: `Bearer ${tokenService.getToken()}`
-          })
         })
         .then(({ json }) => {
           if (resource === "users") {
@@ -74,9 +70,6 @@ const customDataProvider = {
           method: "POST",
           body: formData,
           credentials: "include",
-          headers: new Headers({
-            Authorization: `Bearer ${tokenService.getToken()}`
-          })
         })
         .then(({ json }) => {
           return { data: json }
@@ -95,9 +88,6 @@ const customDataProvider = {
         .fetchJson(`${import.meta.env.VITE_ECOMMERCE_BASE_URL}/Admin/${resource}${filterValue}`, {
           method: "GET",
           credentials: "include",
-          headers: new Headers({
-            Authorization: `Bearer ${tokenService.getToken()}`
-          })
         })
         .then(({ json }) => {
           return { data: json, total: json.length }

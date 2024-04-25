@@ -1,5 +1,4 @@
 import { useState } from 'react';
-
 import {
   Avatar,
   Button,
@@ -20,7 +19,6 @@ import Box from '@mui/material/Box';
 
 const LoginPage = () => {
   const [loading, setLoading] = useState(false);
-
   const notify = useNotify();
   const login = useLogin();
 
@@ -30,6 +28,7 @@ const LoginPage = () => {
       auth,
     ).catch((error) => {
       setLoading(false);
+
       console.log(error);
       notify(
         typeof error === 'string'
@@ -53,7 +52,7 @@ const LoginPage = () => {
   };
 
   return (
-    <Form onSubmit={handleSubmit} noValidate>
+    <Form onSubmit={handleSubmit}>
       <Box
         sx={{
           display: 'flex',
@@ -93,11 +92,12 @@ const LoginPage = () => {
             <Box sx={{ marginTop: '1em' }}>
               <TextInput
                 autoFocus
-                source="userNameOrEmail"
+                source="username"
                 label="Username or Email"
                 disabled={loading}
                 validate={required()}
                 fullWidth
+                resettable
               />
             </Box>
             <Box sx={{ marginTop: '1em' }}>
@@ -108,6 +108,7 @@ const LoginPage = () => {
                 disabled={loading}
                 validate={required()}
                 fullWidth
+                resettable
               />
             </Box>
           </Box>
