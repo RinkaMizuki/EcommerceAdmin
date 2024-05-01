@@ -1,4 +1,4 @@
-export const tokenService = {
+export const userService = {
   setUser: (data) => {
     localStorage.setItem(import.meta.env.VITE_ECOMMERCE_USER_KEY, JSON.stringify(data.user))
   },

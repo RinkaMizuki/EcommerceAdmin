@@ -1,29 +1,40 @@
 import simpleRestProvider from "ra-data-simple-rest"
 import { fetchUtils, addRefreshAuthToDataProvider } from "react-admin";
-import { tokenService } from "../services/tokenService.js";
+import { userService } from "../services/userService.js";
 import { updateUserFormData, productFormData, handleGetFiles, sliderFormData } from "../data/index.js";
 import queryString from "query-string";
+import { jwtDecode } from "jwt-decode";
+let retry = false;
 
 const httpClient = async (url, options = {}) => {
-  return fetchUtils.fetchJson(url, { ...options, credentials: "include" })
-}
-const refreshAuth = async () => {
-  const request = new Request(`${import.meta.env.VITE_ECOMMERCE_SSO_BASE_URL}/auth/refresh-token?type=default`, {
-    method: "GET",
+  const token = localStorage.getItem('token') || import.meta.env.VITE_ECOMMERCE_TOKEN_FAKE;
+  options = {
+    ...options,
+    headers: new Headers({ Accept: 'application/json' }),
     credentials: "include",
-    headers: {
-      'Content-Type': 'application/json'
-    },
-  })
-  return fetch(request)
-    .then(res => res.json())
-    .then(data => {
-      if (data.statusCode === 403) {
-        throw new Error("Access denied.")
-      }
-      return Promise.resolve(data);
-    })
+  };
+  const decoded = jwtDecode(token)
+  if (decoded.exp <= Date.now() / 1000) {
+    // This function will fetch the new tokens from the authentication service and update them in localStorage
+    if (!retry) {
+      return fetchUtils.fetchJson(`${import.meta.env.VITE_ECOMMERCE_SSO_BASE_URL}/auth/refresh-token?type=default`, {
+        headers: new Headers({ Accept: 'application/json' }),
+        credentials: "include",
+      }).then(({ json: { accessToken } }) => {
+        retry = true;
+        localStorage.setItem('token', accessToken)
+        options.headers.set('Authorization', `Bearer ${accessToken}`);
+        return fetchUtils.fetchJson(url, options);
+      })
+    }
+  }
+  else {
+    options.headers.set('Authorization', `Bearer ${token}`);
+    retry = false;
+    return fetchUtils.fetchJson(url, options);
+  }
 }
+
 const baseDataProvider = simpleRestProvider(`${import.meta.env.VITE_ECOMMERCE_BASE_URL}/Admin`, httpClient)
 
 const customDataProvider = {
@@ -36,23 +47,20 @@ const customDataProvider = {
       const files = isProducts && await handleGetFiles(params);
       const formData = isUsers ? updateUserFormData(params) : isProducts ? productFormData(params, files) : sliderFormData(params);
 
-      return fetchUtils
-        .fetchJson(`${import.meta.env.VITE_ECOMMERCE_BASE_URL}/Admin/${resource}/update/${params.id}`, {
-          method: "PUT",
-          body: formData,
-          credentials: "include",
-        })
-        .then(({ json }) => {
-          if (resource === "users") {
-            const getIdLoginUser = tokenService.getUser().id;
-            if (getIdLoginUser == json.id) {
-              tokenService.setUser({
-                user: json,
-              });
-            }
+      return httpClient(`${import.meta.env.VITE_ECOMMERCE_BASE_URL}/Admin/${resource}/update/${params.id}`, {
+        method: "PUT",
+        body: formData,
+      }).then(({ json }) => {
+        if (resource === "users") {
+          const getIdLoginUser = userService.getUser().id;
+          if (getIdLoginUser == json.id) {
+            userService.setUser({
+              user: json,
+            });
           }
-          return { data: json }
-        });
+        }
+        return { data: json }
+      });
     }
     return baseDataProvider.update(`${resource}/update`, params);
   },
@@ -65,15 +73,12 @@ const customDataProvider = {
   create: async (resource, params) => {
     if (resource === "products" || resource === "sliders") {
       const formData = resource === "products" ? productFormData(params) : sliderFormData(params);
-      return fetchUtils
-        .fetchJson(`${import.meta.env.VITE_ECOMMERCE_BASE_URL}/Admin/${resource}/post`, {
-          method: "POST",
-          body: formData,
-          credentials: "include",
-        })
-        .then(({ json }) => {
-          return { data: json }
-        });
+      return httpClient(`${import.meta.env.VITE_ECOMMERCE_BASE_URL}/Admin/${resource}/post`, {
+        method: "POST",
+        body: formData,
+      }).then(({ json }) => {
+        return { data: json }
+      });
     }
     return baseDataProvider.create(`${resource}/post`, params);
   },
@@ -83,15 +88,11 @@ const customDataProvider = {
       const queryStringData = queryString.stringify({ filter: JSON.stringify(params.filter) })
 
       const filterValue = hasFilter ? `?${queryStringData}` : "";
-
-      return fetchUtils
-        .fetchJson(`${import.meta.env.VITE_ECOMMERCE_BASE_URL}/Admin/${resource}${filterValue}`, {
-          method: "GET",
-          credentials: "include",
-        })
-        .then(({ json }) => {
-          return { data: json, total: json.length }
-        });
+      return httpClient(`${import.meta.env.VITE_ECOMMERCE_BASE_URL}/Admin/${resource}${filterValue}`, {
+        method: "GET",
+      }).then(({ json }) => {
+        return { data: json, total: json.length }
+      });
     }
     return baseDataProvider.getList(resource, params);
   },
@@ -100,4 +101,4 @@ const customDataProvider = {
   }
 }
 
-export const dataProvider = addRefreshAuthToDataProvider(customDataProvider, refreshAuth)
+export const dataProvider = customDataProvider

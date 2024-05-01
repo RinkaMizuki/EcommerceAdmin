@@ -1,11 +1,11 @@
-import { tokenService } from "../services/tokenService";
+import { userService } from "../services/userService";
 
 const updateUserFormData = (
   params
 ) => {
   const formData = new FormData();
 
-  const user = tokenService.getUser();
+  const user = userService.getUser();
   params.data?.avatar?.rawFile ? formData.append("file", params.data.avatar.rawFile) : formData.append("file", null);
   formData.append("avatar", params.data.avatar != null ? `$avatar_${user.id}_${user.avatar}` : "");
   params.data?.birthDate ? formData.append("birthDate", params.data.birthDate) : formData.append("birthDate", params.data.previousData?.birthDate);

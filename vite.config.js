@@ -7,5 +7,14 @@ export default defineConfig({
   server: {
     open: true,
     port: 5173,
+  },
+  define: {
+    global: {
+      console: {
+        log: function (message) {
+          console.log(message)
+        }
+      }
+    },
   }
 })

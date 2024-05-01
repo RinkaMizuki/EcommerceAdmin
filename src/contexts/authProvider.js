@@ -1,13 +1,14 @@
-import { tokenService } from "../services/tokenService";
+import { userService } from "../services/userService";
 
 export const authProvider = {
-  login: async (params) => {
+  login: (params) => {
     const request = new Request(`${import.meta.env.VITE_ECOMMERCE_SSO_BASE_URL}/auth/login`, {
       method: "POST",
       body: JSON.stringify(params),
       headers: new Headers({ "Content-Type": "application/json" }),
       credentials: "include"
     });
+
     return fetch(request)
       .then(response => {
         if (response.status < 200 || response.status >= 300) {
@@ -16,29 +17,31 @@ export const authProvider = {
         return response.json();
       })
       .then(auth => {
-        tokenService.setUser(auth)
+        localStorage.setItem('token', auth.accessToken);
+        userService.setUser(auth)
       })
       .catch(err => {
         throw new Error(err.message);
       })
   },
   //mỗi khi user navigate page sẽ gọi lại hàm này để check ràng user thực sự vẫn còn authen
-  checkAuth: async () => {
-    return Promise.resolve()
+  checkAuth: () => {
+    return Promise.resolve();
     // khi bị rejected sẽ gọi hàm logout và nếu checkAuth có chuyển hướng thì nó sẽ được ưu tiên thay vì phải theo logout
   },
-  checkError: async (error) => {
+  checkError: (error) => {
     const status = error.status;
-    if (status === 401) {
+    if (status === 403) {
       //logic refresh token
       return Promise.reject(error);
     }
-    console.log(status);
-    return Promise.reject(error);
+    return Promise.resolve();
   },
-  getPermissions: async () => { },
-  logout: async () => {
-    const userId = tokenService.getUser()?.id
+  getPermissions: () => {
+    return Promise.resolve();
+  },
+  logout: () => {
+    const userId = userService.getUser()?.id
     const request = new Request(`${import.meta.env.VITE_ECOMMERCE_SSO_BASE_URL}/auth/logout`, {
       method: "POST",
       credentials: "include",
@@ -53,11 +56,12 @@ export const authProvider = {
       .then(res => res.json())
       .then(data => {
         console.log(data);
-        tokenService.removeUser();
+        localStorage.removeItem('token')
+        userService.removeUser();
         return Promise.resolve();
       })
       .catch(err => {
-        throw new Error(err.message)
+        return Promise.reject(err);
       })
   },
 }

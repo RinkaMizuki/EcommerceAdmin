@@ -1,11 +1,11 @@
 import { AppBar, TitlePortal, UserMenu } from 'react-admin';
 import { AvatarField } from '../Field/AvatarField';
-import { tokenService } from '../../services/tokenService';
+import { userService } from '../../services/userService';
 import Logo from './Logo';
 import { Box, useMediaQuery } from '@mui/material';
 import { AppBarToolbar } from '../Layout/AppBarToolbar';
 const Profile = () => {
-  const data = tokenService.getUser();
+  const data = userService.getUser();
   return (
     <AvatarField
       size='35'
