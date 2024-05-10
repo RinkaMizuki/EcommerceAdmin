@@ -1,4 +1,4 @@
-import { BulkDeleteButton, BulkDeleteWithConfirmButton, BulkDeleteWithUndoButton, BulkExportButton, BulkUpdateButton, BulkUpdateWithConfirmButton } from "react-admin"
+import { BulkDeleteWithUndoButton, BulkExportButton, BulkUpdateWithConfirmButton } from "react-admin"
 
 const UserBulkActionButtons = () => {
   return (

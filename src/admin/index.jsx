@@ -1,4 +1,5 @@
 import { Admin, Resource, houseDarkTheme, houseLightTheme } from "react-admin"
+import { QueryClient } from 'react-query';
 import { UserList } from "../components/User/UserList"
 import { dataProvider } from "../contexts/dataProvider"
 import { authProvider } from "../contexts/authProvider"
@@ -23,11 +24,27 @@ import { CouponCreate } from "../components/Coupon/CouponCreate";
 import { SliderList } from "../components/Slider/SliderList";
 import SliderEdit from "../components/Slider/SliderEdit";
 import SliderCreate from "../components/Slider/SliderCreate";
+import OrderList from "../components/Order/OrderList";
+import OrderEdit from "../components/Order/OrderEdit";
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      refetchOnWindowFocus: false,
+      retry: false,
+      structuralSharing: false,
+    },
+    mutations: {
+      retryDelay: 3000,
+    },
+  },
+});
 
 const AdminPanel = () => {
 
   return (
     <Admin
+      queryClient={queryClient}
       layout={LayoutDefault}
       dataProvider={dataProvider}
       authProvider={authProvider}
@@ -58,6 +75,11 @@ const AdminPanel = () => {
         list={ProductList}
         create={ProductCreate}
         edit={ProductEdit}
+      ></Resource>
+      <Resource
+        name="orders"
+        list={OrderList}
+        edit={OrderEdit}
       ></Resource>
       <Resource
         name="coupons"

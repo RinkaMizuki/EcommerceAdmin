@@ -19,6 +19,9 @@ export const UserList = () => {
   );
   return (
     <List
+      sx={{
+        marginTop: "15px"
+      }}
       aside={<UserFilterSidebar />}
       perPage={6}
       pagination={<Pagination
@@ -26,7 +29,13 @@ export const UserList = () => {
       actions={<UsersListActions />}
     >
       {!isSmall ?
-        <DatagridConfigurable rowClick="edit" bulkActionButtons={<UserBulkActionButtons />}>
+        <DatagridConfigurable
+          rowClick="edit"
+          omit={['id', 'birthDate']}
+          bulkActionButtons={<UserBulkActionButtons />}
+          sx={{
+            marginTop: "5px"
+          }}>
           <TextField source="id" />
           <DateField source="birthDate" locales="fr-FR" />
           <UserNameField label="Users"></UserNameField>

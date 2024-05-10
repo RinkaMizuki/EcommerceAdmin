@@ -5,6 +5,7 @@ import ProductionQuantityLimitsIcon from '@mui/icons-material/ProductionQuantity
 import SlideshowIcon from '@mui/icons-material/Slideshow';
 import ConfirmationNumberIcon from '@mui/icons-material/ConfirmationNumber';
 import ReviewsIcon from '@mui/icons-material/Reviews';
+import ReceiptIcon from '@mui/icons-material/Receipt';
 import GroupIcon from '@mui/icons-material/Group';
 import { Box } from '@mui/material';
 import { useState } from 'react';
@@ -67,6 +68,13 @@ export const MyMenu = ({ dense = false }) => {
           state={{ _scrollToTop: true }}
           primaryText="Categories"
           leftIcon={<CategoryIcon />}
+          dense={dense}
+        />
+        <MenuItemLink
+          to="/orders"
+          state={{ _scrollToTop: true }}
+          primaryText="Orders"
+          leftIcon={<ReceiptIcon />}
           dense={dense}
         />
         <MenuItemLink

@@ -1,5 +1,5 @@
 import simpleRestProvider from "ra-data-simple-rest"
-import { fetchUtils, addRefreshAuthToDataProvider } from "react-admin";
+import { fetchUtils } from "react-admin";
 import { userService } from "../services/userService.js";
 import { updateUserFormData, productFormData, handleGetFiles, sliderFormData } from "../data/index.js";
 import queryString from "query-string";
@@ -17,11 +17,11 @@ const httpClient = async (url, options = {}) => {
   if (decoded.exp <= Date.now() / 1000) {
     // This function will fetch the new tokens from the authentication service and update them in localStorage
     if (!retry) {
+      retry = true;
       return fetchUtils.fetchJson(`${import.meta.env.VITE_ECOMMERCE_SSO_BASE_URL}/auth/refresh-token?type=default`, {
         headers: new Headers({ Accept: 'application/json' }),
         credentials: "include",
       }).then(({ json: { accessToken } }) => {
-        retry = true;
         localStorage.setItem('token', accessToken)
         options.headers.set('Authorization', `Bearer ${accessToken}`);
         return fetchUtils.fetchJson(url, options);
