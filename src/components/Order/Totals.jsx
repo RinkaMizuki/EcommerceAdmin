@@ -7,6 +7,14 @@ import { TableCellRight } from './TableCellRight';
 const Totals = () => {
   const record = useRecordContext();
 
+  const calcTotal = () => {
+    return record.orderDetails
+      ? record.orderDetails?.reduce((acc, p) => {
+        return acc + (1 - p?.discountProduct / 100) * p?.priceProduct * p?.quantityProduct
+      }, 0)
+      : 0;
+  }
+
   return (
     <Table sx={{ minWidth: '35em' }}>
       <TableBody>
@@ -15,7 +23,7 @@ const Totals = () => {
             Sub Total
           </TableCell>
           <TableCellRight>
-            {record?.totalPrice.toLocaleString("fr-FR", {
+            {calcTotal().toLocaleString("fr-FR", {
               style: 'currency',
               currency: 'VND',
             })}
@@ -37,7 +45,7 @@ const Totals = () => {
             Voucher
           </TableCell>
           <TableCellRight>
-            -{"0"?.toLocaleString('fr-FR', {
+            - {record?.totalDiscount?.toLocaleString('fr-FR', {
               style: 'currency',
               currency: 'VND',
             })}

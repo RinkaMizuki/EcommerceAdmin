@@ -12,9 +12,6 @@ import { TableCellRight } from './TableCellRight';
 
 const Basket = () => {
   const record = useRecordContext();
-
-
-
   const calcTotal = (productId) => {
     return record.orderDetails
       ? record.orderDetails?.filter(p => p.productId === productId).reduce((acc, p) => {

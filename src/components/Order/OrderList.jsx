@@ -2,20 +2,21 @@ import * as React from 'react';
 import { Fragment, useCallback } from 'react';
 import {
   AutocompleteInput,
-  BooleanField,
   Count,
   DatagridConfigurable,
   DateField,
+  DateInput,
   ExportButton,
   FilterButton,
   List,
+  NullableBooleanInput,
   NumberField,
   Pagination,
-  ReferenceField,
   ReferenceInput,
   SearchInput,
   SelectColumnsButton,
   TextField,
+  TextInput,
   TopToolbar,
   WrapperField,
   useListContext,
@@ -35,10 +36,11 @@ const ListActions = () => (
 
 const OrderList = () => (
   <List
-    filterDefaultValues={{ status: 'succeed' }}
+    filterDefaultValues={{ status: 'ordered' }}
     perPage={6}
     pagination={<Pagination
-      rowsPerPageOptions={[6, 12, 24, 30]} />}
+      rowsPerPageOptions={[6, 12, 24, 30]} />
+    }
     filters={orderFilters}
     actions={<ListActions />}
   >
@@ -48,7 +50,7 @@ const OrderList = () => (
 
 const orderFilters = [
   <SearchInput source="q" alwaysOn />,
-  <ReferenceInput source="id" reference="users" label="Users">
+  <ReferenceInput source="userId" reference="users" label="Users">
     <AutocompleteInput
       label="User"
       optionText={(choice) =>
@@ -59,10 +61,14 @@ const orderFilters = [
       sx={{ minWidth: 200 }}
     />
   </ReferenceInput>,
+  <DateInput source="orderedBefore" />,
+  <DateInput source="orderedSince" />,
+  <TextInput source="minAmount" />,
+  <NullableBooleanInput source="returned" />
 ];
 
 const tabs = [
-  { id: 'succeed', name: 'succeed' },
+  { id: 'ordered', name: 'ordered' },
   { id: 'delivered', name: 'delivered' },
   { id: 'cancelled', name: 'cancelled' },
 ];
@@ -70,7 +76,7 @@ const tabs = [
 const TabbedDatagrid = () => {
   const listContext = useListContext();
   const { filterValues, setFilters, displayedFilters } = listContext;
-
+  //console.log(filterValues, setFilters);
   const handleChange = useCallback(
     (event, value) => {
       setFilters &&
@@ -99,12 +105,13 @@ const TabbedDatagrid = () => {
               <span>
                 {choice.name} (
                 <Count
+                  resource='orders'
                   filter={{
                     ...filterValues,
                     status: choice.name,
                   }}
-                  sx={{ lineHeight: 'inherit' }}
-                />
+                >
+                </Count>
                 )
               </span>
             }
@@ -114,7 +121,7 @@ const TabbedDatagrid = () => {
       </Tabs>
       <Divider />
       <>
-        {filterValues.status === 'succeed' && (
+        {filterValues.status === 'ordered' && (
           <DatagridConfigurable
             rowClick="edit"
           >
@@ -143,88 +150,66 @@ const TabbedDatagrid = () => {
               locales="fr-FR"
               sx={{ fontWeight: 'bold' }}
             />
-
           </DatagridConfigurable>
         )}
         {filterValues.status === 'delivered' && (
           <DatagridConfigurable
             rowClick="edit"
-            omit={['total_ex_taxes', 'delivery_fees', 'taxes']}
           >
-            <DateField source="date" showTime />
-            <TextField source="reference" />
-            <ReferenceField
-              source="customer_id"
-              reference="customers"
-              link={false}
-              label="resources.commands.fields.address"
-            >
-              <AddressField />
-            </ReferenceField>
-            <NbItemsField
-              label="resources.commands.fields.nb_items"
-              textAlign="right"
-            />
+            <DateField source="orderDate" showTime />
+            <TextField source="id" />
+            <WrapperField source="users">
+              <UserReferenceField />
+            </WrapperField>
+
+            <TextField source="deliveryAddress" sx={{
+              maxWidth: "300px",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
+              display: "block"
+            }} />
+            <WrapperField label="Nb Items">
+              <NbItemsField />
+            </WrapperField>
             <NumberField
-              source="total"
+              source="totalPrice"
               options={{
                 style: 'currency',
-                currency: 'USD',
+                currency: 'VND',
               }}
+              locales="fr-FR"
               sx={{ fontWeight: 'bold' }}
-            />
-            <BooleanField
-              source="returned"
-              sx={{ mt: -0.5, mb: -0.5 }}
             />
           </DatagridConfigurable>
         )}
         {filterValues.status === 'cancelled' && (
           <DatagridConfigurable
             rowClick="edit"
-            omit={['total_ex_taxes', 'delivery_fees', 'taxes']}
           >
-            <DateField source="date" showTime />
-            <TextField source="reference" />
-            <ReferenceField
-              source="customer_id"
-              reference="customers"
-              link={false}
-              label="resources.commands.fields.address"
-            >
-              <AddressField />
-            </ReferenceField>
-            <NbItemsField
-              label="resources.commands.fields.nb_items"
-              textAlign="right"
-            />
+            <DateField source="orderDate" showTime />
+            <TextField source="id" />
+            <WrapperField source="Users">
+              <UserReferenceField />
+            </WrapperField>
+
+            <TextField source="deliveryAddress" sx={{
+              maxWidth: "300px",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
+              display: "block"
+            }} />
+            <WrapperField label="Nb Items">
+              <NbItemsField />
+            </WrapperField>
             <NumberField
-              source="total_ex_taxes"
+              source="totalPrice"
               options={{
                 style: 'currency',
-                currency: 'USD',
+                currency: 'VND',
               }}
-            />
-            <NumberField
-              source="delivery_fees"
-              options={{
-                style: 'currency',
-                currency: 'USD',
-              }}
-            />
-            <NumberField
-              source="taxes"
-              options={{
-                style: 'currency',
-                currency: 'USD',
-              }}
-            />
-            <NumberField
-              source="total"
-              options={{
-                style: 'currency',
-                currency: 'USD',
-              }}
+              locales="fr-FR"
               sx={{ fontWeight: 'bold' }}
             />
           </DatagridConfigurable>

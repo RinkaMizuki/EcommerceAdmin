@@ -2,8 +2,10 @@ import { Menu, MenuItemLink, useSidebarState } from 'react-admin';
 import LabelIcon from '@mui/icons-material/Label';
 import CategoryIcon from '@mui/icons-material/Category';
 import ProductionQuantityLimitsIcon from '@mui/icons-material/ProductionQuantityLimits';
+import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import SlideshowIcon from '@mui/icons-material/Slideshow';
 import ConfirmationNumberIcon from '@mui/icons-material/ConfirmationNumber';
+import RequestQuoteIcon from '@mui/icons-material/RequestQuote';
 import ReviewsIcon from '@mui/icons-material/Reviews';
 import ReceiptIcon from '@mui/icons-material/Receipt';
 import GroupIcon from '@mui/icons-material/Group';
@@ -17,6 +19,7 @@ export const MyMenu = ({ dense = false }) => {
     menuCatalog: true,
     menuSales: true,
     menuCustomers: true,
+    menuSale: true,
   });
 
   const [open] = useSidebarState();
@@ -71,6 +74,21 @@ export const MyMenu = ({ dense = false }) => {
           dense={dense}
         />
         <MenuItemLink
+          to="/coupons"
+          state={{ _scrollToTop: true }}
+          primaryText="Coupons"
+          leftIcon={<ConfirmationNumberIcon />}
+          dense={dense}
+        />
+      </SubMenu>
+      <SubMenu
+        handleToggle={() => handleToggle('menuSale')}
+        isOpen={state.menuSale}
+        name="Sale"
+        icon={<AttachMoneyIcon />}
+        dense={dense}
+      >
+        <MenuItemLink
           to="/orders"
           state={{ _scrollToTop: true }}
           primaryText="Orders"
@@ -78,10 +96,10 @@ export const MyMenu = ({ dense = false }) => {
           dense={dense}
         />
         <MenuItemLink
-          to="/coupons"
+          to="/invoices"
           state={{ _scrollToTop: true }}
-          primaryText="Coupons"
-          leftIcon={<ConfirmationNumberIcon />}
+          primaryText="Invoices"
+          leftIcon={<RequestQuoteIcon />}
           dense={dense}
         />
       </SubMenu>

@@ -11,7 +11,6 @@ import {
   TextField,
   Toolbar,
   useRecordContext,
-  useTranslate,
 } from 'react-admin';
 import { Link as RouterLink } from 'react-router-dom';
 import { Card, CardContent, Box, Grid, Typography, Link } from '@mui/material';
@@ -61,16 +60,10 @@ const CustomerDetails = () => {
 
 const CustomerAddress = () => {
   const record = useRecordContext();
-  console.log(record);
+
   return (
     <div>
-      <Typography>
-        {record?.userName}
-      </Typography>
       <Typography>{`${record?.userAddresses[0]?.address}, ${record?.userAddresses[0]?.district}, ${record?.userAddresses[0]?.city}, ${record?.userAddresses[0]?.state}`}</Typography>
-      <Typography>
-        {record?.city}, {record?.stateAbbr} {record?.zipcode}
-      </Typography>
     </div>
   );
 };
@@ -78,12 +71,11 @@ const CustomerAddress = () => {
 const Spacer = () => <Box mb={1}>&nbsp;</Box>;
 
 const OrderForm = () => {
-  const translate = useTranslate();
   return (
     <Form>
-      <Box maxWidth="50em">
+      <Box maxWidth="100">
         <PrevNextButtons
-          filterDefaultValues={{ status: 'succeed' }}
+          filterDefaultValues={{ status: 'ordered' }}
         />
         <Card>
           <CardContent>
@@ -107,6 +99,9 @@ const OrderForm = () => {
                 <Grid container>
                   <Grid item xs={12} sm={12} md={6}>
                     <SelectInput
+                      sx={{
+                        marginTop: "15px"
+                      }}
                       source="status"
                       choices={[
                         {
@@ -139,7 +134,7 @@ const OrderForm = () => {
                   Customer
                 </Typography>
                 <ReferenceField
-                  source="id"
+                  source="userId"
                   reference="users"
                   link={false}
                 >
@@ -151,12 +146,17 @@ const OrderForm = () => {
                   Shipping Address
                 </Typography>
                 <ReferenceField
-                  source="id"
+                  source="userId"
                   reference="users"
                   link={false}
                 >
                   <CustomerAddress />
                 </ReferenceField>
+              </Grid>
+              <Grid item xs={12} sm={12} md={8}>
+                <Labeled source='note'>
+                  <TextField source='note' emptyText="No notes here"></TextField>
+                </Labeled>
               </Grid>
             </Grid>
             <Spacer />
