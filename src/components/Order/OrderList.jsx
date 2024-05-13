@@ -25,6 +25,7 @@ import { Divider, Tabs, Tab } from '@mui/material';
 
 import UserReferenceField from '../User/UserReferenceField';
 import NbItemsField from './NbItemsField';
+import CustomerField from './CustomerField';
 
 const ListActions = () => (
   <TopToolbar>
@@ -127,8 +128,8 @@ const TabbedDatagrid = () => {
           >
             <DateField source="orderDate" showTime />
             <TextField source="id" />
-            <WrapperField source="Users">
-              <UserReferenceField />
+            <WrapperField source="Customer">
+              <CustomerField />
             </WrapperField>
 
             <TextField source="deliveryAddress" sx={{

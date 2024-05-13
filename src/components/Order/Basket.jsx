@@ -27,7 +27,7 @@ const Basket = () => {
       <TableHead>
         <TableRow>
           <TableCell>
-            Order ID
+            Product
           </TableCell>
           <TableCellRight>
             Price
@@ -45,10 +45,10 @@ const Basket = () => {
       </TableHead>
       <TableBody>
         {record.orderDetails.map((item) => (
-          <TableRow key={item.productId}>
+          <TableRow key={item?.product.id}>
             <TableCell>
-              <Link to={`/products/${item.productId}`}>
-                {item.productId}
+              <Link to={`/products/${item?.product.id}`}>
+                {item?.product.title}
               </Link>
             </TableCell>
             <TableCellRight>

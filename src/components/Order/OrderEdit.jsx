@@ -10,6 +10,7 @@ import {
   SelectInput,
   TextField,
   Toolbar,
+  WrapperField,
   useRecordContext,
 } from 'react-admin';
 import { Link as RouterLink } from 'react-router-dom';
@@ -43,7 +44,7 @@ const CustomerDetails = () => {
         to={`/users/${record?.userId}`}
         style={{ textDecoration: 'none' }}
       >
-        {record?.userName}
+        {record?.fullName}
       </Typography>
       <br />
       <Typography
@@ -133,13 +134,9 @@ const OrderForm = () => {
                 <Typography variant="h6" gutterBottom>
                   Customer
                 </Typography>
-                <ReferenceField
-                  source="userId"
-                  reference="users"
-                  link={false}
-                >
+                <WrapperField source="Customer">
                   <CustomerDetails />
-                </ReferenceField>
+                </WrapperField>
                 <Spacer />
 
                 <Typography variant="h6" gutterBottom>

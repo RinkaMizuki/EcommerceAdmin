@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { Box, Card, CardContent, Grid, Typography } from '@mui/material';
-import { ReferenceField, TextField, useRecordContext } from 'react-admin';
+import { Link, ReferenceField, TextField, useRecordContext } from 'react-admin';
 
 import Basket from '../Order/Basket';
 
@@ -16,11 +16,11 @@ const InvoiceShow = () => {
               MT Store
             </Typography>
           </Grid>
-          <Grid item xs={6} container alignItems="center" justifyContent="center" direction="column">
-            <Typography variant="h6" gutterBottom align="right" sx={{ fontWeight: 'bold' }}>
+          <Grid item xs={6} container alignItems="flex-start" justifyContent="center" direction="column">
+            <Typography variant="h6" gutterBottom align="left" sx={{ fontWeight: 'bold' }}>
               Invoice
             </Typography>
-            <Typography variant="h6" gutterBottom align="right">
+            <Typography variant="h6" gutterBottom align="left">
               {record.id}
             </Typography>
           </Grid>
@@ -37,11 +37,11 @@ const InvoiceShow = () => {
               }}
             />
           </Grid>
-          <Grid item xs={12} md={6} container alignContent="center" direction="column" justifyContent="flex-start">
-            <Typography variant="h6" gutterBottom align="right" sx={{ fontWeight: 'bold' }}>
+          <Grid item xs={12} md={6} container alignContent="left" direction="column" justifyContent="flex-start">
+            <Typography variant="h6" gutterBottom align="left" sx={{ fontWeight: 'bold' }}>
               Currency
             </Typography>
-            <Typography variant="h8" gutterBottom align="center">
+            <Typography variant="h8" gutterBottom align="left">
               {record.paymentCurrency}
             </Typography>
           </Grid>
@@ -49,24 +49,45 @@ const InvoiceShow = () => {
         <Box height={20}>&nbsp;</Box>
         <Grid container spacing={2}>
           <Grid item xs={6}>
-            <Typography variant="h6" gutterBottom align="center" sx={{ fontWeight: 'bold' }} >
+            <Typography variant="h6" gutterBottom align="left" sx={{ fontWeight: 'bold' }} >
               Date
             </Typography>
-            <Typography gutterBottom align="center">
-              {new Date(record.createdAt).toLocaleDateString()}
+            <Typography gutterBottom align="left">
+              {new Date(record?.createdAt).toLocaleDateString()}
             </Typography>
           </Grid>
 
-          <Grid item xs={5}>
-            <Typography variant="h6" gutterBottom align="center" sx={{ fontWeight: 'bold' }}>
+          <Grid item xs={6}>
+            <Typography variant="h6" gutterBottom align="left" sx={{ fontWeight: 'bold' }}>
               Order
             </Typography>
-            <TextField
-              source="id"
-              align="center"
-              component="p"
-              gutterBottom
-            />
+            <Link to={`/orders/${record?.order?.id}`}>
+              <TextField
+                source="id"
+                align="left"
+                component="p"
+                gutterBottom
+              />
+            </Link>
+          </Grid>
+        </Grid>
+        <Grid container spacing={2}>
+          <Grid item xs={6}>
+            <Typography variant="h6" gutterBottom align="left" sx={{ fontWeight: 'bold' }} >
+              Payment method
+            </Typography>
+            <Typography gutterBottom align="left">
+              {record.paymentDestination?.desShortName}
+            </Typography>
+          </Grid>
+
+          <Grid item xs={6}>
+            <Typography variant="h6" gutterBottom align="left" sx={{ fontWeight: 'bold' }}>
+              Payment message
+            </Typography>
+            <Typography gutterBottom align="left">
+              {record?.paymentMessage || "-"}
+            </Typography>
           </Grid>
         </Grid>
         <Box margin="10px 0">
