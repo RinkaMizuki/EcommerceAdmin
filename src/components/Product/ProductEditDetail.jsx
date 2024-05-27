@@ -144,7 +144,7 @@ export const ProductEditDetail = forwardRef(({ onSaveable }, ref) => {
       </Grid>
 
       <Grid item xs={12} sm={4}>
-        <NumberInput source="quantity" validate={req} fullWidth />
+        <NumberInput source="productStock.stockQuantity" validate={req} fullWidth label="Stock" />
       </Grid>
       <Grid item xs={0} sm={4}></Grid>
       <Grid item xs={12} sm={4} sx={{

@@ -28,8 +28,6 @@ const LoginPage = () => {
       auth,
     ).catch((error) => {
       setLoading(false);
-
-      console.log(error);
       notify(
         typeof error === 'string'
           ? error
@@ -48,6 +46,9 @@ const LoginPage = () => {
           },
         }
       );
+      // setTimeout(() => {
+      //   window.location.reload()
+      // }, 300);
     });
   };
 

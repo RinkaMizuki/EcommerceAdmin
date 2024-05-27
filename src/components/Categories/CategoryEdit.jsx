@@ -55,7 +55,7 @@ const CategoryEdit = () => (
                 currency: 'VND',
               }}
             />
-            <NumberField source="quantity" />
+            <NumberField source="productStock.stockQuantity" />
             <Stack>
             </Stack>
             <BooleanField source="hot" />

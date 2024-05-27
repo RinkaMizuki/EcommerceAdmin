@@ -9,10 +9,11 @@ export const LayoutDefault = props => <Layout
   menu={MyMenu}
   sx={{
     '& .RaLayout-appFrame': {
-      marginTop: "47px",
+      marginTop: "0",
     },
     '& .RaSidebar-fixed': {
-      marginLeft: "5px"
+      marginLeft: "5px",
+      marginTop: "-10px"
     },
     '& .MuiPaper-rounded': {
       overflow: "hidden"
@@ -22,6 +23,9 @@ export const LayoutDefault = props => <Layout
     },
     '& .MuiStack-root > .MuiTypography-body2': {
       marginTop: "2px"
+    },
+    '& .RaLayout-contentWithSidebar': {
+      marginTop: "10px"
     }
   }}
 />;

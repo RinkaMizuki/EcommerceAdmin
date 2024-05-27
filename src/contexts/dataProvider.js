@@ -1,12 +1,12 @@
 import simpleRestProvider from "ra-data-simple-rest"
-import { fetchUtils, addRefreshAuthToDataProvider } from "react-admin";
+import { fetchUtils } from "react-admin";
 import { userService } from "../services/userService.js";
 import { updateUserFormData, productFormData, handleGetFiles, sliderFormData } from "../data/index.js";
 import queryString from "query-string";
 import { refreshAuth } from "../services/tokenService.js";
 
 const httpClient = async (url, options = {}) => {
-  const token = localStorage.getItem('token') || import.meta.env.VITE_ECOMMERCE_TOKEN_FAKE;
+  const token = localStorage.getItem("token") !== 'undefined' ? JSON.parse(localStorage.getItem("token")) || import.meta.env.VITE_ECOMMERCE_TOKEN_FAKE : import.meta.env.VITE_ECOMMERCE_TOKEN_FAKE
   options = {
     ...options,
     headers: new Headers({ Accept: 'application/json' }),
@@ -81,5 +81,24 @@ const customDataProvider = {
     return baseDataProvider.getManyReference(resource, params);
   }
 }
+
+const addRefreshAuthToDataProvider = (customDataProvider, refreshAuth) => {
+  return new Proxy(customDataProvider, {
+    get: (target, name) => {
+      if (typeof target[name] !== 'function') {
+        return target[name];
+      }
+      return async (...args) => {
+        try {
+          await refreshAuth();
+        } catch (error) {
+          return Promise.reject(error);
+        }
+        return target[name](...args);
+      };
+    },
+  })
+};
+
 
 export const dataProvider = addRefreshAuthToDataProvider(customDataProvider, refreshAuth) 

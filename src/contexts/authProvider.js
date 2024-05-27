@@ -2,7 +2,7 @@ import { userService } from "../services/userService";
 
 export const authProvider = {
   login: (params) => {
-    const request = new Request(`${import.meta.env.VITE_ECOMMERCE_SSO_BASE_URL}/auth/login`, {
+    const request = new Request(`${import.meta.env.VITE_ECOMMERCE_SSO_BASE_URL}/auth/login-admin`, {
       method: "POST",
       body: JSON.stringify(params),
       headers: new Headers({ "Content-Type": "application/json" }),
@@ -17,7 +17,7 @@ export const authProvider = {
         return response.json();
       })
       .then(auth => {
-        localStorage.setItem('token', auth.accessToken);
+        localStorage.setItem('token', JSON.stringify(auth.accessToken));
         userService.setUser(auth)
       })
       .catch(err => {
