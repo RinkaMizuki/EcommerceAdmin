@@ -1,68 +1,64 @@
-import { AppBar, TitlePortal, UserMenu } from 'react-admin';
+import { AppBar, Link, TitlePortal, UserMenu } from 'react-admin';
 import { AvatarField } from '../Field/AvatarField';
 import { userService } from '../../services/userService';
 import Logo from './Logo';
-import { Box, useMediaQuery } from '@mui/material';
+import { Box, Menu, MenuItem, useMediaQuery } from '@mui/material';
 import { AppBarToolbar } from '../Layout/AppBarToolbar';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import * as signalR from "@microsoft/signalr";
 import { Avatar, Divider, List, ListItem, ListItemAvatar, ListItemText, Typography } from '@mui/material';
-import { getAccessToken, refreshAuth } from '../../services/tokenService';
-import { jwtDecode } from 'jwt-decode';
-const Profile = () => {
-  const data = userService.getUser();
+import Fade from '@mui/material/Fade';
+import signalrConnection from "../../services/realtimeService";
+import { dataProvider } from '../../contexts/dataProvider';
+
+const Profile = ({ currentAdmin }) => {
   return (
     <AvatarField
       size='35'
-      data={data}
+      data={currentAdmin}
     />
   )
 };
-const UserProfile = props => (<UserMenu {...props} icon={<Profile />} />);
+const UserProfile = props => (<UserMenu {...props} icon={<Profile currentAdmin={props.currentAdmin} />} />);
 
 export const Navbar = () => {
+
+  const [anchorEl, setAnchorEl] = useState(null);
+  //const [isShowNotifications, setIsShowNotifications] = useState(false);
+  const [listOrderNoti, setListOrderNoti] = useState([]);
+  const [isNewNoti, setIsNewNoti] = useState(false);
+
+
+  const currentAdmin = userService.getUser();
   const isLargeEnough = useMediaQuery(theme =>
     theme.breakpoints.up('sm')
   );
 
-  const [isShowNotifications, setIsShowNotifications] = useState(false);
-
-  const accessTokenFactory = async () => {
-    let token = getAccessToken();
-    // Kiểm tra xem token đã hết hạn chưa
-    const decodedToken = jwtDecode(token)
-    if (decodedToken.exp < Date.now() / 1000) {
-      // Nếu token đã hết hạn, làm mới token
-      await refreshAuth();
-      token = getAccessToken();
-    }
-    // Trả về token mới hoặc cũ tùy thuộc vào tình trạng làm mới token
-    console.log(token);
-    return token
+  const open = Boolean(anchorEl);
+  const handleClick = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+  const handleClose = () => {
+    setAnchorEl(null);
   };
 
   useEffect(() => {
-
-    const connection = new signalR.HubConnectionBuilder()
-      .withUrl(`${import.meta.env.VITE_ECOMMERCE_BASE_URL}/admin/orderhub`, {
-        accessTokenFactory: async () => await accessTokenFactory(),
-        withCredentials: true,
-        skipNegotiation: true,
-        transport: signalR.HttpTransportType.WebSockets
-      })
-      .withAutomaticReconnect()
-      .build();
-
-    connection.on("ReceiveMessage", data => {
-      console.log(data);
+    signalrConnection.on("ReceivedOrder", async (newOrderNoti) => {
+      const { data: user } = await dataProvider.getOne('users', { id: newOrderNoti.userId });
+      setListOrderNoti(prevNofi => [{ ...newOrderNoti, user }, ...prevNofi])
+      setIsNewNoti(true)
     });
 
-    connection.start()
-      .then(() => connection.invoke("SendMessage", "Ayaka ne", "Hello kaka"))
-      .catch(err => console.log('Error connecting to SignalR', err));
+    //start signalrConnection to hub and call RFC SendMessage method
+    if (signalrConnection.state === signalR.HubConnectionState.Disconnected) {
+      signalrConnection.start().then(() => {
+        console.log("SignalR connected successfully.");
+      }).catch(err => console.log(err))
+    }
+
     return () => {
-      if (connection.state === signalR.HubConnectionState.Connected) {
-        connection.stop();
+      if (signalrConnection.state === signalR.HubConnectionState.Connected) {
+        signalrConnection.stop().then(() => console.warn("SignalR disconnected successfully."));
       }
     }
   }, [])
@@ -70,128 +66,86 @@ export const Navbar = () => {
   return (
     <AppBar
       color="primary"
-      userMenu={<UserProfile />}
+      userMenu={<UserProfile currentAdmin={currentAdmin} />}
       toolbar={<AppBarToolbar
-        setIsShowNotifications={setIsShowNotifications}
-        isShowNotifications={isShowNotifications}
+        setIsNewNoti={setIsNewNoti}
+        isNewNoti={isNewNoti}
+        handleClick={handleClick}
+        open={open}
       />}
       sx={{
         position: "relative",
       }}
     >
-      {isShowNotifications && <List
-        sx={{
-          width: '100%',
-          maxWidth: 360,
-          bgcolor: 'background.paper',
-          position: "absolute",
-          top: "40px",
-          borderRadius: "5px",
-          right: '10%'
-        }}
-      >
-        <ListItem alignItems="flex-start">
-          <ListItemAvatar>
-            <Avatar alt="Remy Sharp" src="/static/images/avatar/1.jpg" />
-          </ListItemAvatar>
-          <ListItemText
-            primary={
-              <>
-                <Typography
-                  sx={{ display: 'inline' }}
-                  component="span"
-                  variant="body2"
-                  color="text.primary"
-                >
-                  Brunch this weekend?
-                </Typography>
-              </>
-            }
-            secondary={
-              <>
-                <Typography
-                  sx={{ display: 'inline' }}
-                  component="span"
-                  variant="body2"
-                  color="text.primary"
-                >
-                  Ali Connors
-                </Typography>
-                {" — I'll be in your neighborhood doing errands this…"}
-              </>
-            }
-          />
-        </ListItem>
-        <Divider variant="inset" component="li" />
-        <ListItem alignItems="flex-start">
-          <ListItemAvatar>
-            <Avatar alt="Travis Howard" src="/static/images/avatar/2.jpg" />
-          </ListItemAvatar>
-          <ListItemText
-            primary={
-              <>
-                <Typography
-                  sx={{ display: 'inline' }}
-                  component="span"
-                  variant="body2"
-                  color="text.primary"
-                >
-                  Summer BBQ
-                </Typography>
-              </>
-            }
-            secondary={
-              <>
-                <Typography
-                  sx={{ display: 'inline' }}
-                  component="span"
-                  variant="body2"
-                  color="text.primary"
-                >
-                  to Scott, Alex, Jennifer
-                </Typography>
-                {" — Wish I could come, but I'm out of town this…"}
-              </>
-            }
-          />
-        </ListItem>
-        <Divider variant="inset" component="li" />
-        <ListItem alignItems="flex-start">
-          <ListItemAvatar>
-            <Avatar alt="Cindy Baker" src="/static/images/avatar/3.jpg" />
-          </ListItemAvatar>
-          <ListItemText
-            primary={
-              <>
-                <Typography
-                  sx={{ display: 'inline' }}
-                  component="span"
-                  variant="body2"
-                  color="text.primary"
-                >
-                  Summer BBQ
-                </Typography>
-              </>
-            }
-            secondary={
-              <>
-                <Typography
-                  sx={{ display: 'inline' }}
-                  component="span"
-                  variant="body2"
-                  color="text.primary"
-                >
-                  Sandra Adams
-                </Typography>
-                {' — Do you have Paris recommendations? Have you ever…'}
-              </>
-            }
-          />
-        </ListItem>
-      </List>}
+      {
+        open && <div>
+          <Menu
+            id="fade-menu"
+            MenuListProps={{
+              'aria-labelledby': 'fade-button',
+            }}
+            anchorEl={anchorEl}
+            open={open}
+            onClose={handleClose}
+            TransitionComponent={Fade}
+          >
+            {listOrderNoti.length ? listOrderNoti.map((od, index) => {
+              return (
+                <Link to={`/orders/${od.id}`}>
+                  <MenuItem alignItems="flex-start" onClick={handleClose}>
+                    <ListItemAvatar sx={{
+                      cursor: 'pointer'
+                    }}
+                    >
+                      <Avatar alt={od.user.avatar} src={od?.user.url} />
+                    </ListItemAvatar>
+                    <ListItemText
+                      sx={{
+                        cursor: 'pointer'
+                      }}
+                      primary={
+                        <>
+                          <Typography color="text.secondary">
+                            You have new order from <Typography
+                              sx={{ display: 'inline' }}
+                              component="span"
+                              variant="body2"
+                              color="text.primary"
+                            >
+                              {od?.user.userName}
+                            </Typography>
+                          </Typography>
+                        </>
+                      }
+                      secondary={
+
+                        <Typography
+                          sx={{ display: 'inline' }}
+                          component="span"
+                          variant="body2"
+                          color="text.primary"
+                        >
+                          Order: {od.id}
+                        </Typography>
+
+                      }
+                    />
+                  </MenuItem>
+                  {!(index + 1 === listOrderNoti.length) && <Divider variant="inset" component="li" />}
+                </Link>
+              )
+            }) : <MenuItem
+              onClick={handleClose}
+              sx={{
+                color: "#bcbcbc",
+                textAlign: "center",
+              }}>You don't have any order.</MenuItem>}
+          </Menu>
+        </div>
+      }
       <TitlePortal />
       {isLargeEnough && <Logo />}
       {isLargeEnough && <Box component="span" sx={{ flex: 1 }} />}
-    </AppBar>
+    </AppBar >
   );
 };

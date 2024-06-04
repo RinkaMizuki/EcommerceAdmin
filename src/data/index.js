@@ -25,7 +25,7 @@ const productFormData = (
 ) => {
   const formData = new FormData();
   const data = params.data;
-
+  console.log(data);
   const colors = JSON.parse(localStorage.getItem("colors_save") || []);
 
   const colorCodes = colors.map(c => c.colorCode);
@@ -51,7 +51,7 @@ const productFormData = (
   formData.append("flashSale", data.flashSale);
   formData.append("hot", data.hot);
   formData.append("price", data.price);
-  formData.append("quantity", data.quantity);
+  formData.append("quantity", data.productStock.stockQuantity);
   formData.append("return", data.return);
   formData.append("status", data.status);
   formData.append("upComing", data.upcoming);

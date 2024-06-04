@@ -4,7 +4,7 @@ import { Typography } from '@mui/material';
 import { ReferenceField, useRecordContext } from 'react-admin';
 import { AvatarField } from '../Field/AvatarField';
 
-const CustomerAvatar = (props) => {
+export const CustomerAvatar = (props) => {
   const { size } = props;
 
   const record = useRecordContext();
