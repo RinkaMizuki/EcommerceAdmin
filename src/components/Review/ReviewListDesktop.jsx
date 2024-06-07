@@ -34,7 +34,7 @@ const ReviewListDesktop = ({ selectedRow }) => (
         borderLeftWidth: 5,
         borderLeftStyle: 'solid',
       },
-      '& .column-comment': {
+      '& .column-content': {
         maxWidth: '18em',
         overflow: 'hidden',
         textOverflow: 'ellipsis',

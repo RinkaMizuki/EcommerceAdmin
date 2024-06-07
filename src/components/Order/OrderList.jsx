@@ -89,7 +89,6 @@ const TabbedDatagrid = () => {
     },
     [displayedFilters, filterValues, setFilters]
   );
-
   return (
     <Fragment>
       <Tabs

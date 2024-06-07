@@ -139,7 +139,7 @@ export const Navbar = () => {
               sx={{
                 color: "#bcbcbc",
                 textAlign: "center",
-              }}>You don't have any order.</MenuItem>}
+              }}>You don't have any new order. It will notify if there is a new order !</MenuItem>}
           </Menu>
         </div>
       }

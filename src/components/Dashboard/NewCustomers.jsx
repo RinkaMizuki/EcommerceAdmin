@@ -60,7 +60,7 @@ const NewCustomers = () => {
           color="primary"
         >
           <Box p={1} sx={{ color: 'primary.main' }}>
-            {translate('All customers')}
+            {translate('See All customers')}
           </Box>
         </Button>
       </CardWithIcon>

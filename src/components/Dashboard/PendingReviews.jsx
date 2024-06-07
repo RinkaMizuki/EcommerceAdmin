@@ -87,7 +87,7 @@ const PendingReviews = () => {
                 overflowY: 'hidden',
                 height: '4em',
                 display: '-webkit-box',
-                WebkitLineClamp: 2,
+                WebkitLineClamp: 3,
                 WebkitBoxOrient: 'vertical',
                 paddingRight: 0,
               }}
@@ -104,7 +104,7 @@ const PendingReviews = () => {
         color="primary"
       >
         <Box p={1} sx={{ color: 'primary.main' }}>
-          {translate('All reviews')}
+          {translate('See All reviews')}
         </Box>
       </Button>
     </CardWithIcon>

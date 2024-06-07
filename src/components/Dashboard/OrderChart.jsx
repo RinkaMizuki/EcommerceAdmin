@@ -9,25 +9,27 @@ import {
   CartesianGrid,
   Tooltip,
 } from 'recharts';
-import { useTranslate } from 'react-admin';
 import { format, subDays, addDays } from 'date-fns';
+import { FORMAT_DATE } from './Dashboard';
+import { useGetList } from 'react-admin';
 
 const lastDay = new Date();
-const lastMonthDays = Array.from({ length: 30 }, (_, i) => subDays(lastDay, i));
-const aMonthAgo = subDays(new Date(), 30);
-
+//loop and minus by index
+const lastMonthDays = Array.from({ length: 31 }, (_, i) => subDays(lastDay, i));
+//get month ago with current date
+const aMonthAgo = subDays(lastDay, 31);
 const dateFormatter = (date) =>
   new Date(date).toLocaleDateString();
 
+//map date with price
 const aggregateOrdersByDay = (orders) =>
   orders
-    .filter((order) => order.status !== 'cancelled')
     .reduce((acc, curr) => {
-      const day = format(new Date(curr.date), 'yyyy-MM-dd');
+      const day = format(new Date(curr.orderDate), FORMAT_DATE);
       if (!acc[day]) {
         acc[day] = 0;
       }
-      acc[day] += curr.total;
+      acc[day] += curr.totalPrice;
       return acc;
     }, {});
 
@@ -35,18 +37,24 @@ const getRevenuePerDay = (orders) => {
   const daysWithRevenue = aggregateOrdersByDay(orders);
   return lastMonthDays.map(date => ({
     date: date.getTime(),
-    total: daysWithRevenue[format(new Date(date), 'yyyy-MM-dd')] || 0,
+    total: daysWithRevenue[format(new Date(date), FORMAT_DATE)] || 0,
   }));
 };
 
-const OrderChart = (props) => {
-  const { orders } = props;
-  const translate = useTranslate();
-  if (!orders) return null;
+const OrderChart = () => {
+  const { data: orders = [] } = useGetList('orders', {
+    filter: {
+      orderedSince: dateFormatter(aMonthAgo),
+      orderedBefore: dateFormatter(lastDay)
+    },
+    sort: { field: 'OrderDate', order: 'DESC' },
+    pagination: { page: 1, perPage: 50 },
+  });
 
+  if (!orders) return null;
   return (
     <Card>
-      <CardHeader title={translate('pos.dashboard.month_history')} />
+      <CardHeader title="30 Day Revenue History" />
       <CardContent>
         <div style={{ width: '100%', height: 300 }}>
           <ResponsiveContainer>
@@ -77,19 +85,19 @@ const OrderChart = (props) => {
                 type="number"
                 scale="time"
                 domain={[
-                  addDays(aMonthAgo, 1).getTime(),
+                  addDays(aMonthAgo).getTime(),
                   new Date().getTime(),
                 ]}
                 tickFormatter={dateFormatter}
               />
-              <YAxis dataKey="total" name="Revenue" unit="€" />
+              {/* <YAxis dataKey="total" name="Revenue" unit="đ" /> */}
               <CartesianGrid strokeDasharray="3 3" />
               <Tooltip
                 cursor={{ strokeDasharray: '3 3' }}
                 formatter={(value) =>
                   new Intl.NumberFormat(undefined, {
                     style: 'currency',
-                    currency: 'USD',
+                    currency: 'VND',
                   }).format(value)
                 }
                 labelFormatter={(label) =>

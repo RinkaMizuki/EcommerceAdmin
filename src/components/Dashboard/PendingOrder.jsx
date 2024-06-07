@@ -7,17 +7,20 @@ import {
   Box,
 } from '@mui/material';
 import { Link } from 'react-router-dom';
-import { useTranslate, useReference } from 'react-admin';
+import { useReference } from 'react-admin';
 
 
 export const PendingOrder = (props) => {
   const { order } = props;
-  const translate = useTranslate();
   const { referenceRecord: customer, isLoading } = useReference({
-    reference: 'customers',
-    id: order.customer_id,
+    reference: 'users',
+    id: order.userId,
   });
+  const orderDate = new Date(order.orderDate).toLocaleString('en-GB');
+  const itemCount = order.orderDetails.length;
+  const customerName = customer ? customer.userName : '';
 
+  const secondaryText = `by ${customerName}, ${itemCount} item${itemCount > 1 ? 's' : ''}`;
   return (
     <ListItem button component={Link} to={`/orders/${order.id}`}>
       <ListItemAvatar>
@@ -25,21 +28,15 @@ export const PendingOrder = (props) => {
           <Avatar />
         ) : (
           <Avatar
-            src={customer?.avatar}
+            src={customer?.url}
             sx={{ bgcolor: 'background.paper' }}
-            alt={customer?.userName}
+            alt={customer?.avatar}
           />
         )}
       </ListItemAvatar>
       <ListItemText
-        primary={new Date(order.date).toLocaleString('en-GB')}
-        secondary={translate('Order items', {
-          smart_count: order.basket.length,
-          nb_items: order.basket.length,
-          customer_name: customer
-            ? customer?.userName
-            : '',
-        })}
+        primary={orderDate}
+        secondary={secondaryText}
       />
       <ListItemSecondaryAction>
         <Box
@@ -49,7 +46,7 @@ export const PendingOrder = (props) => {
             color: 'text.primary',
           }}
         >
-          {order.total}$
+          {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(order.totalPrice)}
         </Box>
       </ListItemSecondaryAction>
     </ListItem>
