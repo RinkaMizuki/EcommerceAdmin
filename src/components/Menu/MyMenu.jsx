@@ -2,6 +2,7 @@ import { Menu, MenuItemLink, useSidebarState } from 'react-admin';
 import LabelIcon from '@mui/icons-material/Label';
 import CategoryIcon from '@mui/icons-material/Category';
 import ProductionQuantityLimitsIcon from '@mui/icons-material/ProductionQuantityLimits';
+import ContactMailIcon from '@mui/icons-material/ContactMail';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import SlideshowIcon from '@mui/icons-material/Slideshow';
 import ConfirmationNumberIcon from '@mui/icons-material/ConfirmationNumber';
@@ -126,6 +127,7 @@ export const MyMenu = ({ dense = false }) => {
         />
       </SubMenu>
       <Menu.Item to="/rates" primaryText="Reviews" leftIcon={<ReviewsIcon />} />
+      <Menu.Item to="/contacts" primaryText="Contacts" leftIcon={<ContactMailIcon />} />
       <Menu.Item to="/sliders" primaryText="Sliders" leftIcon={<SlideshowIcon />} />
     </Box>
   )

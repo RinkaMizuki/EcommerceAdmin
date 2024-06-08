@@ -18,10 +18,10 @@ const useColsForWidth = () => {
   const lg = useMediaQuery(theme.breakpoints.up('lg'));
   const xl = useMediaQuery(theme.breakpoints.up('xl'));
   // there are all dividers of 24, to have full rows on each page
-  if (xl) return 8;
-  if (lg) return 6;
-  if (md) return 4;
-  if (sm) return 3;
+  if (xl) return 6;
+  if (lg) return 5;
+  if (md) return 3;
+  if (sm) return 2;
   return 2;
 };
 
@@ -98,6 +98,7 @@ const LoadedGridList = () => {
               </span>
             }
             sx={{
+              textAlign: 'center',
               background:
                 'linear-gradient(to top, rgba(0,0,0,0.8) 0%,rgba(0,0,0,0.4) 70%,rgba(0,0,0,0) 100%)',
             }}

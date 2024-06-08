@@ -70,6 +70,7 @@ const orderFilters = [
 
 const tabs = [
   { id: 'ordered', name: 'ordered' },
+  { id: 'shipped', name: 'shipped' },
   { id: 'delivered', name: 'delivered' },
   { id: 'cancelled', name: 'cancelled' },
 ];
@@ -122,6 +123,37 @@ const TabbedDatagrid = () => {
       <Divider />
       <>
         {filterValues.status === 'ordered' && (
+          <DatagridConfigurable
+            rowClick="edit"
+          >
+            <DateField source="orderDate" showTime />
+            <TextField source="id" />
+            <WrapperField source="Customer">
+              <CustomerField />
+            </WrapperField>
+
+            <TextField source="deliveryAddress" sx={{
+              maxWidth: "300px",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
+              display: "block"
+            }} />
+            <WrapperField label="Nb Items">
+              <NbItemsField />
+            </WrapperField>
+            <NumberField
+              source="totalPrice"
+              options={{
+                style: 'currency',
+                currency: 'VND',
+              }}
+              locales="fr-FR"
+              sx={{ fontWeight: 'bold' }}
+            />
+          </DatagridConfigurable>
+        )}
+        {filterValues.status === 'shipped' && (
           <DatagridConfigurable
             rowClick="edit"
           >

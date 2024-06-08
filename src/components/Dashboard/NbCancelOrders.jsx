@@ -7,8 +7,8 @@ const NbCancelOrders = (props) => {
     <CardWithIcon
       to="/orders"
       icon={MoneyOffIcon}
-      title={'Cancel orders'}
-      subtitle={value}
+      title={'Cancel orders of month'}
+      subtitle={value || "0"}
     />
   );
 };

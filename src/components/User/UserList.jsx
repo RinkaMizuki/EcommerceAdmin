@@ -41,7 +41,7 @@ export const UserList = () => {
           <UserNameField label="Users"></UserNameField>
           <EmailField source="email" />
           <TextField source="role" />
-          <BooleanField source="emailConfirm" />
+          <BooleanField source="emailConfirm" textAlign="center" />
           <BooleanField source="isActive" label="Ban" />
           <ArrayField source="segments">
             <SingleFieldList linkType={false}>

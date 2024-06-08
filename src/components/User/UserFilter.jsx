@@ -2,6 +2,7 @@ import { SavedQueriesList, FilterLiveSearch, FilterList, FilterListItem } from '
 import { Card, CardContent } from '@mui/material';
 import BlockIcon from '@mui/icons-material/Block';
 import CategoryIcon from '@mui/icons-material/LocalOffer';
+import MarkEmailReadIcon from '@mui/icons-material/MarkEmailRead';
 
 export const UserFilterSidebar = () => {
 
@@ -40,6 +41,23 @@ export const UserFilterSidebar = () => {
           >
           </FilterListItem>
         </FilterList>
+
+        <FilterList
+          label="Verify email"
+          icon={<MarkEmailReadIcon />}
+        >
+          <FilterListItem
+            label="Verified"
+            value={{ isVerify: true }}
+          >
+          </FilterListItem>
+          <FilterListItem
+            label="Unverified"
+            value={{ isVerify: false }}
+          >
+          </FilterListItem>
+        </FilterList>
+
         <FilterList
           label="Segments"
           icon={<CategoryIcon />}

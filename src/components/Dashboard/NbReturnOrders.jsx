@@ -7,8 +7,8 @@ const NbReturnOrders = (props) => {
     <CardWithIcon
       to="/orders"
       icon={RecyclingIcon}
-      title={'Return orders'}
-      subtitle={value}
+      title={'Return orders of month'}
+      subtitle={value || "0"}
     />
   );
 };

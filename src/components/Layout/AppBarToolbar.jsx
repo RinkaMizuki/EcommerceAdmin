@@ -8,6 +8,10 @@ export const AppBarToolbar = ({ setIsNewNoti, isNewNoti, handleClick, open }) =>
   <div style={{ display: "flex", alignItems: "center", position: "relative" }} >
 
     <Button
+      color='inherit'
+      sx={{
+        minWidth: "unset",
+      }}
       id="fade-button"
       aria-controls={open ? 'fade-menu' : undefined}
       aria-haspopup="true"

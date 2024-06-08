@@ -9,14 +9,13 @@ import {
   TopToolbar,
 } from 'react-admin';
 import { matchPath, useLocation, useNavigate } from 'react-router-dom';
-import { Box, Drawer, useMediaQuery } from '@mui/material';
+import { Box, Drawer } from '@mui/material';
 
-import ReviewListDesktop from './ReviewListDesktop';
-import ReviewFilter from './ReviewFilter';
-import ReviewEdit from './ReviewEdit';
-import ReviewListMobile from './ReviewListMobile';
+import ContactListDesktop from './ContactListDesktop';
+import ContactFilter from './ContactFilter';
+import ContactEdit from './ContactEdit';
 
-const ReviewListActions = () => (
+const ContactListActions = () => (
   <TopToolbar>
     <FilterButton />
     <CreateButton />
@@ -25,18 +24,15 @@ const ReviewListActions = () => (
   </TopToolbar>
 );
 
-const ReviewList = () => {
-  const isXSmall = useMediaQuery(theme =>
-    theme.breakpoints.down('sm')
-  );
+const ContactList = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
   const handleClose = useCallback(() => {
-    navigate('/rates');
+    navigate('/contacts');
   }, [navigate]);
 
-  const match = matchPath('/rates/:id', location.pathname);
+  const match = matchPath('/contacts/:id', location.pathname);
 
   return (
     <Box display="flex">
@@ -52,22 +48,12 @@ const ReviewList = () => {
             }),
           marginRight: !!match ? '400px' : 0,
         }}
-        filters={ReviewFilter}
+        filters={ContactFilter}
         perPage={25}
         sort={{ field: 'date', order: 'DESC' }}
-        actions={<ReviewListActions />}
+        actions={<ContactListActions />}
       >
-        {isXSmall ? (
-          <ReviewListMobile />
-        ) : (
-          <ReviewListDesktop
-            selectedRow={
-              !!match
-                ? parseInt((match).params.id, 10)
-                : undefined
-            }
-          />
-        )}
+        <ContactListDesktop />
       </List>
       <Drawer
         variant="persistent"
@@ -78,7 +64,7 @@ const ReviewList = () => {
       >
         {/* To avoid any errors if the route does not match, we don't render at all the component in this case */}
         {!!match && (
-          <ReviewEdit
+          <ContactEdit
             id={(match).params.id}
             onCancel={handleClose}
           />
@@ -88,4 +74,4 @@ const ReviewList = () => {
   );
 };
 
-export default ReviewList;
+export default ContactList;

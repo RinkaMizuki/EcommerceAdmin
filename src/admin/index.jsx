@@ -27,6 +27,7 @@ import SliderCreate from "../components/Slider/SliderCreate";
 import OrderList from "../components/Order/OrderList";
 import OrderEdit from "../components/Order/OrderEdit";
 import InvoiceList from "../components/Invoice/InvoiceList";
+import ContactList from "../components/Contact/ContactList";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -96,6 +97,10 @@ const AdminPanel = () => {
         name="rates"
         list={ReviewList}
         create={ReviewCreate}
+      ></Resource>
+      <Resource
+        name="contacts"
+        list={ContactList}
       ></Resource>
       <Resource
         name="sliders"

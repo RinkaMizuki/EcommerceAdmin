@@ -17,7 +17,7 @@ const lastDay = new Date();
 //loop and minus by index
 const lastMonthDays = Array.from({ length: 31 }, (_, i) => subDays(lastDay, i));
 //get month ago with current date
-const aMonthAgo = subDays(lastDay, 31);
+const aMonthAgo = subDays(lastDay, 30);
 const dateFormatter = (date) =>
   new Date(date).toLocaleDateString();
 
@@ -50,7 +50,7 @@ const OrderChart = () => {
     sort: { field: 'OrderDate', order: 'DESC' },
     pagination: { page: 1, perPage: 50 },
   });
-
+  console.log(orders)
   if (!orders) return null;
   return (
     <Card>

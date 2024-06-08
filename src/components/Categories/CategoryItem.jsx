@@ -38,6 +38,11 @@ const CategoryItem = ({ record }) => {
               variant="h5"
               component="h2"
               align="center"
+              sx={{
+                overflow: "hidden",
+                whiteSpace: "nowrap",
+                textOverflow: "ellipsis"
+              }}
             >
               {record.title}
             </Typography>
@@ -55,14 +60,16 @@ const CategoryItem = ({ record }) => {
           </CardActions>
         </Card>
       </Grid>
-      {record?.listProductCategoryChild.length > 0 && (
-        record?.listProductCategoryChild.map((subCategory) => {
-          return (
-            <CategoryItem key={subCategory.id} record={subCategory} />
-          )
-        })
-      )}
-    </RecordContextProvider>
+      {
+        record?.listProductCategoryChild.length > 0 && (
+          record?.listProductCategoryChild.map((subCategory) => {
+            return (
+              <CategoryItem key={subCategory.id} record={subCategory} />
+            )
+          })
+        )
+      }
+    </RecordContextProvider >
   )
 };
 

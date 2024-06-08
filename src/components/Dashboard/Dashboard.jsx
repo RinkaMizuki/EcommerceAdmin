@@ -61,7 +61,6 @@ const Dashboard = () => {
     }
     return acc;
   }, { pendingOrders: [], cancelledOrders: [], donedOrders: [], returnedOrders: [] });
-  console.log(cancelledOrders)
   const revenue = donedOrders?.reduce((acc, order) => {
     return acc + order.totalPrice
   }, 0)
@@ -70,7 +69,7 @@ const Dashboard = () => {
       <div style={styles.flexColumn}>
         <MonthlyRevenue value={revenue} />
         <VerticalSpacer />
-        <NbNewOrders value={donedOrders.length} />
+        <NbNewOrders formatShortDate={formatShortDate} nowDate={nowDate} value={donedOrders} />
         <VerticalSpacer />
         <NbCancelOrders value={cancelledOrders.length} />
         <VerticalSpacer />
@@ -86,7 +85,7 @@ const Dashboard = () => {
       <div style={styles.flex}>
         <MonthlyRevenue value={revenue} />
         <Spacer />
-        <NbNewOrders value={donedOrders.length} />
+        <NbNewOrders formatShortDate={formatShortDate} nowDate={nowDate} value={donedOrders} />
         <Spacer />
         <NbCancelOrders value={cancelledOrders.length} />
         <Spacer />
@@ -106,7 +105,7 @@ const Dashboard = () => {
           <div style={styles.flex}>
             <MonthlyRevenue value={revenue} />
             <Spacer />
-            <NbNewOrders value={donedOrders.length} />
+            <NbNewOrders formatShortDate={formatShortDate} nowDate={nowDate} value={donedOrders} />
           </div>
           <div style={{ ...styles.flex, marginTop: "20px" }}>
             <NbCancelOrders value={cancelledOrders.length} />
