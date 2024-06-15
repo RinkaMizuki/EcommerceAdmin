@@ -52,6 +52,7 @@ const productFormData = (
   formData.append("hot", data.hot);
   formData.append("price", data.price);
   formData.append("quantity", data.productStock.stockQuantity);
+  formData.append("location", data.productStock.location);
   formData.append("return", data.return);
   formData.append("status", data.status);
   formData.append("upComing", data.upcoming);

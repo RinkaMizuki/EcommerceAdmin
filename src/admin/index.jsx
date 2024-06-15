@@ -1,8 +1,8 @@
-import { Admin, Resource, houseDarkTheme, houseLightTheme } from "react-admin"
-import { QueryClient } from 'react-query';
-import { UserList } from "../components/User/UserList"
-import { dataProvider } from "../contexts/dataProvider"
-import { authProvider } from "../contexts/authProvider"
+import { Admin, Resource, houseDarkTheme, houseLightTheme } from "react-admin";
+import { QueryClient } from "react-query";
+import { UserList } from "../components/User/UserList";
+import { dataProvider } from "../contexts/dataProvider";
+import { authProvider } from "../contexts/authProvider";
 import LoginPage from "../components/Layout/LoginPage";
 import { UserCreate } from "../components/User/UserCreate";
 import { UserEdit } from "../components/User/UserEdit";
@@ -28,88 +28,80 @@ import OrderList from "../components/Order/OrderList";
 import OrderEdit from "../components/Order/OrderEdit";
 import InvoiceList from "../components/Invoice/InvoiceList";
 import ContactList from "../components/Contact/ContactList";
+import ChatList from "../components/Chat/ChatList";
 
 const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      refetchOnWindowFocus: false,
-      retry: false,
-      structuralSharing: false,
+    defaultOptions: {
+        queries: {
+            refetchOnWindowFocus: false,
+            retry: false,
+            structuralSharing: false,
+        },
+        mutations: {
+            retryDelay: 3000,
+        },
     },
-    mutations: {
-      retryDelay: 3000,
-    },
-  },
 });
 
 const AdminPanel = () => {
+    return (
+        <Admin
+            queryClient={queryClient}
+            layout={LayoutDefault}
+            dataProvider={dataProvider}
+            authProvider={authProvider}
+            loginPage={LoginPage}
+            lightTheme={houseLightTheme}
+            darkTheme={houseDarkTheme}
+            dashboard={Dashboard}
+        >
+            <Resource
+                name="users"
+                list={UserList}
+                create={UserCreate}
+                edit={UserEdit}
+                icon={UserIcon}
+            ></Resource>
+            <Resource name="segments" list={SegmentList}></Resource>
+            <Resource
+                name="categories"
+                list={CategoryList}
+                edit={CategoryEdit}
+                create={CategoryCreate}
+            ></Resource>
+            <Resource
+                name="products"
+                list={ProductList}
+                create={ProductCreate}
+                edit={ProductEdit}
+            ></Resource>
+            <Resource
+                name="orders"
+                list={OrderList}
+                edit={OrderEdit}
+            ></Resource>
+            <Resource name="invoices" list={InvoiceList}></Resource>
+            <Resource
+                name="coupons"
+                list={CouponList}
+                edit={CouponEdit}
+                create={CouponCreate}
+            ></Resource>
+            <Resource
+                name="rates"
+                list={ReviewList}
+                create={ReviewCreate}
+            ></Resource>
+            <Resource name="contacts" list={ContactList}></Resource>
+            <Resource
+                name="sliders"
+                list={SliderList}
+                create={SliderCreate}
+                edit={SliderEdit}
+            ></Resource>
+            <Resource name="converses" list={ChatList}></Resource>
+        </Admin>
+    );
+};
 
-  return (
-    <Admin
-      queryClient={queryClient}
-      layout={LayoutDefault}
-      dataProvider={dataProvider}
-      authProvider={authProvider}
-      loginPage={LoginPage}
-      lightTheme={houseLightTheme}
-      darkTheme={houseDarkTheme}
-      dashboard={Dashboard}
-    >
-      <Resource
-        name="users"
-        list={UserList}
-        create={UserCreate}
-        edit={UserEdit}
-        icon={UserIcon}
-      ></Resource>
-      <Resource
-        name="segments"
-        list={SegmentList}
-      ></Resource>
-      <Resource
-        name="categories"
-        list={CategoryList}
-        edit={CategoryEdit}
-        create={CategoryCreate}
-      ></Resource>
-      <Resource
-        name="products"
-        list={ProductList}
-        create={ProductCreate}
-        edit={ProductEdit}
-      ></Resource>
-      <Resource
-        name="orders"
-        list={OrderList}
-        edit={OrderEdit}
-      ></Resource>
-      <Resource
-        name="invoices"
-        list={InvoiceList}
-      ></Resource>
-      <Resource
-        name="coupons"
-        list={CouponList}
-        edit={CouponEdit}
-        create={CouponCreate}
-      ></Resource>
-      <Resource
-        name="rates"
-        list={ReviewList}
-        create={ReviewCreate}
-      ></Resource>
-      <Resource
-        name="contacts"
-        list={ContactList}
-      ></Resource>
-      <Resource
-        name="sliders"
-        list={SliderList}
-        create={SliderCreate}
-        edit={SliderEdit}
-      ></Resource>
-    </Admin >
-  )
-}
-
-export default AdminPanel
+export default AdminPanel;

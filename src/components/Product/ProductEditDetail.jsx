@@ -127,6 +127,14 @@ export const ProductEditDetail = forwardRef(({ onSaveable }, ref) => {
           fullWidth
         />
       </Grid>
+      <Grid item xs={12} sm={8}>
+        <TextInput
+          required
+          label="Location"
+          source="productStock.location"
+          fullWidth
+        />
+      </Grid>
       <Grid item xs={0} sm={4}></Grid>
       <Grid item xs={12} sm={4}>
         <NumberInput
