@@ -1,29 +1,37 @@
-import { Avatar, Box, Grid, TextField, Typography } from "@mui/material";
+import { Box, Grid, TextField, Typography } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import { useLogout, useTheme } from "react-admin";
 import Divider from "@mui/material/Divider";
-import CallIcon from "@mui/icons-material/Call";
-import VideocamIcon from "@mui/icons-material/Videocam";
-import InfoIcon from "@mui/icons-material/Info";
-import SendIcon from "@mui/icons-material/Send";
-import AddReactionIcon from "@mui/icons-material/AddReaction";
-import AddCircleIcon from "@mui/icons-material/AddCircle";
-import AddPhotoAlternateIcon from "@mui/icons-material/AddPhotoAlternate";
-import GifBoxIcon from "@mui/icons-material/GifBox";
 import ChatItem from "./ChatItem";
-import { useEffect, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import { chathubConnection } from "../../services/realtimeService";
 import * as signalR from "@microsoft/signalr";
 import { userService } from "../../services/userService";
+import ChatHeader from "./ChatHeader";
+import ChatBody from "./ChatBody";
+import ChatBox from "./ChatBox";
 
 const ChatList = () => {
     const mode = useTheme()[0];
     const [message, setMessage] = useState("");
+    const [participants, setParticipants] = useState([]);
+    const [conversation, setConversation] = useState(null);
+    const [messages, setMessages] = useState([]);
+
     const logout = useLogout();
+    const currentUser = userService.getUser();
 
     useEffect(() => {
         chathubConnection.on("ReceiveMessage", (newMessage) => {
-            console.log(newMessage);
+            setMessages((prevMessages) => [...prevMessages, newMessage]);
+        });
+
+        chathubConnection.on("ReceiveParticipants", (participantList) => {
+            setParticipants(participantList);
+        });
+
+        chathubConnection.on("NewParticipant", (newParticipant) => {
+            setParticipants((prevList) => [...prevList, newParticipant]);
         });
 
         if (
@@ -55,12 +63,27 @@ const ChatList = () => {
         };
     }, []);
 
+    useEffect(() => {
+        if (conversation != null) {
+            chathubConnection.invoke(
+                "GetMessageAsync",
+                conversation?.conversationId
+            );
+            chathubConnection.on("ReceiveMessages", (listMessages) => {
+                setMessages(listMessages);
+            });
+        }
+    }, [conversation]);
+
     const handleSendMessage = () => {
         if (message) {
-            const currentUser = userService.getUser();
             chathubConnection.invoke(
-                "SendMessageToRandomAdmin",
-                currentUser.userName
+                "SendMessageAsync",
+                currentUser.id,
+                conversation?.email,
+                message,
+                conversation?.conversationId,
+                ""
             );
             setMessage("");
         }
@@ -68,6 +91,7 @@ const ChatList = () => {
 
     return (
         <Grid
+            maxHeight="641px"
             container
             spacing={2}
             sx={{
@@ -178,100 +202,16 @@ const ChatList = () => {
                         overflowX: "hidden",
                     }}
                 >
-                    <ChatItem mode={mode} />
-                    <Box>
-                        <Box
-                            sx={{
-                                borderRadius: "5px",
-                                cursor: "pointer",
-                                padding: "15px",
-                                display: "flex",
-                                alignItems: "center",
-                                gap: "15px",
-                            }}
-                        >
-                            <Box
-                                sx={{
-                                    position: "relative",
-                                }}
-                            >
-                                <Avatar
-                                    src="https://mui.com/static/images/avatar/2.jpg"
-                                    alt="Hehe"
-                                />
-                                <div
-                                    style={{
-                                        bottom: "0",
-                                        right: "0",
-                                        width: "8px",
-                                        height: "8px",
-                                        borderRadius: "50%",
-                                        border: `3px solid ${
-                                            mode === "dark"
-                                                ? "#2B3033"
-                                                : "#ffffff"
-                                        }`,
-                                        boxSizing: "unset",
-                                        backgroundColor: "#4daa57",
-                                        position: "absolute",
-                                    }}
-                                ></div>
-                            </Box>
-                            <Box
-                                sx={{
-                                    flex: 1,
-                                    display: "flex",
-                                    flexDirection: "column",
-                                    justifyContent: "space-between",
-                                }}
-                            >
-                                <Typography fontWeight="600" fontSize="15px">
-                                    Hehe
-                                </Typography>
-                                <p
-                                    style={{
-                                        fontSize: "13px",
-                                        color: `${
-                                            mode === "dark"
-                                                ? "#d5d5d5"
-                                                : "#838383"
-                                        }`,
-                                    }}
-                                >
-                                    Hello Hehe, How are you today ?
-                                </p>
-                            </Box>
-                            <Box
-                                sx={{
-                                    display: "flex",
-                                    flexDirection: "column",
-                                    gap: "3px",
-                                    alignSelf: "flex-end",
-                                }}
-                            >
-                                <Typography
-                                    sx={{
-                                        fontSize: "13px",
-                                    }}
-                                >
-                                    Dec 08
-                                </Typography>
-                                <div
-                                    style={{
-                                        display: "flex",
-                                        alignSelf: "flex-end",
-                                        justifyContent: "center",
-                                        alignItems: "center",
-                                        width: "13px",
-                                        height: "13px",
-                                        backgroundColor: "#0866ff",
-                                        borderRadius: "50%",
-                                    }}
-                                ></div>
-                            </Box>
-                        </Box>
-                    </Box>
-                    <Divider />
+                    {participants.map((p) => (
+                        <Fragment key={p.conversationId}>
+                            <ChatItem
+                                mode={mode}
+                                p={p}
+                                setConversation={setConversation}
+                            />
+                            <Divider />
+                        </Fragment>
+                    ))}
                 </Box>
             </Grid>
             <Grid
@@ -286,367 +226,24 @@ const ChatList = () => {
                     padding: "0 !important",
                 }}
             >
-                {/* Header chat area */}
-                <Box
-                    sx={{
-                        boxShadow: "0px 2px 3px -1px #111",
-                    }}
-                >
-                    <Box
-                        sx={{
-                            display: "flex",
-                            justifyContent: "space-between",
-                            alignItems: "center",
-                            paddingY: "10px",
-                            paddingX: "15px",
-                        }}
-                    >
-                        <Box
-                            sx={{
-                                display: "flex",
-                                alignItems: "center",
-                                gap: "5px",
-                            }}
-                        >
-                            <Avatar
-                                src="https://mui.com/static/images/avatar/2.jpg"
-                                alt="Hehe"
-                            />
-                            <Typography variant="h6" component="h6">
-                                Hehe
-                            </Typography>
-                        </Box>
-                        <Box
-                            sx={{
-                                display: "flex",
-                                alignItems: "center",
-                                gap: "5px",
-                            }}
-                        >
-                            <Box
-                                sx={{
-                                    display: "flex",
-                                    justifyContent: "center",
-                                    alignItems: "center",
-                                    width: "40px",
-                                    height: "40px",
-                                    borderRadius: "50%",
-                                    ":hover": {
-                                        bgcolor: "#4e4e4e85",
-                                    },
-                                }}
-                            >
-                                <CallIcon
-                                    sx={{
-                                        color: "#00a838",
-                                        cursor: "pointer",
-                                    }}
-                                />
-                            </Box>
-                            <Box
-                                sx={{
-                                    display: "flex",
-                                    justifyContent: "center",
-                                    alignItems: "center",
-                                    width: "40px",
-                                    height: "40px",
-                                    borderRadius: "50%",
-                                    ":hover": {
-                                        bgcolor: "#4e4e4e85",
-                                    },
-                                }}
-                            >
-                                <VideocamIcon
-                                    sx={{
-                                        color: "#00a838",
-                                        cursor: "pointer",
-                                    }}
-                                />
-                            </Box>
-                            <Box
-                                sx={{
-                                    display: "flex",
-                                    justifyContent: "center",
-                                    alignItems: "center",
-                                    borderRadius: "50%",
-                                    width: "40px",
-                                    height: "40px",
-                                    ":hover": {
-                                        bgcolor: "#4e4e4e85",
-                                    },
-                                }}
-                            >
-                                <InfoIcon
-                                    sx={{
-                                        borderRadius: "50%",
-                                        color: "#00a838",
-                                        cursor: "pointer",
-                                    }}
-                                />
-                            </Box>
-                        </Box>
-                    </Box>
-                </Box>
-                {/* Body chat area */}
-                <Box>
-                    <Box
-                        className="card-body"
-                        sx={{
-                            "::-webkit-scrollbar": {
-                                borderRadius: "15px",
-                                width: "8px",
-                                background: "unset",
-                            },
-                            "::-webkit-scrollbar-track": {
-                                borderRadius: "15px",
-                            },
-                            "::-webkit-scrollbar-thumb": {
-                                borderRadius: "15px",
-                                boxShadow: "none",
-                                background: `${
-                                    mode === "dark" ? "#d5d5d5" : "#838383"
-                                }`,
-                            },
-                            maxHeight: "511px",
-                            position: "relative",
-                            overflow: "overlay",
-                            scrollbarGutter: "stable both-edges",
-                            overflowX: "hidden",
-                        }}
-                    >
-                        <Box
-                            sx={{
-                                paddingX: "5px",
-                            }}
-                        >
-                            <div className="d-flex flex-row justify-content-start">
-                                <img
-                                    src="https://mdbcdn.b-cdn.net/img/Photos/new-templates/bootstrap-chat/ava3-bg.webp"
-                                    alt="avatar 1"
-                                    style={{
-                                        width: "45px",
-                                        height: "100%",
-                                    }}
-                                />
-                                <div>
-                                    <p
-                                        className="small p-2 ms-3 mb-1 rounded-3"
-                                        style={{
-                                            color: "#000000",
-                                            backgroundColor: "#f5f6f7",
-                                        }}
-                                    >
-                                        Hi
-                                    </p>
-                                    <p
-                                        className="small p-2 ms-3 mb-1 rounded-3"
-                                        style={{
-                                            color: "#000000",
-                                            backgroundColor: "#f5f6f7",
-                                        }}
-                                    >
-                                        How are you ...???
-                                    </p>
-                                    <p
-                                        className="small p-2 ms-3 mb-1 rounded-3"
-                                        style={{
-                                            color: "#000000",
-                                            backgroundColor: "#f5f6f7",
-                                        }}
-                                    >
-                                        What are you doing tomorrow? Can we come
-                                        up a bar?
-                                    </p>
-                                    <p className="small ms-3 mb-3 rounded-3 text-muted">
-                                        23:58
-                                    </p>
-                                </div>
-                            </div>
-
-                            <div className="divider d-flex align-items-center mb-4">
-                                <p
-                                    className="text-center mx-3 mb-0"
-                                    style={{
-                                        color: "#a2aab7",
-                                    }}
-                                >
-                                    Today
-                                </p>
-                            </div>
-
-                            <div className="d-flex flex-row justify-content-end mb-4 pt-1">
-                                <div>
-                                    <p className="small p-2 me-3 mb-1 text-white rounded-3 bg-primary">
-                                        Hiii, I'm good.
-                                    </p>
-                                    <p className="small p-2 me-3 mb-1 text-white rounded-3 bg-primary">
-                                        How are you doing?
-                                    </p>
-                                    <p className="small p-2 me-3 mb-1 text-white rounded-3 bg-primary">
-                                        Long time no see! Tomorrow office. will
-                                        be free on sunday.
-                                    </p>
-                                    <p className="small me-3 mb-3 rounded-3 text-muted d-flex justify-content-end">
-                                        00:06
-                                    </p>
-                                </div>
-                                <img
-                                    src="https://mdbcdn.b-cdn.net/img/Photos/new-templates/bootstrap-chat/ava4-bg.webp"
-                                    alt="avatar 1"
-                                    style={{
-                                        width: "45px",
-                                        height: "100%",
-                                    }}
-                                />
-                            </div>
-                            <div className="d-flex flex-row justify-content-end mb-4 pt-1">
-                                <div>
-                                    <p className="small p-2 me-3 mb-1 text-white rounded-3 bg-primary">
-                                        Hiii, I'm good.
-                                    </p>
-                                    <p className="small p-2 me-3 mb-1 text-white rounded-3 bg-primary">
-                                        How are you doing?
-                                    </p>
-                                    <p className="small p-2 me-3 mb-1 text-white rounded-3 bg-primary">
-                                        Long time no see! Tomorrow office. will
-                                        be free on sunday.
-                                    </p>
-                                    <p className="small me-3 mb-3 rounded-3 text-muted d-flex justify-content-end">
-                                        00:06
-                                    </p>
-                                </div>
-                                <img
-                                    src="https://mdbcdn.b-cdn.net/img/Photos/new-templates/bootstrap-chat/ava4-bg.webp"
-                                    alt="avatar 1"
-                                    style={{
-                                        width: "45px",
-                                        height: "100%",
-                                    }}
-                                />
-                            </div>
-                            <div className="d-flex flex-row justify-content-start">
-                                <img
-                                    src="https://mdbcdn.b-cdn.net/img/Photos/new-templates/bootstrap-chat/ava3-bg.webp"
-                                    alt="avatar 1"
-                                    style={{
-                                        width: "45px",
-                                        height: "100%",
-                                    }}
-                                />
-                                <div>
-                                    <p
-                                        className="small p-2 ms-3 mb-1 rounded-3"
-                                        style={{
-                                            color: "#000000",
-                                            backgroundColor: "#f5f6f7",
-                                        }}
-                                    >
-                                        Hi
-                                    </p>
-                                    <p
-                                        className="small p-2 ms-3 mb-1 rounded-3"
-                                        style={{
-                                            color: "#000000",
-                                            backgroundColor: "#f5f6f7",
-                                        }}
-                                    >
-                                        How are you ...???
-                                    </p>
-                                    <p
-                                        className="small p-2 ms-3 mb-1 rounded-3"
-                                        style={{
-                                            color: "#000000",
-                                            backgroundColor: "#f5f6f7",
-                                        }}
-                                    >
-                                        What are you doing tomorrow? Can we come
-                                        up a bar?
-                                    </p>
-                                    <p className="small ms-3 mb-3 rounded-3 text-muted">
-                                        23:58
-                                    </p>
-                                </div>
-                            </div>
-                        </Box>
-                    </Box>
-                </Box>
-                {/* Chat box area */}
-                <Box
-                    sx={{
-                        boxShadow: "0px -1px 3px -1px #111",
-                    }}
-                >
-                    <Box
-                        sx={{
-                            display: "flex",
-                            justifyContent: "space-between",
-                            alignItems: "center",
-                            paddingY: "5px",
-                            paddingX: "15px",
-                        }}
-                    >
-                        <Box
-                            sx={{
-                                display: "flex",
-                                alignItems: "center",
-                                flex: 1,
-                                gap: "15px",
-                                position: "relative",
-                            }}
-                        >
-                            <Box
-                                sx={{
-                                    display: "flex",
-                                    alignItems: "center",
-                                    gap: "10px",
-                                }}
-                            >
-                                <AddCircleIcon
-                                    sx={{
-                                        cursor: "pointer",
-                                    }}
-                                />
-                                <AddReactionIcon
-                                    sx={{
-                                        cursor: "pointer",
-                                    }}
-                                />
-                                <AddPhotoAlternateIcon
-                                    sx={{
-                                        cursor: "pointer",
-                                    }}
-                                />
-                                <GifBoxIcon
-                                    sx={{
-                                        cursor: "pointer",
-                                    }}
-                                />
-                            </Box>
-                            <TextField
-                                fullWidth
-                                label="Message"
-                                id="message-input"
-                                size="small"
-                                color="secondary"
-                                autoFocus={true}
-                                value={message}
-                                onChange={(e) => setMessage(e.target.value)}
-                            />
-                            <div
-                                onClick={handleSendMessage}
-                                style={{
-                                    cursor: "pointer",
-                                    top: "55%",
-                                    right: "10px",
-                                    transform: "translateY(-50%)",
-                                    position: "absolute",
-                                }}
-                            >
-                                <SendIcon />
-                            </div>
-                        </Box>
-                    </Box>
-                </Box>
+                {conversation ? (
+                    <>
+                        <ChatHeader conversation={conversation} />
+                        <ChatBody
+                            mode={mode}
+                            messages={messages}
+                            currentUser={currentUser}
+                        />
+                        <ChatBox
+                            conversation={conversation}
+                            handleSendMessage={handleSendMessage}
+                            setMessage={setMessage}
+                            message={message}
+                        />
+                    </>
+                ) : (
+                    <></>
+                )}
             </Grid>
         </Grid>
     );

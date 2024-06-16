@@ -1,16 +1,24 @@
 import { Avatar, Box, Typography } from "@mui/material";
+import { format, parseISO } from "date-fns";
+import { memo } from "react";
 
-const ChatItem = ({ mode }) => {
+const ChatItem = ({ mode, p, setConversation }) => {
+    const formatDate = (date) => {
+        return format(parseISO(date), "MMMM d");
+    };
     return (
         <Box
             sx={{
                 marginTop: "15px",
             }}
         >
-            <Box
-                sx={{
-                    boxShadow:
-                        "rgba(0, 0, 0, 0.19) 0px 10px 20px, rgba(0, 0, 0, 0) 0px 6px 6px",
+            <div
+                onClick={() => {
+                    setConversation(p);
+                }}
+                style={{
+                    // boxShadow:
+                    //     "rgba(0, 0, 0, 0.19) 0px 10px 10px, rgba(0, 0, 0, 0) 0px 6px 6px",
                     borderRadius: "5px",
                     cursor: "pointer",
                     padding: "15px",
@@ -24,10 +32,7 @@ const ChatItem = ({ mode }) => {
                         position: "relative",
                     }}
                 >
-                    <Avatar
-                        src="https://mui.com/static/images/avatar/2.jpg"
-                        alt="Hehe"
-                    />
+                    <Avatar src={p.user?.url} alt={p.user?.avatar} />
                     <div
                         style={{
                             bottom: "0",
@@ -53,15 +58,19 @@ const ChatItem = ({ mode }) => {
                     }}
                 >
                     <Typography fontWeight="600" fontSize="15px">
-                        Hehe
+                        {p.user?.userName}
                     </Typography>
                     <p
                         style={{
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            whiteSpace: "nowrap",
+                            width: "calc(100% - 20px)",
                             fontSize: "13px",
                             color: `${mode === "dark" ? "#d5d5d5" : "#838383"}`,
                         }}
                     >
-                        Hello Hehe, How are you today ?
+                        {p.conversation?.lastestMessage}
                     </p>
                 </Box>
                 <Box
@@ -77,7 +86,7 @@ const ChatItem = ({ mode }) => {
                             fontSize: "13px",
                         }}
                     >
-                        Dec 08
+                        {formatDate(p.conversation?.lastestSend)}
                     </Typography>
                     <div
                         style={{
@@ -92,8 +101,8 @@ const ChatItem = ({ mode }) => {
                         }}
                     ></div>
                 </Box>
-            </Box>
+            </div>
         </Box>
     );
 };
-export default ChatItem;
+export default memo(ChatItem);
