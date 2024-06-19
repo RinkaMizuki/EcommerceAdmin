@@ -1,4 +1,10 @@
-import { Admin, Resource, houseDarkTheme, houseLightTheme } from "react-admin";
+import {
+    Admin,
+    CustomRoutes,
+    Resource,
+    houseDarkTheme,
+    houseLightTheme,
+} from "react-admin";
 import { QueryClient } from "react-query";
 import { UserList } from "../components/User/UserList";
 import { dataProvider } from "../contexts/dataProvider";
@@ -29,6 +35,7 @@ import OrderEdit from "../components/Order/OrderEdit";
 import InvoiceList from "../components/Invoice/InvoiceList";
 import ContactList from "../components/Contact/ContactList";
 import ChatList from "../components/Chat/ChatList";
+import { Route } from "react-router-dom";
 
 const queryClient = new QueryClient({
     defaultOptions: {
@@ -99,7 +106,13 @@ const AdminPanel = () => {
                 create={SliderCreate}
                 edit={SliderEdit}
             ></Resource>
-            <Resource name="converses" list={ChatList}></Resource>
+            <CustomRoutes>
+                <Route
+                    path="/converses/:conversationId"
+                    element={<ChatList />}
+                />
+                <Route path="/converses" element={<ChatList />} />
+            </CustomRoutes>
         </Admin>
     );
 };

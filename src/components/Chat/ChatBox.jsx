@@ -4,14 +4,29 @@ import AddCircleIcon from "@mui/icons-material/AddCircle";
 import AddPhotoAlternateIcon from "@mui/icons-material/AddPhotoAlternate";
 import GifBoxIcon from "@mui/icons-material/GifBox";
 import { Box, TextField } from "@mui/material";
+import EmojiPicker from "emoji-picker-react";
+import { useState } from "react";
 
 const ChatBox = ({ setMessage, message, handleSendMessage }) => {
+    const [isShowEmoji, setIsShowEmoji] = useState(false);
+
+    const handleChooseEmoji = (emojiObj, e) => {
+        setMessage((prevText) => `${prevText}${emojiObj.emoji}`);
+    };
+
     return (
         <Box
             sx={{
                 boxShadow: "0px -1px 3px -1px #111",
+                position: "relative",
+                aside: {
+                    position: "absolute",
+                    bottom: "103%",
+                    left: 0,
+                },
             }}
         >
+            <EmojiPicker open={isShowEmoji} onEmojiClick={handleChooseEmoji} />
             <Box
                 sx={{
                     display: "flex",
@@ -42,11 +57,13 @@ const ChatBox = ({ setMessage, message, handleSendMessage }) => {
                                 cursor: "pointer",
                             }}
                         />
-                        <AddReactionIcon
-                            sx={{
-                                cursor: "pointer",
-                            }}
-                        />
+                        <div onClick={() => setIsShowEmoji(!isShowEmoji)}>
+                            <AddReactionIcon
+                                sx={{
+                                    cursor: "pointer",
+                                }}
+                            />
+                        </div>
                         <AddPhotoAlternateIcon
                             sx={{
                                 cursor: "pointer",
@@ -66,10 +83,17 @@ const ChatBox = ({ setMessage, message, handleSendMessage }) => {
                         color="secondary"
                         autoFocus={true}
                         value={message}
+                        onKeyDown={(e) => {
+                            setIsShowEmoji(false);
+                            handleSendMessage(e);
+                        }}
                         onChange={(e) => setMessage(e.target.value)}
                     />
                     <div
-                        onClick={handleSendMessage}
+                        onClick={(e) => {
+                            setIsShowEmoji(false);
+                            handleSendMessage(e);
+                        }}
                         style={{
                             cursor: "pointer",
                             top: "55%",

@@ -1,14 +1,17 @@
-import { Avatar, Box } from "@mui/material";
+import { Avatar, Box, Tooltip } from "@mui/material";
 import { memo, useEffect, useRef } from "react";
+import TooltipTime from "./TooltipTime";
 
 const ChatBody = ({ mode, messages, currentUser }) => {
     const lastMessageRef = useRef(null);
+
     useEffect(() => {
         // Cuộn tới tin nhắn cuối cùng khi danh sách tin nhắn thay đổi
         if (lastMessageRef.current) {
             lastMessageRef.current.scrollIntoView({ behavior: "smooth" });
         }
     }, [messages]);
+
     return (
         <Box height="calc(100% - 61px - 63px)" paddingY="10px">
             <Box
@@ -41,43 +44,48 @@ const ChatBody = ({ mode, messages, currentUser }) => {
                         paddingX: "5px",
                     }}
                 >
-                    {messages
-                        .sort((a, b) => new Date(a.sendAt) - new Date(b.sendAt))
-                        .map((msg, index) => {
-                            return msg?.senderId === currentUser.id ? (
-                                <div
-                                    className="d-flex flex-row justify-content-end pt-1"
-                                    key={msg.messageId}
-                                    ref={
-                                        index === messages.length - 1
-                                            ? lastMessageRef
-                                            : null
-                                    }
-                                >
+                    {messages.map((msg, index) => {
+                        return msg?.senderId === currentUser.id ? (
+                            <div
+                                className="d-flex flex-row justify-content-end pt-1"
+                                key={msg.messageId}
+                                ref={
+                                    index === messages.length - 1
+                                        ? lastMessageRef
+                                        : null
+                                }
+                            >
+                                <TooltipTime date={msg?.sendAt}>
                                     <div>
                                         <p className="small p-2 me-3 mb-1 text-white rounded-3 bg-primary">
                                             {msg.messageContent}
                                         </p>
                                     </div>
-                                    <Avatar
-                                        src={msg.sender?.url}
-                                        alt={msg.sender?.avatar}
-                                    />
-                                </div>
-                            ) : (
-                                <div
-                                    className="d-flex flex-row justify-content-start pt-1"
-                                    key={msg.messageId}
-                                    ref={
-                                        index === messages.length - 1
-                                            ? lastMessageRef
-                                            : null
-                                    }
+                                </TooltipTime>
+
+                                <Avatar
+                                    src={msg.sender?.url}
+                                    alt={msg.sender?.avatar}
+                                />
+                            </div>
+                        ) : (
+                            <div
+                                className="d-flex flex-row justify-content-start pt-1"
+                                key={msg.messageId}
+                                ref={
+                                    index === messages.length - 1
+                                        ? lastMessageRef
+                                        : null
+                                }
+                            >
+                                <Avatar
+                                    src={msg.sender?.url}
+                                    alt={msg.sender?.avatar}
+                                />
+                                <TooltipTime
+                                    date={msg?.sendAt}
+                                    position="right-start"
                                 >
-                                    <Avatar
-                                        src={msg.sender?.url}
-                                        alt={msg.sender?.avatar}
-                                    />
                                     <div>
                                         <p
                                             className="small p-2 ms-3 mb-1 rounded-3"
@@ -89,9 +97,10 @@ const ChatBody = ({ mode, messages, currentUser }) => {
                                             {msg.messageContent}
                                         </p>
                                     </div>
-                                </div>
-                            );
-                        })}
+                                </TooltipTime>
+                            </div>
+                        );
+                    })}
                     {/* <div className="d-flex flex-row justify-content-start">
                         <img
                             src="https://mdbcdn.b-cdn.net/img/Photos/new-templates/bootstrap-chat/ava3-bg.webp"

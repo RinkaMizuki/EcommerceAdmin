@@ -1,6 +1,7 @@
 import { Box, Grid, TextField, Typography } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import { useLogout, useTheme } from "react-admin";
+import CloseIcon from "@mui/icons-material/Close";
 import Divider from "@mui/material/Divider";
 import ChatItem from "./ChatItem";
 import { Fragment, useEffect, useState } from "react";
@@ -10,16 +11,40 @@ import { userService } from "../../services/userService";
 import ChatHeader from "./ChatHeader";
 import ChatBody from "./ChatBody";
 import ChatBox from "./ChatBox";
+import { httpClient } from "../../contexts/dataProvider";
+import queryString from "query-string";
 
 const ChatList = () => {
     const mode = useTheme()[0];
     const [message, setMessage] = useState("");
     const [participants, setParticipants] = useState([]);
-    const [conversation, setConversation] = useState(null);
+    const [participant, setParticipant] = useState(null);
     const [messages, setMessages] = useState([]);
+    const [usersStatus, setUsersStatus] = useState([]);
+    const [search, setSearch] = useState("");
 
     const logout = useLogout();
     const currentUser = userService.getUser();
+
+    useEffect(() => {
+        const queryStringData = queryString.stringify({
+            filter: JSON.stringify({
+                q: search,
+                adminId: currentUser?.id,
+            }),
+        });
+
+        httpClient(
+            `${
+                import.meta.env.VITE_ECOMMERCE_BASE_URL
+            }/Admin/conversations?${queryStringData}`,
+            {
+                method: "GET",
+            }
+        ).then(({ json: data }) => {
+            setParticipants(data);
+        });
+    }, [search]);
 
     useEffect(() => {
         chathubConnection.on("ReceiveMessage", (newMessage) => {
@@ -30,8 +55,12 @@ const ChatList = () => {
             setParticipants(participantList);
         });
 
-        chathubConnection.on("NewParticipant", (newParticipant) => {
+        chathubConnection.on("ReceiveNewParticipant", (newParticipant) => {
             setParticipants((prevList) => [...prevList, newParticipant]);
+        });
+
+        chathubConnection.on("ReceiveListUserStatus", (usersEmail) => {
+            setUsersStatus(usersEmail);
         });
 
         if (
@@ -64,34 +93,58 @@ const ChatList = () => {
     }, []);
 
     useEffect(() => {
-        if (conversation != null) {
+        if (participant != null) {
             chathubConnection.invoke(
                 "GetMessageAsync",
-                conversation?.conversationId
+                participant?.conversationId
             );
             chathubConnection.on("ReceiveMessages", (listMessages) => {
-                setMessages(listMessages);
+                setMessages(
+                    listMessages.sort(
+                        (a, b) => new Date(a.sendAt) - new Date(b.sendAt)
+                    )
+                );
             });
         }
-    }, [conversation]);
+    }, [participant]);
 
-    const handleSendMessage = () => {
+    const handleSendMessage = (e) => {
         if (message) {
-            chathubConnection.invoke(
-                "SendMessageAsync",
-                currentUser.id,
-                conversation?.email,
-                message,
-                conversation?.conversationId,
-                ""
-            );
-            setMessage("");
+            if (
+                e.type === "click" ||
+                (e.type === "keydown" && e.keyCode === 13)
+            ) {
+                chathubConnection.invoke(
+                    "SendMessageAsync",
+                    currentUser.id,
+                    participant?.email,
+                    message,
+                    participant?.conversationId,
+                    ""
+                );
+                setMessage("");
+            }
         }
     };
 
+    useEffect(() => {
+        if (chathubConnection.state === signalR.HubConnectionState.Connected) {
+            chathubConnection.invoke(
+                "GetListParticipantAsync",
+                currentUser?.id,
+                currentUser?.email
+            );
+            chathubConnection.on(
+                "ReceiveUpdatedReceiveParticipants",
+                (participantList) => {
+                    setParticipants(participantList);
+                }
+            );
+        }
+    }, [messages]);
+
     return (
         <Grid
-            maxHeight="641px"
             container
             spacing={2}
             sx={{
@@ -164,18 +217,40 @@ const ChatList = () => {
                     >
                         <TextField
                             fullWidth
+                            sx={{
+                                input: {
+                                    paddingRight: "50px",
+                                },
+                            }}
                             label="Search"
+                            value={search}
                             id="outlined-size-small"
                             size="small"
+                            onChange={(e) => setSearch(e.target.value)}
                         />
-                        <SearchIcon
-                            sx={{
-                                position: "absolute",
-                                top: "55%",
-                                transform: "translateY(-50%)",
-                                right: "5%",
-                            }}
-                        />
+
+                        {!search ? (
+                            <SearchIcon
+                                sx={{
+                                    position: "absolute",
+                                    top: "55%",
+                                    transform: "translateY(-50%)",
+                                    right: "5%",
+                                }}
+                            />
+                        ) : (
+                            <div
+                                onClick={() => setSearch("")}
+                                style={{
+                                    position: "absolute",
+                                    top: "55%",
+                                    transform: "translateY(-50%)",
+                                    right: "5%",
+                                }}
+                            >
+                                <CloseIcon />
+                            </div>
+                        )}
                     </Box>
                 </Box>
                 <Box
@@ -202,16 +277,19 @@ const ChatList = () => {
                         overflowX: "hidden",
                     }}
                 >
-                    {participants.map((p) => (
-                        <Fragment key={p.conversationId}>
-                            <ChatItem
-                                mode={mode}
-                                p={p}
-                                setConversation={setConversation}
-                            />
-                            <Divider />
-                        </Fragment>
-                    ))}
+                    {participants.map((p) => {
+                        return (
+                            <Fragment key={p.conversationId}>
+                                <ChatItem
+                                    isActive={usersStatus.includes(p.email)}
+                                    mode={mode}
+                                    p={p}
+                                    setParticipant={setParticipant}
+                                />
+                                <Divider />
+                            </Fragment>
+                        );
+                    })}
                 </Box>
             </Grid>
             <Grid
@@ -226,16 +304,20 @@ const ChatList = () => {
                     padding: "0 !important",
                 }}
             >
-                {conversation ? (
+                {participant ? (
                     <>
-                        <ChatHeader conversation={conversation} />
+                        <ChatHeader
+                            participant={participant}
+                            isActive={usersStatus.includes(
+                                participant?.user?.email
+                            )}
+                        />
                         <ChatBody
                             mode={mode}
                             messages={messages}
                             currentUser={currentUser}
                         />
                         <ChatBox
-                            conversation={conversation}
                             handleSendMessage={handleSendMessage}
                             setMessage={setMessage}
                             message={message}

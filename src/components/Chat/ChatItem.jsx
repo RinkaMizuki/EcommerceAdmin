@@ -1,11 +1,25 @@
 import { Avatar, Box, Typography } from "@mui/material";
 import { format, parseISO } from "date-fns";
-import { memo } from "react";
+import { memo, useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 
-const ChatItem = ({ mode, p, setConversation }) => {
+const ChatItem = ({ mode, p, setParticipant, isActive }) => {
+    const navigate = useNavigate();
+    const params = useParams();
+
     const formatDate = (date) => {
-        return format(parseISO(date), "MMMM d");
+        if (date) {
+            return format(parseISO(date), "MMMM d");
+        }
+        return "";
     };
+
+    useEffect(() => {
+        if (params?.conversationId === p?.conversation?.conversationId) {
+            setParticipant(p);
+        }
+    }, [params?.conversationId]);
+
     return (
         <Box
             sx={{
@@ -14,7 +28,8 @@ const ChatItem = ({ mode, p, setConversation }) => {
         >
             <div
                 onClick={() => {
-                    setConversation(p);
+                    setParticipant(p);
+                    navigate(`/converses/${p.conversation.conversationId}`);
                 }}
                 style={{
                     // boxShadow:
@@ -44,7 +59,9 @@ const ChatItem = ({ mode, p, setConversation }) => {
                                 mode === "dark" ? "#2B3033" : "#ffffff"
                             }`,
                             boxSizing: "unset",
-                            backgroundColor: "#4daa57",
+                            backgroundColor: `${
+                                isActive ? "#4daa57" : "#8d8d8d"
+                            }`,
                             position: "absolute",
                         }}
                     ></div>
@@ -70,7 +87,7 @@ const ChatItem = ({ mode, p, setConversation }) => {
                             color: `${mode === "dark" ? "#d5d5d5" : "#838383"}`,
                         }}
                     >
-                        {p.conversation?.lastestMessage}
+                        {p.conversation?.lastMessage?.messageContent}
                     </p>
                 </Box>
                 <Box
@@ -86,7 +103,7 @@ const ChatItem = ({ mode, p, setConversation }) => {
                             fontSize: "13px",
                         }}
                     >
-                        {formatDate(p.conversation?.lastestSend)}
+                        {formatDate(p.conversation?.lastMessage?.sendAt)}
                     </Typography>
                     <div
                         style={{

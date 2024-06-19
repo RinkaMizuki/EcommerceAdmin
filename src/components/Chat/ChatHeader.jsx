@@ -3,9 +3,9 @@ import VideocamIcon from "@mui/icons-material/Videocam";
 import InfoIcon from "@mui/icons-material/Info";
 import { Avatar, Box, Typography } from "@mui/material";
 import { memo } from "react";
+import { Link } from "react-admin";
 
-const ChatHeader = ({ conversation }) => {
-    console.log(conversation);
+const ChatHeader = ({ participant, isActive }) => {
     return (
         <Box
             sx={{
@@ -17,47 +17,72 @@ const ChatHeader = ({ conversation }) => {
                     display: "flex",
                     justifyContent: "space-between",
                     alignItems: "center",
-                    paddingY: "10px",
-                    paddingX: "15px",
+                    paddingY: "5px",
+                    paddingX: "10px",
                 }}
             >
                 <Box
                     sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "5px",
+                        borderRadius: "5px",
+                        cursor: "pointer",
+                        padding: "5px",
+                        ":hover": {
+                            bgcolor: "#4e4e4e85",
+                        },
                     }}
                 >
-                    <Avatar
-                        src={conversation.user?.url}
-                        alt={conversation.user?.avatar}
-                    />
-                    <Box
+                    <Link
+                        to={`/users/${participant.user?.userId}`}
                         sx={{
+                            gap: "5px",
                             display: "flex",
-                            flexDirection: "column",
+                            alignItems: "center",
                         }}
                     >
-                        <Typography
-                            variant="h6"
-                            component="h4"
+                        <Avatar
+                            src={participant.user?.url}
+                            alt={participant.user?.avatar}
+                        />
+                        <Box
                             sx={{
-                                lineHeight: 1,
+                                display: "flex",
+                                flexDirection: "column",
                             }}
                         >
-                            {conversation.user?.userName}
-                        </Typography>
-                        <Typography
-                            variant="h6"
-                            component="h6"
-                            sx={{
-                                fontSize: "13px",
-                                color: "#b4b4b4",
-                            }}
-                        >
-                            {conversation.user?.email}
-                        </Typography>
-                    </Box>
+                            <Typography
+                                variant="h6"
+                                component="h4"
+                                sx={{
+                                    lineHeight: 1,
+                                }}
+                            >
+                                {participant.user?.userName}
+                            </Typography>
+                            <Typography
+                                variant="h6"
+                                component="h6"
+                                sx={{
+                                    fontSize: "13px",
+                                    color: "#b4b4b4",
+                                }}
+                            >
+                                <span
+                                    style={{
+                                        display: "inline-block",
+                                        marginRight: "5px",
+                                        width: "8px",
+                                        height: "8px",
+                                        borderRadius: "50%",
+                                        boxSizing: "unset",
+                                        backgroundColor: `${
+                                            isActive ? "#4daa57" : "#8d8d8d"
+                                        }`,
+                                    }}
+                                ></span>
+                                {isActive ? "Active" : "Inactive"}
+                            </Typography>
+                        </Box>
+                    </Link>
                 </Box>
                 <Box
                     sx={{
