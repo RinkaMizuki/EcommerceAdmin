@@ -22,6 +22,8 @@ const ChatList = () => {
     const [messages, setMessages] = useState([]);
     const [usersStatus, setUsersStatus] = useState([]);
     const [search, setSearch] = useState("");
+    const [isPreparing, setIsPreparing] = useState(false);
+    const [isUserPreparing, setIsUserPreparing] = useState(false);
 
     const logout = useLogout();
     const currentUser = userService.getUser();
@@ -93,6 +95,42 @@ const ChatList = () => {
     }, []);
 
     useEffect(() => {
+        chathubConnection.on("ReceivePreparing", (isPrepare) => {
+            setIsUserPreparing(isPrepare);
+        });
+    }, []);
+
+    useEffect(() => {
+        if (!message) {
+            setIsPreparing(false);
+        } else {
+            setIsPreparing(true);
+        }
+    }, [message]);
+
+    useEffect(() => {
+        if (
+            chathubConnection.state === signalR.HubConnectionState.Connected &&
+            isPreparing
+        ) {
+            chathubConnection.invoke(
+                "SendMessagePreparingAsync",
+                participant?.email,
+                isPreparing
+            );
+        } else if (
+            chathubConnection.state === signalR.HubConnectionState.Connected &&
+            !isPreparing
+        ) {
+            chathubConnection.invoke(
+                "SendMessagePreparingAsync",
+                participant?.email,
+                isPreparing
+            );
+        }
+    }, [isPreparing]);
+
+    useEffect(() => {
         if (participant != null) {
             chathubConnection.invoke(
                 "GetMessageAsync",
@@ -107,6 +145,22 @@ const ChatList = () => {
             });
         }
     }, [participant]);
+
+    useEffect(() => {
+        if (chathubConnection.state === signalR.HubConnectionState.Connected) {
+            chathubConnection.invoke(
+                "GetListParticipantAsync",
+                currentUser?.id,
+                currentUser?.email
+            );
+            chathubConnection.on(
+                "ReceiveUpdatedReceiveParticipants",
+                (participantList) => {
+                    setParticipants(participantList);
+                }
+            );
+        }
+    }, [messages]);
 
     const handleSendMessage = (e) => {
         if (message) {
@@ -126,22 +180,6 @@ const ChatList = () => {
             }
         }
     };
-
-    useEffect(() => {
-        if (chathubConnection.state === signalR.HubConnectionState.Connected) {
-            chathubConnection.invoke(
-                "GetListParticipantAsync",
-                currentUser?.id,
-                currentUser?.email
-            );
-            chathubConnection.on(
-                "ReceiveUpdatedReceiveParticipants",
-                (participantList) => {
-                    setParticipants(participantList);
-                }
-            );
-        }
-    }, [messages]);
 
     return (
         <Grid
@@ -313,11 +351,13 @@ const ChatList = () => {
                             )}
                         />
                         <ChatBody
+                            isUserPreparing={isUserPreparing}
                             mode={mode}
                             messages={messages}
                             currentUser={currentUser}
                         />
                         <ChatBox
+                            setIsPreparing={setIsPreparing}
                             handleSendMessage={handleSendMessage}
                             setMessage={setMessage}
                             message={message}

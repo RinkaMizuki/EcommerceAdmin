@@ -32,8 +32,12 @@ const ChatItem = ({ mode, p, setParticipant, isActive }) => {
                     navigate(`/converses/${p.conversation.conversationId}`);
                 }}
                 style={{
-                    // boxShadow:
-                    //     "rgba(0, 0, 0, 0.19) 0px 10px 10px, rgba(0, 0, 0, 0) 0px 6px 6px",
+                    boxShadow: `${
+                        params?.conversationId ===
+                        p?.conversation?.conversationId
+                            ? "rgba(0, 0, 0, 0.19) 0px 10px 10px, rgba(0, 0, 0, 0) 0px 6px 6px"
+                            : "none"
+                    }`,
                     borderRadius: "5px",
                     cursor: "pointer",
                     padding: "15px",
@@ -95,7 +99,7 @@ const ChatItem = ({ mode, p, setParticipant, isActive }) => {
                         display: "flex",
                         flexDirection: "column",
                         gap: "3px",
-                        alignSelf: "flex-end",
+                        // alignSelf: "flex-end",
                     }}
                 >
                     <Typography
@@ -105,7 +109,7 @@ const ChatItem = ({ mode, p, setParticipant, isActive }) => {
                     >
                         {formatDate(p.conversation?.lastMessage?.sendAt)}
                     </Typography>
-                    <div
+                    {/* <div
                         style={{
                             display: "flex",
                             alignSelf: "flex-end",
@@ -116,7 +120,7 @@ const ChatItem = ({ mode, p, setParticipant, isActive }) => {
                             backgroundColor: "#0866ff",
                             borderRadius: "50%",
                         }}
-                    ></div>
+                    ></div> */}
                 </Box>
             </div>
         </Box>
