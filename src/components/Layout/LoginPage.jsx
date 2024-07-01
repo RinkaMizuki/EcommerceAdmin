@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
     Avatar,
     Button,
@@ -15,6 +15,7 @@ const LoginPage = () => {
     const [loading, setLoading] = useState(false);
     const notify = useNotify();
     const login = useLogin();
+    const boxRef = useRef(null);
 
     const handleSubmit = (auth) => {
         setLoading(true);
@@ -38,23 +39,34 @@ const LoginPage = () => {
                     },
                 }
             );
-            // setTimeout(() => {
-            //   window.location.reload()
-            // }, 300);
+            setTimeout(() => {
+                window.location.reload();
+            }, 300);
         });
     };
 
+    useEffect(() => {
+        fetch("https://api.unsplash.com/photos/random", {
+            headers: {
+                Authorization: `Client-ID SDynFX-uXY-s89Epbp-VNjF4qpMRgyNGyb0O1A0MuOA`,
+            },
+        })
+            .then((response) => response.json())
+            .then((data) => {
+                const imageUrl = data.urls.regular;
+                boxRef.current.style.backgroundImage = `url(${imageUrl})`;
+            });
+    }, []);
     return (
         <Form onSubmit={handleSubmit}>
             <Box
+                ref={boxRef}
                 sx={{
                     display: "flex",
                     flexDirection: "column",
                     minHeight: "100vh",
                     alignItems: "center",
                     justifyContent: "flex-start",
-                    background:
-                        "url(https://source.unsplash.com/featured/1600x900)",
                     backgroundRepeat: "no-repeat",
                     backgroundSize: "cover",
                 }}

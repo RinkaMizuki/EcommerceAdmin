@@ -115,7 +115,7 @@ const ChatList = () => {
         ) {
             chathubConnection.invoke(
                 "SendMessagePreparingAsync",
-                participant?.email,
+                participant?.userId,
                 isPreparing
             );
         } else if (
@@ -124,7 +124,7 @@ const ChatList = () => {
         ) {
             chathubConnection.invoke(
                 "SendMessagePreparingAsync",
-                participant?.email,
+                participant?.userId,
                 isPreparing
             );
         }
@@ -150,8 +150,7 @@ const ChatList = () => {
         if (chathubConnection.state === signalR.HubConnectionState.Connected) {
             chathubConnection.invoke(
                 "GetListParticipantAsync",
-                currentUser?.id,
-                currentUser?.email
+                currentUser?.id
             );
             chathubConnection.on(
                 "ReceiveUpdatedReceiveParticipants",
@@ -171,7 +170,7 @@ const ChatList = () => {
                 chathubConnection.invoke(
                     "SendMessageAsync",
                     currentUser.id,
-                    participant?.email,
+                    participant?.userId,
                     message,
                     participant?.conversationId,
                     ""
@@ -319,7 +318,7 @@ const ChatList = () => {
                         return (
                             <Fragment key={p.conversationId}>
                                 <ChatItem
-                                    isActive={usersStatus.includes(p.email)}
+                                    isActive={usersStatus.includes(p.userId)}
                                     mode={mode}
                                     p={p}
                                     setParticipant={setParticipant}
@@ -347,7 +346,7 @@ const ChatList = () => {
                         <ChatHeader
                             participant={participant}
                             isActive={usersStatus.includes(
-                                participant?.user?.email
+                                participant?.user?.userId
                             )}
                         />
                         <ChatBody
