@@ -11,7 +11,7 @@ import { userService } from "../../services/userService";
 import ChatHeader from "./ChatHeader";
 import ChatBody from "./ChatBody";
 import ChatBox from "./ChatBox";
-import { httpClient } from "../../contexts/dataProvider";
+import { dataProvider, httpClient } from "../../contexts/dataProvider";
 import queryString from "query-string";
 
 const ChatList = () => {
@@ -24,32 +24,28 @@ const ChatList = () => {
     const [search, setSearch] = useState("");
     const [isPreparing, setIsPreparing] = useState(false);
     const [isUserPreparing, setIsUserPreparing] = useState(false);
+    const [toggleScroll, setToggleScroll] = useState(false);
 
+    const { getList } = dataProvider;
     const logout = useLogout();
     const currentUser = userService.getUser();
 
     useEffect(() => {
-        const queryStringData = queryString.stringify({
-            filter: JSON.stringify({
+        getList("conversations", {
+            filter: {
                 q: search,
                 adminId: currentUser?.id,
-            }),
-        });
-
-        httpClient(
-            `${
-                import.meta.env.VITE_ECOMMERCE_BASE_URL
-            }/Admin/conversations?${queryStringData}`,
-            {
-                method: "GET",
-            }
-        ).then(({ json: data }) => {
-            setParticipants(data);
-        });
+            },
+        })
+            .then(({ data, total }) => {
+                setParticipants(data);
+            })
+            .catch((err) => console.log(err));
     }, [search]);
 
     useEffect(() => {
         chathubConnection.on("ReceiveMessage", (newMessage) => {
+            setToggleScroll(!toggleScroll);
             setMessages((prevMessages) => [...prevMessages, newMessage]);
         });
 
@@ -113,51 +109,64 @@ const ChatList = () => {
             chathubConnection.state === signalR.HubConnectionState.Connected &&
             isPreparing
         ) {
-            chathubConnection.invoke(
-                "SendMessagePreparingAsync",
-                participant?.userId,
-                isPreparing
-            );
+            chathubConnection
+                .invoke(
+                    "SendMessagePreparingAsync",
+                    participant?.userId,
+                    isPreparing
+                )
+                .catch((err) =>
+                    console.error(
+                        "Error invoking SendMessagePreparingAsync: ",
+                        err
+                    )
+                );
         } else if (
             chathubConnection.state === signalR.HubConnectionState.Connected &&
             !isPreparing
         ) {
-            chathubConnection.invoke(
-                "SendMessagePreparingAsync",
-                participant?.userId,
-                isPreparing
-            );
+            chathubConnection
+                .invoke(
+                    "SendMessagePreparingAsync",
+                    participant?.userId,
+                    isPreparing
+                )
+                .catch((err) =>
+                    console.error(
+                        "Error invoking SendMessagePreparingAsync: ",
+                        err
+                    )
+                );
         }
     }, [isPreparing]);
 
     useEffect(() => {
         if (participant != null) {
-            chathubConnection.invoke(
-                "GetMessageAsync",
-                participant?.conversationId
-            );
-            chathubConnection.on("ReceiveMessages", (listMessages) => {
-                setMessages(
-                    listMessages.sort(
-                        (a, b) => new Date(a.sendAt) - new Date(b.sendAt)
-                    )
+            chathubConnection
+                .invoke(
+                    "GetMessagesAsync",
+                    "[0, 14]",
+                    participant?.conversationId
+                )
+                .catch((err) =>
+                    console.error("Error invoking GetMessagesAsync: ", err)
                 );
+            chathubConnection.on("ReceiveMessages", (listMessages) => {
+                setMessages(listMessages.reverse());
             });
         }
     }, [participant]);
 
     useEffect(() => {
         if (chathubConnection.state === signalR.HubConnectionState.Connected) {
-            chathubConnection.invoke(
-                "GetListParticipantAsync",
-                currentUser?.id
-            );
-            chathubConnection.on(
-                "ReceiveUpdatedReceiveParticipants",
-                (participantList) => {
-                    setParticipants(participantList);
-                }
-            );
+            chathubConnection
+                .invoke("GetListParticipantAsync", currentUser?.id)
+                .catch((err) =>
+                    console.error(
+                        "Error invoking GetListParticipantAsync: ",
+                        err
+                    )
+                );
         }
     }, [messages]);
 
@@ -167,14 +176,18 @@ const ChatList = () => {
                 e.type === "click" ||
                 (e.type === "keydown" && e.keyCode === 13)
             ) {
-                chathubConnection.invoke(
-                    "SendMessageAsync",
-                    currentUser.id,
-                    participant?.userId,
-                    message,
-                    participant?.conversationId,
-                    ""
-                );
+                chathubConnection
+                    .invoke(
+                        "SendMessageAsync",
+                        currentUser.id,
+                        participant?.userId,
+                        message,
+                        participant?.conversationId,
+                        ""
+                    )
+                    .catch((err) =>
+                        console.error("Error invoking SendMessageAsync: ", err)
+                    );
                 setMessage("");
             }
         }
@@ -353,7 +366,9 @@ const ChatList = () => {
                             isUserPreparing={isUserPreparing}
                             mode={mode}
                             messages={messages}
+                            setMessages={setMessages}
                             currentUser={currentUser}
+                            toggleScroll={toggleScroll}
                         />
                         <ChatBox
                             setIsPreparing={setIsPreparing}

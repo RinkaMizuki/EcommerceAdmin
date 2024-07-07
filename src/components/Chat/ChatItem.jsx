@@ -119,6 +119,7 @@ const ChatItem = ({ mode, p, setParticipant, isActive }) => {
                             height: "13px",
                             backgroundColor: "#0866ff",
                             borderRadius: "50%",
+                            marginTop: "5px",
                         }}
                     ></div> */}
                 </Box>

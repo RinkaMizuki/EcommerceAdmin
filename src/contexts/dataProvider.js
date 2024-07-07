@@ -93,10 +93,12 @@ const customDataProvider = {
         return baseDataProvider.create(`${resource}/post`, params);
     },
     getList: async (resource, params) => {
+        console.log(params);
         if (
             resource == "segments" ||
             resource == "categories" ||
-            resource == "sliders"
+            resource == "sliders" ||
+            resource == "conversations"
         ) {
             const hasFilter = Object.keys(params.filter).length !== 0;
             const queryStringData = queryString.stringify({
@@ -111,6 +113,27 @@ const customDataProvider = {
                 {
                     method: "GET",
                 }
+            )
+                .then(({ json }) => {
+                    return { data: json, total: json.length };
+                })
+                .catch((err) => console.log(err));
+        } else if (
+            resource.includes("conversations") &&
+            resource.includes("messages")
+        ) {
+            const { range } = params;
+            const queryStringData = queryString.stringify({
+                range: JSON.stringify([range[0], range[1]]),
+            });
+
+            return httpClient(
+                `${
+                    import.meta.env.VITE_ECOMMERCE_BASE_URL
+                }/Admin/${resource}?${queryStringData}`,
+                {
+                    method: "GET",
+                }
             ).then(({ json }) => {
                 return { data: json, total: json.length };
             });
@@ -122,7 +145,10 @@ const customDataProvider = {
     },
 };
 
-const addRefreshAuthToDataProvider = (customDataProvider, refreshAuth) => {
+export const addRefreshAuthToDataProvider = (
+    customDataProvider,
+    refreshAuth
+) => {
     return new Proxy(customDataProvider, {
         get: (target, name) => {
             if (typeof target[name] !== "function") {
