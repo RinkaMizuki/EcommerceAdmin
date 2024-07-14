@@ -4,6 +4,10 @@
     gap: 10px;
 }
 
+.conversation-item:hover {
+    background-color: #4e4e4e85;
+}
+
 .jump1,
 .jump2,
 .jump3 {
