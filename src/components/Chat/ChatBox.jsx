@@ -76,28 +76,38 @@ const ChatBox = forwardRef(
                 gap: "10px",
               }}
             >
-              <AddCircleIcon
-                sx={{
-                  cursor: "pointer",
-                }}
-              />
-              <div onClick={() => setIsShowEmoji(!isShowEmoji)}>
-                <AddReactionIcon
+              <TooltipTitle title="More actions">
+                <AddCircleIcon
                   sx={{
                     cursor: "pointer",
                   }}
                 />
+              </TooltipTitle>
+
+              <div onClick={() => setIsShowEmoji(!isShowEmoji)}>
+                <TooltipTitle title="Emojis">
+                  <AddReactionIcon
+                    sx={{
+                      cursor: "pointer",
+                    }}
+                  />
+                </TooltipTitle>
               </div>
-              <AddPhotoAlternateIcon
-                sx={{
-                  cursor: "pointer",
-                }}
-              />
-              <GifBoxIcon
-                sx={{
-                  cursor: "pointer",
-                }}
-              />
+              <TooltipTitle title="Images">
+                <AddPhotoAlternateIcon
+                  sx={{
+                    cursor: "pointer",
+                  }}
+                />
+              </TooltipTitle>
+
+              <TooltipTitle title="GIF">
+                <GifBoxIcon
+                  sx={{
+                    cursor: "pointer",
+                  }}
+                />
+              </TooltipTitle>
             </Box>
             <TextField
               inputRef={ref}

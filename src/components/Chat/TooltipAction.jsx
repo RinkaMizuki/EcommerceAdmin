@@ -12,9 +12,12 @@ import AddReactionIcon from "@mui/icons-material/AddReaction";
 import ReplyIcon from "@mui/icons-material/Reply";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import { makeStyles } from "@mui/styles";
-import { useEffect, useRef, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import { userService } from "../../services/userService";
 import { default as ReactionPicker } from "emoji-picker-react";
+import { ParticipantContext } from "../../contexts/participantContext";
+import { chathubConnection } from "../../services/realtimeService";
+import "./Chat.css";
 
 const useStyles = makeStyles(() => ({
   customTooltip: {
@@ -32,11 +35,16 @@ export const TooltipTitle = ({
   arrow = true,
   offsetX = 0,
   offsetY = 0,
+  enterDelay = 200,
+  leaveDelay = 200,
+  ...props
 }) => {
   const classes = useStyles();
-
   return (
     <Tooltip
+      {...props}
+      leaveDelay={leaveDelay}
+      enterDelay={enterDelay}
       slotProps={{
         popper: {
           modifiers: [
@@ -78,10 +86,12 @@ const ActionCpn = ({
     react: "React",
     reply: "Reply",
   });
+  const { participant } = useContext(ParticipantContext);
   const classes = useStyles();
   const currentUser = userService.getUser();
 
   const handleToggle = () => {
+    setIsShowReaction(false);
     setOpen((prevOpen) => !prevOpen);
     setTooltipTitle((prevTitle) => ({ ...prevTitle, more: "" }));
   };
@@ -93,19 +103,31 @@ const ActionCpn = ({
     setOpen(false);
   };
 
-  function handleListKeyDown(event) {
+  const handleListKeyDown = (event) => {
     if (event.key === "Tab") {
       event.preventDefault();
       setOpen(false);
     } else if (event.key === "Escape") {
       setOpen(false);
     }
-  }
+  };
+
+  const handleRemoveMessage = (message) => {
+    chathubConnection.invoke("SendRemoveMessageAsync", currentUser.id, message);
+  };
 
   const handleChooseReaction = (reaction, event) => {
-    console.log(reaction);
-    console.log(123);
-    console.log(event);
+    setIsShowReaction(false);
+    const reactionDto = {
+      reactionCode: reaction.unified,
+      reactionImgUrl: reaction.imageUrl,
+      emoji: reaction.emoji,
+      messageId: msg.messageId,
+      userReactionId: currentUser.id,
+    };
+    chathubConnection
+      .invoke("SendReactMessageAsync", participant?.userId, reactionDto)
+      .catch((err) => console.error("Error invoking SendMessageAsync: ", err));
   };
 
   // return focus to the button when we transitioned from !open -> open
@@ -141,6 +163,7 @@ const ActionCpn = ({
         >
           <>
             <ReactionPicker
+              className="custom-reaction-picker"
               onReactionClick={handleChooseReaction}
               onEmojiClick={handleChooseReaction}
               reactions={["1f44d", "1f606", "1f622", "1f621", "2764-fe0f"]}
@@ -190,18 +213,22 @@ const ActionCpn = ({
                       onKeyDown={handleListKeyDown}
                     >
                       {currentUser.id === msg.senderId && (
-                        <MenuItem
-                          onClick={(e) => {
-                            handleClose(e);
-                            setReplyMessage(null);
-                            setEditMessage(msg);
-                            setMessage(msg.messageContent);
-                          }}
-                        >
-                          Edit
-                        </MenuItem>
+                        <Box>
+                          <MenuItem
+                            onClick={(e) => {
+                              handleClose(e);
+                              setReplyMessage(null);
+                              setEditMessage(msg);
+                              setMessage(msg.messageContent);
+                            }}
+                          >
+                            Edit
+                          </MenuItem>
+                          <MenuItem onClick={() => handleRemoveMessage(msg)}>
+                            Remove
+                          </MenuItem>
+                        </Box>
                       )}
-                      <MenuItem onClick={handleClose}>Remove</MenuItem>
                     </MenuList>
                   </ClickAwayListener>
                 </Paper>
@@ -211,7 +238,11 @@ const ActionCpn = ({
         </Box>
       </TooltipTitle>
       <TooltipTitle title={tooltipTitle.reply}>
-        <span onClick={() => setReplyMessage(msg)}>
+        <span
+          onClick={() => {
+            setReplyMessage(msg);
+          }}
+        >
           <ReplyIcon
             sx={{
               cursor: "pointer",
@@ -244,7 +275,7 @@ const TooltipAction = ({
   children,
   reverse = false,
   morePlacement = "top-end",
-  setMessage,
+  setMessage = () => {},
   setEditMessage,
   setIsCalcHeight,
   setReplyMessage,

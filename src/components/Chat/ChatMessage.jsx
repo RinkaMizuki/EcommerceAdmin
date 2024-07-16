@@ -2,55 +2,60 @@ import { Box, Typography, Avatar } from "@mui/material";
 import TooltipAction from "./TooltipAction";
 import TooltipTime from "./TooltipTime";
 import ReplyIcon from "@mui/icons-material/Reply";
-import { useState } from "react";
+import { forwardRef, useState } from "react";
 import ChatHistory from "./ChatHistory";
+import ChatReaction from "./ChatReaction";
 
-const ChatMessage = ({
-  msg,
-  newDate,
-  currentUser,
-  editMessage,
-  setMessage,
-  setEditMessage,
-  setReplyMessage,
-}) => {
-  const [isShowMessagesHistory, setIsShowMessagesHistory] = useState(false);
+const ChatMessage = forwardRef(
+  (
+    {
+      msg,
+      newDate,
+      currentUser,
+      editMessage,
+      setMessage,
+      setEditMessage,
+      setReplyMessage,
+      handleScrollToMessage,
+    },
+    ref
+  ) => {
+    const [isShowMessagesHistory, setIsShowMessagesHistory] = useState(false);
+    const convertMillisecondToSecond = (time) =>
+      Math.floor(new Date(time).getTime() / 1000);
 
-  const convertMillisecondToSecond = (time) =>
-    Math.floor(new Date(time).getTime() / 1000);
+    const compareNotEqualTime = (aTime, bTime) => {
+      return (
+        convertMillisecondToSecond(aTime) !== convertMillisecondToSecond(bTime)
+      );
+    };
 
-  const compareNotEqualTime = (aTime, bTime) => {
+    const { sendAt, modifiedAt, originalMessage, isDeleted } = msg;
+    const isEdited = compareNotEqualTime(sendAt, modifiedAt);
+
     return (
-      convertMillisecondToSecond(aTime) !== convertMillisecondToSecond(bTime)
-    );
-  };
-
-  const { sendAt, modifiedAt, originalMessage } = msg;
-  const isEdited = compareNotEqualTime(sendAt, modifiedAt);
-
-  return (
-    <div>
-      {newDate && (
-        <Typography
-          sx={{
-            textAlign: "center",
-            color: "#8a8d91",
-            fontSize: "14px",
-            marginY: "10px",
-          }}
-        >
-          {newDate}
-        </Typography>
-      )}
-      {msg?.senderId === currentUser.id ? (
-        <div
-          className="d-flex flex-row justify-content-end pt-1"
-          style={{
-            position: "relative",
-            alignItems: "flex-end",
-          }}
-        >
-          {!editMessage ? (
+      <div className="mt-2">
+        {newDate && (
+          <Typography
+            sx={{
+              textAlign: "center",
+              color: "#8a8d91",
+              fontSize: "14px",
+              marginY: "10px",
+            }}
+          >
+            {newDate}
+          </Typography>
+        )}
+        {msg?.senderId === currentUser.id ? (
+          //message of Admin
+          <div
+            className="d-flex flex-row justify-content-end pt-1"
+            style={{
+              position: "relative",
+              alignItems: "flex-end",
+            }}
+          >
             <Box
               sx={{
                 display: "flex",
@@ -58,7 +63,7 @@ const ChatMessage = ({
                 position: "relative",
               }}
             >
-              {isEdited && !originalMessage && (
+              {isEdited && !originalMessage && !isDeleted && (
                 <Typography
                   onClick={() =>
                     setIsShowMessagesHistory(!isShowMessagesHistory)
@@ -84,11 +89,13 @@ const ChatMessage = ({
                 sx={{
                   display: "flex",
                   flexDirection: "column",
+                  alignItems: "flex-end",
                 }}
               >
                 {originalMessage && (
                   <Box
                     sx={{
+                      cursor: "pointer",
                       display: "flex",
                       flexDirection: "column",
                       alignItems: "flex-end",
@@ -112,10 +119,14 @@ const ChatMessage = ({
                         }}
                       />
                       <span>
-                        You replied to{" "}
-                        {originalMessage.senderId === currentUser.id
-                          ? "yourself"
-                          : originalMessage.sender.userName}
+                        {originalMessage.isDeleted
+                          ? "You replied to a removed message"
+                          : `You replied to
+                        ${
+                          originalMessage.senderId === currentUser.id
+                            ? "yourself"
+                            : originalMessage.sender.userName
+                        }`}
                       </span>
                       {isEdited && (
                         <Typography
@@ -153,8 +164,15 @@ const ChatMessage = ({
                           color: "#cbcbcb",
                           fontSize: "13px",
                         }}
+                        onClick={() =>
+                          handleScrollToMessage(originalMessage.messageId)
+                        }
                       >
-                        {originalMessage?.messageContent}
+                        {!originalMessage.isDeleted ? (
+                          originalMessage?.messageContent
+                        ) : (
+                          <i>Message removed</i>
+                        )}
                       </p>
                     </Box>
                   </Box>
@@ -163,122 +181,188 @@ const ChatMessage = ({
                 {isShowMessagesHistory && (
                   <ChatHistory messagesHistory={msg.messageHistories} />
                 )}
-                <TooltipAction
-                  msg={msg}
-                  offsetX={-3}
-                  setMessage={setMessage}
-                  setEditMessage={setEditMessage}
-                  setReplyMessage={setReplyMessage}
-                >
-                  <Box
-                    sx={{
-                      alignSelf: "flex-end",
+                {!editMessage && !isDeleted ? (
+                  <TooltipAction
+                    msg={msg}
+                    offsetX={-3}
+                    setMessage={setMessage}
+                    setEditMessage={setEditMessage}
+                    setReplyMessage={setReplyMessage}
+                  >
+                    <div
+                      style={{
+                        alignSelf: "flex-end",
+                      }}
+                    >
+                      <TooltipTime
+                        date={msg?.sendAt}
+                        offsetX={-3}
+                        offsetY={-10}
+                      >
+                        <Box
+                          sx={{
+                            position: "relative",
+                            zIndex: 2,
+                            alignSelf: "flex-end",
+                          }}
+                        >
+                          <p
+                            className="small p-2 me-3 mb-1 text-white rounded-3 bg-primary"
+                            ref={ref}
+                          >
+                            {msg.messageContent}
+                          </p>
+                          <ChatReaction reactions={msg.reactions} />
+                        </Box>
+                      </TooltipTime>
+                    </div>
+                  </TooltipAction>
+                ) : (
+                  <span
+                    style={{
+                      position: "relative",
+                      zIndex: 2,
                     }}
                   >
-                    <TooltipTime date={msg?.sendAt} offsetX={-3} offsetY={-10}>
+                    {!isDeleted ? (
+                      <TooltipTime date={msg?.sendAt}>
+                        <Box
+                          sx={{
+                            display: "flex",
+                          }}
+                        >
+                          <p className="small p-2 me-3 mb-1 text-white rounded-3 bg-primary">
+                            {msg.messageContent}
+                          </p>
+                          <ChatReaction reactions={msg.reactions} />
+                        </Box>
+                      </TooltipTime>
+                    ) : (
                       <Box
                         sx={{
-                          position: "relative",
-                          zIndex: 2,
-                          alignSelf: "flex-end",
+                          display: "flex",
+                          backgroundColor: "transparent",
                         }}
                       >
-                        <p className="small p-2 me-3 mb-1 text-white rounded-3 bg-primary">
-                          {msg.messageContent}
+                        <p
+                          className="small p-2 me-3 mb-1 rounded-3"
+                          style={{
+                            border: "1px solid #505050",
+                            color: "#686868",
+                          }}
+                        >
+                          You unsent a message
                         </p>
                       </Box>
-                    </TooltipTime>
-                  </Box>
-                </TooltipAction>
+                    )}
+                  </span>
+                )}
               </Box>
             </Box>
-          ) : (
-            <span
-              style={{
-                position: "relative",
-                zIndex: 2,
-              }}
-            >
-              <TooltipTime date={msg?.sendAt}>
-                <Box
-                  sx={{
-                    display: "flex",
-                  }}
-                >
-                  <p className="small p-2 me-3 mb-1 text-white rounded-3 bg-primary">
-                    {msg.messageContent}
-                  </p>
-                </Box>
-              </TooltipTime>
-            </span>
-          )}
-          <Avatar src={msg.sender?.url} alt={msg.sender?.avatar} />
-        </div>
-      ) : (
-        <div
-          className="d-flex flex-row justify-content-start pt-1"
-          style={{
-            position: "relative",
-            marginTop: originalMessage ? "50px" : "unset",
-          }}
-          key={msg.messageId}
-        >
-          <Avatar src={msg.sender?.url} alt={msg.sender?.avatar} />
-          {originalMessage && (
-            <Box
-              sx={{
-                display: "flex",
-                alignItems: "center",
-                position: "absolute",
-                left: "55px",
-                top: "-100%",
-                color: "#cbcbcb",
-                fontSize: "13px",
-              }}
-            >
-              <ReplyIcon
+
+            <Avatar src={msg.sender?.url} alt={msg.sender?.avatar} />
+          </div>
+        ) : (
+          //message of User
+          <div
+            className="d-flex flex-row justify-content-start pt-1"
+            style={{
+              position: "relative",
+              marginTop: originalMessage ? "50px" : "unset",
+            }}
+            key={msg.messageId}
+          >
+            <Avatar src={msg.sender?.url} alt={msg.sender?.avatar} />
+            {originalMessage && (
+              <Box
                 sx={{
-                  fontSize: "20px",
-                }}
-              />
-              <span>
-                {msg.sender?.userName} replied to{" "}
-                {originalMessage.senderId === currentUser.id
-                  ? currentUser.userName
-                  : "themself"}
-              </span>
-            </Box>
-          )}
-          {originalMessage && (
-            <Box
-              sx={{
-                position: "absolute",
-                top: "-50%",
-                left: "55px",
-                zIndex: 1,
-              }}
-            >
-              <p
-                className="small p-2 me-3 mb-1 rounded-3"
-                style={{
-                  backgroundColor: "#494949",
+                  display: "flex",
+                  alignItems: "center",
+                  position: "absolute",
+                  left: "55px",
+                  top: "-100%",
                   color: "#cbcbcb",
                   fontSize: "13px",
                 }}
               >
-                {originalMessage?.messageContent}
-              </p>
-            </Box>
-          )}
-          {!editMessage ? (
-            <TooltipAction
-              msg={msg}
-              position="right-start"
-              reverse={true}
-              morePlacement="top-start"
-              setEditMessage={setEditMessage}
-              setReplyMessage={setReplyMessage}
-            >
+                <ReplyIcon
+                  sx={{
+                    fontSize: "20px",
+                  }}
+                />
+                <span>
+                  {msg.sender?.userName} replied to{" "}
+                  {originalMessage.senderId === currentUser.id
+                    ? currentUser.userName
+                    : "themself"}
+                </span>
+              </Box>
+            )}
+            {originalMessage && (
+              <Box
+                sx={{
+                  position: "absolute",
+                  top: "-50%",
+                  left: "55px",
+                  zIndex: 1,
+                }}
+              >
+                <p
+                  className="small p-2 me-3 mb-1 rounded-3"
+                  style={{
+                    backgroundColor: "#494949",
+                    color: "#cbcbcb",
+                    fontSize: "13px",
+                  }}
+                >
+                  {originalMessage?.messageContent}
+                </p>
+              </Box>
+            )}
+            {!editMessage ? (
+              <TooltipAction
+                msg={msg}
+                position="right-start"
+                reverse={true}
+                morePlacement="top-start"
+                setEditMessage={setEditMessage}
+                setReplyMessage={setReplyMessage}
+              >
+                <span
+                  style={{
+                    position: "relative",
+                    zIndex: 2,
+                  }}
+                >
+                  <TooltipTime
+                    date={msg?.sendAt}
+                    position="left-end"
+                    offsetY={-25}
+                    offsetX={-3}
+                  >
+                    <Box
+                      sx={{
+                        position: "relative",
+                        zIndex: 2,
+                        alignSelf: "flex-end",
+                      }}
+                    >
+                      <p
+                        ref={ref}
+                        className="small p-2 ms-3 mb-1 rounded-3"
+                        style={{
+                          color: "#000000",
+                          backgroundColor: "#f5f6f7",
+                        }}
+                      >
+                        {msg.messageContent}
+                      </p>
+                      <ChatReaction reactions={msg.reactions} />
+                    </Box>
+                  </TooltipTime>
+                </span>
+              </TooltipAction>
+            ) : (
               <span
                 style={{
                   position: "relative",
@@ -291,7 +375,13 @@ const ChatMessage = ({
                   offsetY={-25}
                   offsetX={-3}
                 >
-                  <Box>
+                  <Box
+                    sx={{
+                      position: "relative",
+                      zIndex: 2,
+                      alignSelf: "flex-end",
+                    }}
+                  >
                     <p
                       className="small p-2 ms-3 mb-1 rounded-3"
                       style={{
@@ -301,41 +391,16 @@ const ChatMessage = ({
                     >
                       {msg.messageContent}
                     </p>
+                    <ChatReaction reactions={msg.reactions} />
                   </Box>
                 </TooltipTime>
               </span>
-            </TooltipAction>
-          ) : (
-            <span
-              style={{
-                position: "relative",
-                zIndex: 2,
-              }}
-            >
-              <TooltipTime
-                date={msg?.sendAt}
-                position="left-end"
-                offsetY={-25}
-                offsetX={-3}
-              >
-                <Box>
-                  <p
-                    className="small p-2 ms-3 mb-1 rounded-3"
-                    style={{
-                      color: "#000000",
-                      backgroundColor: "#f5f6f7",
-                    }}
-                  >
-                    {msg.messageContent}
-                  </p>
-                </Box>
-              </TooltipTime>
-            </span>
-          )}
-        </div>
-      )}
-    </div>
-  );
-};
+            )}
+          </div>
+        )}
+      </div>
+    );
+  }
+);
 
 export default ChatMessage;

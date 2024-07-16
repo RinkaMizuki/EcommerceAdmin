@@ -1,8 +1,7 @@
 import { Avatar, Box } from "@mui/material";
-import { forwardRef, memo, useEffect, useState } from "react";
+import { createRef, forwardRef, memo, useEffect, useState } from "react";
 import "./Chat.css";
 import { dataProvider } from "../../contexts/dataProvider";
-
 import { MESSAGE_STATE } from "./ChatList";
 import ChatMessage from "./ChatMessage";
 
@@ -27,9 +26,11 @@ const ChatBody = forwardRef(
   ) => {
     const [scrollPosition, setScrollPosition] = useState(0);
     const [isLoading, setIsLoading] = useState(false);
+    const [messageRefs, setMessageRefs] = useState([]);
 
     const { bodyChatWrapperRef, areaChatRef } = ref;
     const { getList } = dataProvider;
+
     const groupMessageDateAndTime = (dateTime) => {
       const dt = new Date(parseInt(new Date(dateTime).getTime()));
 
@@ -130,6 +131,29 @@ const ChatBody = forwardRef(
         }
       }
     };
+    const handleScrollToMessage = (messageId) => {
+      const messageElement = messageRefs.find(
+        (m) => m?.current?.id === messageId
+      );
+      //message was already render in UI
+      if (messageElement?.current) {
+        messageElement.current.scrollIntoView({
+          behavior: "smooth",
+          block: "center",
+        });
+      }
+      //message not rendered => scroll top to load more messages
+      else {
+        areaChatRef.current.scrollTop = 0;
+      }
+    };
+
+    useEffect(() => {
+      const refs = Array.from({ length: messages.length }).map(() =>
+        createRef()
+      );
+      setMessageRefs(refs);
+    }, [messages]);
 
     const userPrepare = messages.find((msg) => msg.senderId != currentUser.id);
 
@@ -189,6 +213,8 @@ const ChatBody = forwardRef(
               const newDate = filterMessageDateAndTime(messages, index);
               return (
                 <ChatMessage
+                  messageRefs={messageRefs}
+                  ref={messageRefs[index]}
                   key={msg.messageId}
                   msg={msg}
                   newDate={newDate}
@@ -197,6 +223,7 @@ const ChatBody = forwardRef(
                   setMessage={setMessage}
                   setEditMessage={setEditMessage}
                   setReplyMessage={setReplyMessage}
+                  handleScrollToMessage={handleScrollToMessage}
                 />
               );
             })}

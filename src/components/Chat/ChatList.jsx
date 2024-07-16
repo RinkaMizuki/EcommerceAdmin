@@ -1,9 +1,9 @@
 import { Avatar, Box, Grid, Typography } from "@mui/material";
-import { useLogout, useTheme } from "react-admin";
+import { useLogout, useTheme, useNotify } from "react-admin";
 import { useDebounce } from "use-debounce";
 import Divider from "@mui/material/Divider";
 import ChatItem from "./ChatItem";
-import { Fragment, useEffect, useRef, useState } from "react";
+import { Fragment, useContext, useEffect, useRef, useState } from "react";
 import { chathubConnection } from "../../services/realtimeService";
 import * as signalR from "@microsoft/signalr";
 import { userService } from "../../services/userService";
@@ -14,6 +14,7 @@ import { dataProvider } from "../../contexts/dataProvider";
 import ChatAction, { REPLY_HEIGHT } from "./ChatAction";
 import ConverSearch from "./ConverSearch";
 import { useNavigate, useParams } from "react-router-dom";
+import { ParticipantContext } from "../../contexts/participantContext";
 
 export const MESSAGE_STATE = {
   ADD: "add",
@@ -26,7 +27,6 @@ const ChatList = () => {
   const [replyMessage, setReplyMessage] = useState(null);
   const [participants, setParticipants] = useState([]);
   const [searchParticipants, setSearchParticipants] = useState([]);
-  const [participant, setParticipant] = useState(null);
   const [messages, setMessages] = useState([]);
   const [usersStatus, setUsersStatus] = useState([]);
   const [search, setSearch] = useState("");
@@ -40,11 +40,13 @@ const ChatList = () => {
   const bodyChatWrapperRef = useRef(null);
   const inputMessageRef = useRef(null);
   const hasAdjustedHeight = useRef(false);
+  const { participant, setParticipant } = useContext(ParticipantContext);
 
   const { getList } = dataProvider;
   const logout = useLogout();
   const navigate = useNavigate();
   const params = useParams();
+  const notify = useNotify();
 
   const currentUser = userService.getUser();
 
@@ -71,12 +73,18 @@ const ChatList = () => {
     });
 
     chathubConnection.on("ReceiveUpdateMessage", (updateMessage) => {
-      console.log(updateMessage);
       setMessages((prevMessages) =>
         prevMessages.map((m) =>
           m.messageId === updateMessage.messageId
             ? { ...m, ...updateMessage }
             : m
+        )
+      );
+    });
+    chathubConnection.on("ReceiveRemoveMessage", (messageDeletedId) => {
+      setMessages((prevMessages) =>
+        prevMessages.map((m) =>
+          m.messageId === messageDeletedId ? { ...m, isDeleted: true } : m
         )
       );
     });
@@ -120,6 +128,18 @@ const ChatList = () => {
     chathubConnection.on("ReceivePreparing", (isPrepare) => {
       setIsUserPreparing(isPrepare);
     });
+  }, []);
+
+  //listen error invoked method from server
+  useEffect(() => {
+    chathubConnection.on(
+      "ReceiveEditMessageError",
+      (errorCode, errorMessage) => {
+        notify(`${errorMessage}`, {
+          type: "error",
+        });
+      }
+    );
   }, []);
 
   useEffect(() => {
@@ -253,13 +273,13 @@ const ChatList = () => {
               ...editMessage,
               messageContent: message,
             })
-            .then(() => {
-              setEditMessage(null);
-              setMessage("");
-            })
             .catch((err) =>
               console.error("Error invoking SendEditMessageAsync: ", err)
-            );
+            )
+            .finally(() => {
+              setEditMessage(null);
+              setMessage("");
+            });
         }
       }
     }
@@ -289,9 +309,9 @@ const ChatList = () => {
         }}
       >
         <ConverSearch
-          isShowSearchConver={isShowSearchConver}
           search={search}
           setSearch={setSearch}
+          isShowSearchConver={isShowSearchConver}
           setIsShowSearchConver={setIsShowSearchConver}
         />
         <Box
@@ -444,8 +464,8 @@ const ChatList = () => {
             />
             <ChatBody
               ref={{ bodyChatWrapperRef, areaChatRef }}
-              isUserPreparing={isUserPreparing}
               mode={mode}
+              isUserPreparing={isUserPreparing}
               messages={messages}
               messageState={messageState}
               editMessage={editMessage}

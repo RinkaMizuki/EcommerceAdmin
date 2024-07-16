@@ -16,7 +16,8 @@ const ChatItem = ({
   const navigate = useNavigate();
   const params = useParams();
 
-  const { messageContent, sendAt, sender } = p.conversation?.lastMessage;
+  const { messageContent, sendAt, sender, isDeleted } =
+    p.conversation?.lastMessage;
 
   const formatDate = (date) => {
     if (date) {
@@ -102,8 +103,12 @@ const ChatItem = ({
             }}
           >
             {sender?.userId === currentUser?.id
-              ? `You: ${messageContent}`
-              : `${messageContent}`}
+              ? `You ${!isDeleted ? `: ${messageContent}` : "unsent a message"}`
+              : `${
+                  !isDeleted
+                    ? messageContent
+                    : `${sender.userName} unsent a message`
+                }`}
           </p>
         </Box>
         <Box
@@ -129,16 +134,16 @@ export default memo(ChatItem);
 
 {
   /* <div
-                        style={{
-                            display: "flex",
-                            alignSelf: "flex-end",
-                            justifyContent: "center",
-                            alignItems: "center",
-                            width: "13px",
-                            height: "13px",
-                            backgroundColor: "#0866ff",
-                            borderRadius: "50%",
-                            marginTop: "5px",
-                        }}
-                    ></div> */
+    style={{
+      alignSelf: "flex-end",
+      display: "flex",
+      justifyContent: "center",
+      alignItems: "center",
+      width: "13px",
+      height: "13px",
+      backgroundColor: "#0866ff",
+      borderRadius: "50%",
+      marginTop: "5px",
+    }}
+    ></div> */
 }
