@@ -16,9 +16,16 @@ import ConverSearch from "./ConverSearch";
 import { useNavigate, useParams } from "react-router-dom";
 import { ParticipantContext } from "../../contexts/participantContext";
 
+export const MESSAGE_TYPE = {
+  TEXT: "text",
+  IMAGE: "image",
+  ICON: "icon",
+};
+
 export const MESSAGE_STATE = {
   ADD: "add",
   LOAD: "load",
+  REP: "rep",
 };
 
 const ChatList = () => {
@@ -87,18 +94,42 @@ const ChatList = () => {
 
     chathubConnection.on("ReceiveUpdateMessage", (updateMessage) => {
       setMessages((prevMessages) =>
-        prevMessages.map((m) =>
-          m.messageId === updateMessage.messageId
-            ? { ...m, ...updateMessage }
-            : m
-        )
+        prevMessages.map((m) => {
+          if (m.messageId === updateMessage.messageId) {
+            return { ...m, ...updateMessage };
+          } else if (
+            m?.originalMessage?.messageId === updateMessage.messageId
+          ) {
+            return {
+              ...m,
+              originalMessage: {
+                ...m.originalMessage,
+                ...updateMessage,
+              },
+            };
+          } else {
+            return m;
+          }
+        })
       );
     });
     chathubConnection.on("ReceiveRemoveMessage", (messageDeletedId) => {
       setMessages((prevMessages) =>
-        prevMessages.map((m) =>
-          m.messageId === messageDeletedId ? { ...m, isDeleted: true } : m
-        )
+        prevMessages.map((m) => {
+          if (m.messageId == messageDeletedId) {
+            return { ...m, isDeleted: true };
+          } else if (m?.originalMessage?.messageId === messageDeletedId) {
+            return {
+              ...m,
+              originalMessage: {
+                ...m.originalMessage,
+                isDeleted: true,
+              },
+            };
+          } else {
+            return m;
+          }
+        })
       );
     });
 
@@ -275,6 +306,7 @@ const ChatList = () => {
             senderId: currentUser.id,
             conversationId: participant?.conversationId,
             messageContent: content,
+            messageType: MESSAGE_TYPE.TEXT,
             originalMessageId: replyMessage ? replyMessage.messageId : null,
           };
           if (content) {
@@ -287,6 +319,7 @@ const ChatList = () => {
           if (files.length) {
             const messageImageDto = {
               messageDto,
+              messageType: MESSAGE_TYPE.IMAGE,
               images: files,
             };
             create(
@@ -300,22 +333,24 @@ const ChatList = () => {
               })
               .catch((err) => console.log(err));
           }
-
           replyMessage && setReplyMessage(null);
           setMessageState(MESSAGE_STATE.ADD);
         } else {
+          const messageDto = {
+            ...editMessage,
+            messageContent: message.content,
+          };
           chathubConnection
-            .invoke("SendEditMessageAsync", participant?.userId, {
-              ...editMessage,
-              messageContent: message,
-            })
+            .invoke("SendEditMessageAsync", participant?.userId, messageDto)
             .catch((err) =>
               console.error("Error invoking SendEditMessageAsync: ", err)
             )
             .finally(() => {
+              setMessageState(MESSAGE_STATE.REP);
               setEditMessage(null);
             });
         }
+
         setBlobs([]);
         setMessage({
           content: "",

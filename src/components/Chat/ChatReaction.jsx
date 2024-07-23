@@ -1,14 +1,15 @@
 import { Box, Typography } from "@mui/material";
 import { TooltipTitle } from "./TooltipAction";
+import { MESSAGE_TYPE } from "./ChatList";
 
-const ChatReaction = ({ reactions }) => {
+const ChatReaction = ({ reactions, type = "text" }) => {
   return (
     <Box
       sx={{
         bgcolor: "#242526",
         borderRadius: "10px",
         position: "absolute",
-        bottom: "-15px",
+        bottom: type === MESSAGE_TYPE.IMAGE ? "-7px" : "-15px",
         right: "10px",
         display: "flex",
         alignItems: "center",

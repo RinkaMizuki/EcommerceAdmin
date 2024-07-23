@@ -138,7 +138,12 @@ const ChatBody = forwardRef(
           messageElement = m;
         } else {
           if (m.current) {
-            m.current.style.border = "unset !important";
+            const child = m?.current?.children[0]?.children[0];
+            if (child) {
+              child.style.border = "unset !important";
+            } else {
+              m.current.style.border = "unset !important";
+            }
           }
         }
       });
@@ -148,7 +153,12 @@ const ChatBody = forwardRef(
           behavior: "smooth",
           block: "center",
         });
-        messageElement.current.style.border = "2px solid #fff";
+        const child = messageElement.current?.children[0]?.children[0];
+        if (child) {
+          child.style.border = "2px solid #fff";
+        } else {
+          messageElement.current.style.border = "2px solid #fff";
+        }
       }
     };
 
@@ -165,7 +175,7 @@ const ChatBody = forwardRef(
       if (areaChatRef.current && messageState === MESSAGE_STATE.LOAD) {
         areaChatRef.current.scrollTop =
           areaChatRef.current.scrollHeight - scrollPosition;
-      } else {
+      } else if (areaChatRef.current && messageState === MESSAGE_STATE.ADD) {
         areaChatRef.current.scrollTop = areaChatRef.current.scrollHeight;
       }
       areaChatRef.current.addEventListener("scroll", handleScrollLoadMessages);
@@ -227,6 +237,7 @@ const ChatBody = forwardRef(
                   setMessage={setMessage}
                   setEditMessage={setEditMessage}
                   setReplyMessage={setReplyMessage}
+                  setMessageState={setMessageState}
                   handleScrollToMessage={handleScrollToMessage}
                 />
               );

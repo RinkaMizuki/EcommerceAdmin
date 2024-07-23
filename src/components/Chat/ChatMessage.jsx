@@ -6,11 +6,12 @@ import { forwardRef, useCallback, useState } from "react";
 import ChatHistory from "./ChatHistory";
 import ChatReaction from "./ChatReaction";
 import { Controlled as ControlledZoom } from "react-medium-image-zoom";
-
+import { LazyLoadImage } from "react-lazy-load-image-component";
+import "react-lazy-load-image-component/src/effects/blur.css";
 import "react-medium-image-zoom/dist/styles.css";
 import ZoomOutMapIcon from "@mui/icons-material/ZoomOutMap";
-
-const _validFileExtensions = [".jpg", ".jpeg", ".png"];
+import { useEffect } from "react";
+import { MESSAGE_TYPE } from "./ChatList";
 
 const ChatMessage = forwardRef(
   (
@@ -22,19 +23,27 @@ const ChatMessage = forwardRef(
       setMessage,
       setEditMessage,
       setReplyMessage,
+      setMessageState,
       handleScrollToMessage,
     },
     ref
   ) => {
     const [isShowMessagesHistory, setIsShowMessagesHistory] = useState(false);
     const [isZoomed, setIsZoomed] = useState(false);
+    const [imgUrl, setImgUrl] = useState("");
 
-    const handleZoomChange = useCallback((shouldZoom, imgUrl) => {
-      document
-        .querySelector("div[data-rmiz-modal-content]")
-        .style.setProperty("--bg", `url("${imgUrl}")`, "important");
+    const handleZoomChange = useCallback((shouldZoom) => {
       setIsZoomed(shouldZoom);
     }, []);
+
+    useEffect(() => {
+      if (isZoomed) {
+        const imgContainerElm = document.querySelector(
+          "dialog[open] div[data-rmiz-modal-content]"
+        );
+        imgContainerElm.style.setProperty("--bg", `url(${imgUrl})`);
+      }
+    }, [isZoomed, imgUrl]);
 
     const convertMillisecondToSecond = (time) =>
       Math.floor(new Date(time).getTime() / 1000);
@@ -45,10 +54,16 @@ const ChatMessage = forwardRef(
       );
     };
 
-    const { sendAt, modifiedAt, originalMessage, isDeleted, messageContent } =
-      msg;
+    const {
+      sendAt,
+      modifiedAt,
+      originalMessage,
+      isDeleted,
+      messageContent,
+      messageType,
+    } = msg;
     const isEdited = compareNotEqualTime(sendAt, modifiedAt);
-    const messageSplit = messageContent.split(".");
+
     return (
       <div className="mt-2">
         {newDate && (
@@ -108,7 +123,7 @@ const ChatMessage = forwardRef(
                   alignItems: "flex-end",
                 }}
               >
-                {originalMessage && (
+                {originalMessage && !msg.isDeleted && (
                   <Box
                     sx={{
                       cursor: "pointer",
@@ -173,24 +188,59 @@ const ChatMessage = forwardRef(
                         gap: "5px",
                       }}
                     >
-                      <p
-                        className="small p-2 me-3 mb-1 rounded-3"
-                        style={{
-                          backgroundColor: "#494949",
-                          color: "#cbcbcb",
-                          fontSize: "13px",
-                          whiteSpace: "pre-wrap",
-                        }}
-                        onClick={() =>
-                          handleScrollToMessage(originalMessage.messageId)
-                        }
-                      >
-                        {!originalMessage.isDeleted ? (
-                          originalMessage?.messageContent
-                        ) : (
+                      {originalMessage.messageType !== MESSAGE_TYPE.IMAGE ? (
+                        <p
+                          className="small p-2 me-3 mb-1 rounded-3"
+                          style={{
+                            backgroundColor: "#494949",
+                            color: "#cbcbcb",
+                            fontSize: "13px",
+                            whiteSpace: "pre-wrap",
+                          }}
+                          onClick={() =>
+                            handleScrollToMessage(originalMessage.messageId)
+                          }
+                        >
+                          {!originalMessage.isDeleted ? (
+                            originalMessage?.messageContent
+                          ) : (
+                            <i>Message removed</i>
+                          )}
+                        </p>
+                      ) : !originalMessage.isDeleted ? (
+                        <LazyLoadImage
+                          onClick={() => {
+                            handleScrollToMessage(originalMessage.messageId);
+                          }}
+                          alt={image.alt}
+                          effect="blur"
+                          className="me-3 mb-1 message-image"
+                          src={`${
+                            originalMessage.messageContent
+                          }?${Date.now()}`}
+                          style={{
+                            cursor: "pointer",
+                            border: "1px solid #232323",
+                            overflow: "hidden",
+                            borderRadius: "20px",
+                            maxWidth: "100px",
+                            height: "100%",
+                            objectFit: "fill",
+                          }}
+                        />
+                      ) : (
+                        <p
+                          className="small p-2 me-3 mb-1 rounded-3"
+                          style={{
+                            backgroundColor: "#494949",
+                            color: "#cbcbcb",
+                            fontSize: "13px",
+                            whiteSpace: "pre-wrap",
+                          }}
+                        >
                           <i>Message removed</i>
-                        )}
-                      </p>
+                        </p>
+                      )}
                     </Box>
                   </Box>
                 )}
@@ -204,6 +254,7 @@ const ChatMessage = forwardRef(
                     offsetX={-3}
                     setMessage={setMessage}
                     setEditMessage={setEditMessage}
+                    setMessageState={setMessageState}
                     setReplyMessage={setReplyMessage}
                   >
                     <div
@@ -223,44 +274,16 @@ const ChatMessage = forwardRef(
                             alignSelf: "flex-end",
                           }}
                         >
-                          {!_validFileExtensions.includes(
-                            "." + messageSplit[messageSplit.length - 1]
-                          ) ? (
-                            <p
-                              id={msg.messageId}
-                              className="small p-2 me-3 mb-1 text-white rounded-3 bg-primary"
-                              style={{
-                                whiteSpace: "pre-wrap",
-                              }}
-                              ref={ref}
-                            >
-                              {messageContent}
-                            </p>
-                          ) : (
-                            <ControlledZoom
-                              IconUnzoom={ZoomOutMapIcon}
-                              onZoomChange={(shouldZoom) =>
-                                handleZoomChange(shouldZoom, messageContent)
-                              }
-                              isZoomed={isZoomed}
-                            >
-                              <img
-                                className="me-3 mb-1 message-image"
-                                src={`${messageContent}?${Date.now()}`}
-                                style={{
-                                  cursor: "pointer",
-                                  border: "1px solid #232323",
-                                  overflow: "hidden",
-                                  borderRadius: "20px",
-                                  maxWidth: "200px",
-                                  height: "100%",
-                                  objectFit: "fill",
-                                }}
-                              />
-                            </ControlledZoom>
-                          )}
-
-                          <ChatReaction reactions={msg.reactions} />
+                          <ChatMessageImage
+                            ref={ref}
+                            messageType={messageType}
+                            messageId={msg.messageId}
+                            messageContent={messageContent}
+                            handleZoomChange={handleZoomChange}
+                            isZoomed={isZoomed}
+                            setImgUrl={setImgUrl}
+                            reactions={msg.reactions}
+                          />
                         </Box>
                       </TooltipTime>
                     </div>
@@ -279,15 +302,16 @@ const ChatMessage = forwardRef(
                             display: "flex",
                           }}
                         >
-                          <p
-                            className="small p-2 me-3 mb-1 text-white rounded-3 bg-primary"
-                            style={{
-                              whiteSpace: "pre-wrap",
-                            }}
-                          >
-                            {messageContent}
-                          </p>
-                          <ChatReaction reactions={msg.reactions} />
+                          <ChatMessageImage
+                            ref={ref}
+                            messageType={messageType}
+                            messageId={msg.messageId}
+                            messageContent={messageContent}
+                            handleZoomChange={handleZoomChange}
+                            isZoomed={isZoomed}
+                            setImgUrl={setImgUrl}
+                            reactions={msg.reactions}
+                          />
                         </Box>
                       </TooltipTime>
                     ) : (
@@ -382,75 +406,14 @@ const ChatMessage = forwardRef(
                 setEditMessage={setEditMessage}
                 setReplyMessage={setReplyMessage}
               >
-                <span
-                  style={{
-                    position: "relative",
-                    zIndex: 2,
-                  }}
-                >
-                  <TooltipTime
-                    date={msg?.sendAt}
-                    position="left-end"
-                    offsetY={-25}
-                    offsetX={-3}
-                  >
-                    <Box
-                      sx={{
-                        position: "relative",
-                        zIndex: 2,
-                        alignSelf: "flex-end",
-                      }}
-                    >
-                      <p
-                        ref={ref}
-                        className="small p-2 ms-3 mb-1 rounded-3"
-                        style={{
-                          color: "#000000",
-                          backgroundColor: "#f5f6f7",
-                          whiteSpace: "pre-wrap",
-                        }}
-                      >
-                        {_validFileExtensions.includes()}
-                      </p>
-                      <ChatReaction reactions={msg.reactions} />
-                    </Box>
-                  </TooltipTime>
-                </span>
+                <>
+                  <ChatMessageItem msg={msg} />
+                </>
               </TooltipAction>
             ) : (
-              <span
-                style={{
-                  position: "relative",
-                  zIndex: 2,
-                }}
-              >
-                <TooltipTime
-                  date={msg?.sendAt}
-                  position="left-end"
-                  offsetY={-25}
-                  offsetX={-3}
-                >
-                  <Box
-                    sx={{
-                      position: "relative",
-                      zIndex: 2,
-                      alignSelf: "flex-end",
-                    }}
-                  >
-                    <p
-                      className="small p-2 ms-3 mb-1 rounded-3"
-                      style={{
-                        color: "#000000",
-                        backgroundColor: "#f5f6f7",
-                        whiteSpace: "pre-wrap",
-                      }}
-                    >
-                      {messageContent}
-                    </p>
-                    <ChatReaction reactions={msg.reactions} />
-                  </Box>
-                </TooltipTime>
-              </span>
+              <>
+                <ChatMessageItem msg={msg} />
+              </>
             )}
           </div>
         )}
@@ -458,5 +421,107 @@ const ChatMessage = forwardRef(
     );
   }
 );
+
+const ChatMessageImage = forwardRef(
+  (
+    {
+      messageId,
+      messageType,
+      messageContent,
+      handleZoomChange,
+      isZoomed,
+      setImgUrl,
+      reactions,
+    },
+    ref
+  ) => {
+    return (
+      <>
+        {!(messageType === MESSAGE_TYPE.IMAGE) ? (
+          <p
+            id={messageId}
+            className="small p-2 me-3 mb-1 text-white rounded-3 bg-primary"
+            style={{
+              whiteSpace: "pre-wrap",
+            }}
+            ref={ref}
+          >
+            {messageContent}
+          </p>
+        ) : (
+          <ControlledZoom
+            IconUnzoom={ZoomOutMapIcon}
+            onZoomChange={(shouldZoom) => {
+              handleZoomChange(shouldZoom);
+              setImgUrl(messageContent);
+            }}
+            isZoomed={isZoomed}
+          >
+            <div ref={ref} id={messageId}>
+              <LazyLoadImage
+                effect="blur"
+                className="me-3 mb-1 message-image"
+                src={`${messageContent}?${Date.now()}`}
+                style={{
+                  cursor: "pointer",
+                  border: "1px solid #232323",
+                  overflow: "hidden",
+                  borderRadius: "20px",
+                  maxWidth: "200px",
+                  height: "100%",
+                  minHeight: "150px",
+                  objectFit: "fill",
+                }}
+                afterLoad={() => {
+                  ref.current.children[0].children[0].style.minHeight = "unset";
+                }}
+              />
+            </div>
+          </ControlledZoom>
+        )}
+
+        <ChatReaction reactions={reactions} type={messageType} />
+      </>
+    );
+  }
+);
+
+const ChatMessageItem = ({ msg }) => {
+  return (
+    <span
+      style={{
+        position: "relative",
+        zIndex: 2,
+      }}
+    >
+      <TooltipTime
+        date={msg?.sendAt}
+        position="left-end"
+        offsetY={-25}
+        offsetX={-3}
+      >
+        <Box
+          sx={{
+            position: "relative",
+            zIndex: 2,
+            alignSelf: "flex-end",
+          }}
+        >
+          <p
+            className="small p-2 ms-3 mb-1 rounded-3"
+            style={{
+              color: "#000000",
+              backgroundColor: "#f5f6f7",
+              whiteSpace: "pre-wrap",
+            }}
+          >
+            {msg.messageContent}
+          </p>
+          <ChatReaction reactions={msg.reactions} />
+        </Box>
+      </TooltipTime>
+    </span>
+  );
+};
 
 export default ChatMessage;

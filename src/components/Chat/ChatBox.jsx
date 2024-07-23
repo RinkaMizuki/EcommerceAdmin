@@ -187,13 +187,13 @@ const ChatBox = forwardRef(
                   setIsShowEmoji(false);
                 }}
               >
-                <>
+                <Box>
                   <EmojiPicker
                     open={isShowEmoji}
                     onEmojiClick={handleChooseEmoji}
                     style={{ zIndex: 9999 }}
                   />
-                </>
+                </Box>
               </ClickAwayListener>
             ) : null}
             <Box
@@ -219,7 +219,7 @@ const ChatBox = forwardRef(
                   setMessage((prevMessage) => {
                     return {
                       ...prevMessage,
-                      content: e.target.value.trim(),
+                      content: e.target.value,
                     };
                   })
                 }

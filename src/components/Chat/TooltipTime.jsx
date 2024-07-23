@@ -10,7 +10,7 @@ const useStyles = makeStyles((theme) => ({
 const TooltipTime = ({
   children,
   date,
-  position = "left-end",
+  position = "left",
   offsetX = 0,
   offsetY = -14,
   enterDelay = 300,

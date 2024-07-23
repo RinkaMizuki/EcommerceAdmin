@@ -2,7 +2,7 @@ import { Avatar, Box, Typography } from "@mui/material";
 import { format, parseISO } from "date-fns";
 import { memo, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { MESSAGE_STATE } from "./ChatList";
+import { MESSAGE_STATE, MESSAGE_TYPE } from "./ChatList";
 
 const ChatItem = ({
   p,
@@ -16,7 +16,7 @@ const ChatItem = ({
   const navigate = useNavigate();
   const params = useParams();
 
-  const { messageContent, sendAt, sender, isDeleted } =
+  const { messageContent, messageType, sendAt, sender, isDeleted } =
     p.conversation?.lastMessage;
 
   const formatDate = (date) => {
@@ -103,11 +103,25 @@ const ChatItem = ({
             }}
           >
             {sender?.userId === currentUser?.id
-              ? `You ${!isDeleted ? `: ${messageContent}` : "unsent a message"}`
+              ? `You ${
+                  !isDeleted
+                    ? `: ${
+                        messageType === MESSAGE_TYPE.TEXT
+                          ? messageContent
+                          : "sent a photo"
+                      }`
+                    : `unsent a ${
+                        messageType === MESSAGE_TYPE.TEXT ? "message" : "photo"
+                      }`
+                }`
               : `${
                   !isDeleted
-                    ? messageContent
-                    : `${sender.userName} unsent a message`
+                    ? messageType === MESSAGE_TYPE.TEXT
+                      ? messageContent
+                      : "sent a photo"
+                    : `${sender.userName} unsent a ${
+                        messageType === MESSAGE_TYPE.TEXT ? "message" : "photo"
+                      }`
                 }`}
           </p>
         </Box>

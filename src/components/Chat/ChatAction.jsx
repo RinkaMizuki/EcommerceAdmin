@@ -1,6 +1,7 @@
 import { Box, Typography } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import { TooltipTitle } from "./TooltipAction";
+import { MESSAGE_TYPE } from "./ChatList";
 
 export const REPLY_HEIGHT = 50;
 
@@ -55,7 +56,9 @@ const ChatAction = ({
               color: "#ccc",
             }}
           >
-            {messageContent}
+            {replyMessage.messageType !== MESSAGE_TYPE.IMAGE
+              ? messageContent
+              : "Image"}
           </Typography>
         )}
       </div>

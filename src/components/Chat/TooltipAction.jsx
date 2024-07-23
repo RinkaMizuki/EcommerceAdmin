@@ -18,6 +18,7 @@ import { default as ReactionPicker } from "emoji-picker-react";
 import { ParticipantContext } from "../../contexts/participantContext";
 import { chathubConnection } from "../../services/realtimeService";
 import "./Chat.css";
+import { MESSAGE_STATE, MESSAGE_TYPE } from "./ChatList";
 
 const useStyles = makeStyles(() => ({
   customTooltip: {
@@ -76,6 +77,7 @@ const ActionCpn = ({
   setMessage,
   morePlacement,
   setEditMessage,
+  setMessageState,
   setReplyMessage,
 }) => {
   const [open, setOpen] = useState(false);
@@ -113,7 +115,20 @@ const ActionCpn = ({
   };
 
   const handleRemoveMessage = (message) => {
-    chathubConnection.invoke("SendRemoveMessageAsync", currentUser.id, message);
+    if (message.messageType === MESSAGE_TYPE.IMAGE) {
+      chathubConnection.invoke(
+        "SendRemoveImageAsync",
+        participant?.userId,
+        message
+      );
+    } else {
+      chathubConnection.invoke(
+        "SendRemoveMessageAsync",
+        participant?.userId,
+        message
+      );
+    }
+    setReplyMessage(null);
   };
 
   const handleChooseReaction = (reaction, event) => {
@@ -128,6 +143,7 @@ const ActionCpn = ({
     chathubConnection
       .invoke("SendReactMessageAsync", participant?.userId, reactionDto)
       .catch((err) => console.error("Error invoking SendMessageAsync: ", err));
+    setMessageState(MESSAGE_STATE.REP);
   };
 
   // return focus to the button when we transitioned from !open -> open
@@ -214,21 +230,23 @@ const ActionCpn = ({
                     >
                       {currentUser.id === msg.senderId && (
                         <Box>
-                          <MenuItem
-                            onClick={(e) => {
-                              handleClose(e);
-                              setReplyMessage(null);
-                              setEditMessage(msg);
-                              setMessage((prevMessage) => {
-                                return {
-                                  ...prevMessage,
-                                  content: msg.messageContent,
-                                };
-                              });
-                            }}
-                          >
-                            Edit
-                          </MenuItem>
+                          {msg.messageType !== MESSAGE_TYPE.IMAGE && (
+                            <MenuItem
+                              onClick={(e) => {
+                                handleClose(e);
+                                setReplyMessage(null);
+                                setEditMessage(msg);
+                                setMessage((prevMessage) => {
+                                  return {
+                                    ...prevMessage,
+                                    content: msg.messageContent,
+                                  };
+                                });
+                              }}
+                            >
+                              Edit
+                            </MenuItem>
+                          )}
                           <MenuItem onClick={() => handleRemoveMessage(msg)}>
                             Remove
                           </MenuItem>
@@ -275,13 +293,14 @@ const ActionCpn = ({
 };
 
 const TooltipAction = ({
-  position = "left-end",
+  position = "left",
   msg,
   children,
   reverse = false,
   morePlacement = "top-end",
   setMessage = () => {},
   setEditMessage,
+  setMessageState,
   setIsCalcHeight,
   setReplyMessage,
   offsetX = 0,
@@ -302,6 +321,7 @@ const TooltipAction = ({
           setReplyMessage={setReplyMessage}
           setEditMessage={setEditMessage}
           setIsCalcHeight={setIsCalcHeight}
+          setMessageState={setMessageState}
         />
       }
       placement={position}

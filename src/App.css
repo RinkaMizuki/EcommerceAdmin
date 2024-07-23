@@ -1,7 +1,3 @@
-:root {
-  --bg: "";
-}
-
 body {
   margin: 0;
   padding: 0 !important;
@@ -9,18 +5,22 @@ body {
 }
 
 div[data-rmiz-modal-content] {
-  overflow: auto;
   position: relative;
 }
 
 div[data-rmiz-modal-content]::before {
   content: "";
-  background-image: var(--bg);
   display: block;
+  background-image: var(--bg, "");
   background-size: cover;
+  background-position: center;
   width: 100%;
   height: 100%;
-  filter: blur(5px);
+  filter: blur(15px);
+  position: absolute;
+  background-color: #000;
+  top: 0;
+  left: 0;
 }
 
 button[data-rmiz-btn-unzoom] {
