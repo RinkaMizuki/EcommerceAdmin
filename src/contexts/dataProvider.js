@@ -6,6 +6,7 @@ import {
   productFormData,
   handleGetFiles,
   sliderFormData,
+  messageImageFromData,
 } from "../data/index.js";
 import queryString from "query-string";
 import { refreshAuth } from "../services/tokenService.js";
@@ -80,6 +81,20 @@ const customDataProvider = {
           : sliderFormData(params);
       return httpClient(
         `${import.meta.env.VITE_ECOMMERCE_BASE_URL}/Admin/${resource}/post`,
+        {
+          method: "POST",
+          body: formData,
+        }
+      ).then(({ json }) => {
+        return { data: json };
+      });
+    } else if (
+      resource.includes("conversations") &&
+      resource.includes("images")
+    ) {
+      const formData = messageImageFromData(params);
+      return httpClient(
+        `${import.meta.env.VITE_ECOMMERCE_BASE_URL}/Admin/${resource}`,
         {
           method: "POST",
           body: formData,

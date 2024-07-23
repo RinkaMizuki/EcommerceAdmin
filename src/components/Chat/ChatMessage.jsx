@@ -2,9 +2,15 @@ import { Box, Typography, Avatar } from "@mui/material";
 import TooltipAction from "./TooltipAction";
 import TooltipTime from "./TooltipTime";
 import ReplyIcon from "@mui/icons-material/Reply";
-import { forwardRef, useState } from "react";
+import { forwardRef, useCallback, useState } from "react";
 import ChatHistory from "./ChatHistory";
 import ChatReaction from "./ChatReaction";
+import { Controlled as ControlledZoom } from "react-medium-image-zoom";
+
+import "react-medium-image-zoom/dist/styles.css";
+import ZoomOutMapIcon from "@mui/icons-material/ZoomOutMap";
+
+const _validFileExtensions = [".jpg", ".jpeg", ".png"];
 
 const ChatMessage = forwardRef(
   (
@@ -21,6 +27,15 @@ const ChatMessage = forwardRef(
     ref
   ) => {
     const [isShowMessagesHistory, setIsShowMessagesHistory] = useState(false);
+    const [isZoomed, setIsZoomed] = useState(false);
+
+    const handleZoomChange = useCallback((shouldZoom, imgUrl) => {
+      document
+        .querySelector("div[data-rmiz-modal-content]")
+        .style.setProperty("--bg", `url("${imgUrl}")`, "important");
+      setIsZoomed(shouldZoom);
+    }, []);
+
     const convertMillisecondToSecond = (time) =>
       Math.floor(new Date(time).getTime() / 1000);
 
@@ -30,9 +45,10 @@ const ChatMessage = forwardRef(
       );
     };
 
-    const { sendAt, modifiedAt, originalMessage, isDeleted } = msg;
+    const { sendAt, modifiedAt, originalMessage, isDeleted, messageContent } =
+      msg;
     const isEdited = compareNotEqualTime(sendAt, modifiedAt);
-
+    const messageSplit = messageContent.split(".");
     return (
       <div className="mt-2">
         {newDate && (
@@ -163,6 +179,7 @@ const ChatMessage = forwardRef(
                           backgroundColor: "#494949",
                           color: "#cbcbcb",
                           fontSize: "13px",
+                          whiteSpace: "pre-wrap",
                         }}
                         onClick={() =>
                           handleScrollToMessage(originalMessage.messageId)
@@ -206,12 +223,43 @@ const ChatMessage = forwardRef(
                             alignSelf: "flex-end",
                           }}
                         >
-                          <p
-                            className="small p-2 me-3 mb-1 text-white rounded-3 bg-primary"
-                            ref={ref}
-                          >
-                            {msg.messageContent}
-                          </p>
+                          {!_validFileExtensions.includes(
+                            "." + messageSplit[messageSplit.length - 1]
+                          ) ? (
+                            <p
+                              id={msg.messageId}
+                              className="small p-2 me-3 mb-1 text-white rounded-3 bg-primary"
+                              style={{
+                                whiteSpace: "pre-wrap",
+                              }}
+                              ref={ref}
+                            >
+                              {messageContent}
+                            </p>
+                          ) : (
+                            <ControlledZoom
+                              IconUnzoom={ZoomOutMapIcon}
+                              onZoomChange={(shouldZoom) =>
+                                handleZoomChange(shouldZoom, messageContent)
+                              }
+                              isZoomed={isZoomed}
+                            >
+                              <img
+                                className="me-3 mb-1 message-image"
+                                src={`${messageContent}?${Date.now()}`}
+                                style={{
+                                  cursor: "pointer",
+                                  border: "1px solid #232323",
+                                  overflow: "hidden",
+                                  borderRadius: "20px",
+                                  maxWidth: "200px",
+                                  height: "100%",
+                                  objectFit: "fill",
+                                }}
+                              />
+                            </ControlledZoom>
+                          )}
+
                           <ChatReaction reactions={msg.reactions} />
                         </Box>
                       </TooltipTime>
@@ -231,8 +279,13 @@ const ChatMessage = forwardRef(
                             display: "flex",
                           }}
                         >
-                          <p className="small p-2 me-3 mb-1 text-white rounded-3 bg-primary">
-                            {msg.messageContent}
+                          <p
+                            className="small p-2 me-3 mb-1 text-white rounded-3 bg-primary"
+                            style={{
+                              whiteSpace: "pre-wrap",
+                            }}
+                          >
+                            {messageContent}
                           </p>
                           <ChatReaction reactions={msg.reactions} />
                         </Box>
@@ -313,6 +366,7 @@ const ChatMessage = forwardRef(
                     backgroundColor: "#494949",
                     color: "#cbcbcb",
                     fontSize: "13px",
+                    whiteSpace: "pre-wrap",
                   }}
                 >
                   {originalMessage?.messageContent}
@@ -353,9 +407,10 @@ const ChatMessage = forwardRef(
                         style={{
                           color: "#000000",
                           backgroundColor: "#f5f6f7",
+                          whiteSpace: "pre-wrap",
                         }}
                       >
-                        {msg.messageContent}
+                        {_validFileExtensions.includes()}
                       </p>
                       <ChatReaction reactions={msg.reactions} />
                     </Box>
@@ -387,9 +442,10 @@ const ChatMessage = forwardRef(
                       style={{
                         color: "#000000",
                         backgroundColor: "#f5f6f7",
+                        whiteSpace: "pre-wrap",
                       }}
                     >
-                      {msg.messageContent}
+                      {messageContent}
                     </p>
                     <ChatReaction reactions={msg.reactions} />
                   </Box>

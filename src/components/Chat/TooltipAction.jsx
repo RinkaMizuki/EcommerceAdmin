@@ -219,7 +219,12 @@ const ActionCpn = ({
                               handleClose(e);
                               setReplyMessage(null);
                               setEditMessage(msg);
-                              setMessage(msg.messageContent);
+                              setMessage((prevMessage) => {
+                                return {
+                                  ...prevMessage,
+                                  content: msg.messageContent,
+                                };
+                              });
                             }}
                           >
                             Edit

@@ -8,6 +8,10 @@
   background-color: #4e4e4e85;
 }
 
+.message-image:hover {
+  background-color: #3c3c3c;
+}
+
 .jump1,
 .jump2,
 .jump3 {

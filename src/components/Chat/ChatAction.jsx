@@ -64,7 +64,10 @@ const ChatAction = ({
           onClick={() => {
             replyMessage && setReplyMessage(null);
             editMessage && setEditMessage(null);
-            setMessage("");
+            setMessage({
+              content: "",
+              files: [],
+            });
           }}
         >
           <CloseIcon

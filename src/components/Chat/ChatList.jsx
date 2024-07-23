@@ -23,7 +23,12 @@ export const MESSAGE_STATE = {
 
 const ChatList = () => {
   const mode = useTheme()[0];
-  const [message, setMessage] = useState("");
+  const [message, setMessage] = useState({
+    content: "",
+    files: [],
+  });
+  const [blobs, setBlobs] = useState([]);
+
   const [replyMessage, setReplyMessage] = useState(null);
   const [participants, setParticipants] = useState([]);
   const [searchParticipants, setSearchParticipants] = useState([]);
@@ -42,7 +47,7 @@ const ChatList = () => {
   const hasAdjustedHeight = useRef(false);
   const { participant, setParticipant } = useContext(ParticipantContext);
 
-  const { getList } = dataProvider;
+  const { getList, create } = dataProvider;
   const logout = useLogout();
   const navigate = useNavigate();
   const params = useParams();
@@ -69,7 +74,15 @@ const ChatList = () => {
 
   useEffect(() => {
     chathubConnection.on("ReceiveMessage", (newMessage) => {
-      setMessages((prevMessages) => [...prevMessages, newMessage]);
+      setMessages((prevMessages) => {
+        return [...prevMessages, newMessage];
+      });
+    });
+
+    chathubConnection.on("ReceiveMessagesImage", (listMessagesImage) => {
+      setMessages((prevMessages) => {
+        return [...prevMessages, ...listMessagesImage];
+      });
     });
 
     chathubConnection.on("ReceiveUpdateMessage", (updateMessage) => {
@@ -202,7 +215,10 @@ const ChatList = () => {
   useEffect(() => {
     setEditMessage(null);
     setReplyMessage(null);
-    setMessage("");
+    setMessage({
+      content: "",
+      files: [],
+    });
   }, [params?.conversationId]);
 
   useEffect(() => {
@@ -245,28 +261,48 @@ const ChatList = () => {
         hasAdjustedHeight.current = false;
       }
     }
+
     inputMessageRef.current?.focus();
   }, [replyMessage, editMessage]);
 
   const handleSendMessage = (e) => {
-    if (message) {
+    const { content, files } = message;
+    if (content || files.length) {
       if (e.type === "click" || (e.type === "keydown" && e.keyCode === 13)) {
         if (!editMessage) {
           const messageDto = {
             messageId: null,
             senderId: currentUser.id,
             conversationId: participant?.conversationId,
-            messageContent: message,
+            messageContent: content,
             originalMessageId: replyMessage ? replyMessage.messageId : null,
           };
-          chathubConnection
-            .invoke("SendMessageAsync", participant?.userId, messageDto)
-            .catch((err) =>
-              console.error("Error invoking SendMessageAsync: ", err)
-            );
+          if (content) {
+            chathubConnection
+              .invoke("SendMessageAsync", participant?.userId, messageDto)
+              .catch((err) =>
+                console.error("Error invoking SendMessageAsync: ", err)
+              );
+          }
+          if (files.length) {
+            const messageImageDto = {
+              messageDto,
+              images: files,
+            };
+            create(
+              `conversations/${participant.conversationId}/images?receiveId=${participant?.userId}`,
+              {
+                data: { messageImageDto },
+              }
+            )
+              .then(({ data }) => {
+                console.log(data);
+              })
+              .catch((err) => console.log(err));
+          }
+
           replyMessage && setReplyMessage(null);
           setMessageState(MESSAGE_STATE.ADD);
-          setMessage("");
         } else {
           chathubConnection
             .invoke("SendEditMessageAsync", participant?.userId, {
@@ -278,9 +314,13 @@ const ChatList = () => {
             )
             .finally(() => {
               setEditMessage(null);
-              setMessage("");
             });
         }
+        setBlobs([]);
+        setMessage({
+          content: "",
+          files: [],
+        });
       }
     }
   };
@@ -490,10 +530,11 @@ const ChatList = () => {
             <ChatBox
               ref={inputMessageRef}
               message={message}
+              blobs={blobs}
               editMessage={editMessage}
               handleSendMessage={handleSendMessage}
+              setBlobs={setBlobs}
               setMessage={setMessage}
-              setIsPreparing={setIsPreparing}
             />
           </>
         ) : null}

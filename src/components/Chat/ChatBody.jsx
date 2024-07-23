@@ -132,19 +132,23 @@ const ChatBody = forwardRef(
       }
     };
     const handleScrollToMessage = (messageId) => {
-      const messageElement = messageRefs.find(
-        (m) => m?.current?.id === messageId
-      );
+      let messageElement = null;
+      messageRefs.forEach((m) => {
+        if (m?.current?.id === messageId) {
+          messageElement = m;
+        } else {
+          if (m.current) {
+            m.current.style.border = "unset !important";
+          }
+        }
+      });
       //message was already render in UI
       if (messageElement?.current) {
         messageElement.current.scrollIntoView({
           behavior: "smooth",
           block: "center",
         });
-      }
-      //message not rendered => scroll top to load more messages
-      else {
-        areaChatRef.current.scrollTop = 0;
+        messageElement.current.style.border = "2px solid #fff";
       }
     };
 
@@ -184,7 +188,7 @@ const ChatBody = forwardRef(
           sx={{
             "::-webkit-scrollbar": {
               borderRadius: "15px",
-              width: "8px",
+              width: "7px",
               background: "unset",
             },
             "::-webkit-scrollbar-track": {

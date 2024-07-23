@@ -97,7 +97,7 @@ const ChatItem = ({
               overflow: "hidden",
               textOverflow: "ellipsis",
               whiteSpace: "nowrap",
-              width: "calc(100% - 20px)",
+              maxWidth: "230px",
               fontSize: "13px",
               color: `${mode === "dark" ? "#d5d5d5" : "#838383"}`,
             }}
