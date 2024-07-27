@@ -1,9 +1,17 @@
 import { Avatar, Box, Grid, Typography } from "@mui/material";
 import { useLogout, useTheme, useNotify } from "react-admin";
 import { useDebounce } from "use-debounce";
+import messageSound from "../../assets/sounds/messageSound.ogg";
 import Divider from "@mui/material/Divider";
 import ChatItem from "./ChatItem";
-import { Fragment, useContext, useEffect, useRef, useState } from "react";
+import {
+  Fragment,
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import { chathubConnection } from "../../services/realtimeService";
 import * as signalR from "@microsoft/signalr";
 import { userService } from "../../services/userService";
@@ -19,6 +27,7 @@ import { ParticipantContext } from "../../contexts/participantContext";
 export const MESSAGE_TYPE = {
   TEXT: "text",
   IMAGE: "image",
+  AUDIO: "audio",
   ICON: "icon",
 };
 
@@ -28,32 +37,60 @@ export const MESSAGE_STATE = {
   REP: "rep",
 };
 
+const TITLE = document.title;
+
+const useIsTabActive = () => {
+  const [isTabVisible, setIsTabVisible] = useState(true);
+
+  const handleVisibilityChange = useCallback(() => {
+    setIsTabVisible(document.visibilityState === "visible");
+  }, []);
+
+  useEffect(() => {
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, []);
+
+  return isTabVisible;
+};
+
 const ChatList = () => {
+  const isActive = useIsTabActive();
   const mode = useTheme()[0];
   const [message, setMessage] = useState({
     content: "",
     files: [],
+    type: "text",
   });
   const [blobs, setBlobs] = useState([]);
-
   const [replyMessage, setReplyMessage] = useState(null);
   const [participants, setParticipants] = useState([]);
   const [searchParticipants, setSearchParticipants] = useState([]);
   const [messages, setMessages] = useState([]);
   const [usersStatus, setUsersStatus] = useState([]);
   const [search, setSearch] = useState("");
+  const [messageAudio] = useState(new Audio(messageSound));
   const [isShowSearchConver, setIsShowSearchConver] = useState(false);
   const [messageState, setMessageState] = useState(MESSAGE_STATE.ADD);
   const [editMessage, setEditMessage] = useState(null);
+  const [userPreparing, setUserPreparing] = useState({
+    isPreparing: false,
+    converPrepareId: "",
+  });
   const [isPreparing, setIsPreparing] = useState(false);
-  const [isUserPreparing, setIsUserPreparing] = useState(false);
+  const [toggleActive, setToggleActive] = useState(!isActive);
+  const [messageNoti, setMessageNoti] = useState({
+    isNoti: false,
+    userName: "",
+  });
   const [searchDebounce] = useDebounce(search, 500);
   const areaChatRef = useRef(null);
   const bodyChatWrapperRef = useRef(null);
   const inputMessageRef = useRef(null);
   const hasAdjustedHeight = useRef(false);
   const { participant, setParticipant } = useContext(ParticipantContext);
-
   const { getList, create } = dataProvider;
   const logout = useLogout();
   const navigate = useNavigate();
@@ -61,6 +98,37 @@ const ChatList = () => {
   const notify = useNotify();
 
   const currentUser = userService.getUser();
+
+  const handleGetListParticipants = () => {
+    if (chathubConnection.state === signalR.HubConnectionState.Connected) {
+      chathubConnection
+        .invoke("GetListParticipantAsync", currentUser?.id)
+        .catch((err) =>
+          console.error("Error invoking GetListParticipantAsync: ", err)
+        );
+    }
+  };
+
+  useEffect(() => {
+    let timeOutId;
+    if (!isActive && messageNoti?.isNoti) {
+      if (!toggleActive) {
+        document.title = `${messageNoti?.userName || ""} messaged you`;
+      } else {
+        document.title = TITLE;
+      }
+      timeOutId = setTimeout(() => {
+        setToggleActive(!toggleActive);
+      }, 1500);
+    } else {
+      document.title = TITLE;
+      setMessageNoti(null);
+    }
+
+    return () => {
+      window.clearTimeout(timeOutId);
+    };
+  }, [isActive, toggleActive, messageNoti]);
 
   useEffect(() => {
     if (searchDebounce) {
@@ -81,14 +149,44 @@ const ChatList = () => {
 
   useEffect(() => {
     chathubConnection.on("ReceiveMessage", (newMessage) => {
-      setMessages((prevMessages) => {
-        return [...prevMessages, newMessage];
-      });
+      if (newMessage.senderId !== currentUser.id) {
+        const notiParticipant = participants.find(
+          (p) => p.conversationId === newMessage.conversationId
+        );
+        if (!notiParticipant?.conversation?.isMute) {
+          setMessageNoti({
+            isNoti: true,
+            userName: newMessage.sender.userName,
+          });
+          messageAudio
+            .play()
+            .catch((error) => console.error("Play audio error: " + error));
+        } else {
+        }
+      }
+      if (participant.conversationId === newMessage.conversationId) {
+        setMessages((prevMessages) => {
+          return [...prevMessages, newMessage];
+        });
+      }
+      handleGetListParticipants();
     });
+    return () => chathubConnection.off("ReceiveMessage");
+  }, [participants, participant]);
 
+  useEffect(() => {
     chathubConnection.on("ReceiveMessagesImage", (listMessagesImage) => {
       setMessages((prevMessages) => {
         return [...prevMessages, ...listMessagesImage];
+      });
+    });
+
+    chathubConnection.on("ReceiveUpdateConversation", (conversation) => {
+      setParticipant((prevPar) => {
+        return {
+          ...prevPar,
+          conversation,
+        };
       });
     });
 
@@ -168,14 +266,10 @@ const ChatList = () => {
     };
   }, []);
 
-  useEffect(() => {
-    chathubConnection.on("ReceivePreparing", (isPrepare) => {
-      setIsUserPreparing(isPrepare);
-    });
-  }, []);
-
   //listen error invoked method from server
   useEffect(() => {
+    handleGetListParticipants();
+
     chathubConnection.on(
       "ReceiveEditMessageError",
       (errorCode, errorMessage) => {
@@ -187,7 +281,7 @@ const ChatList = () => {
   }, []);
 
   useEffect(() => {
-    if (!message) {
+    if (!message.content) {
       setIsPreparing(false);
     } else {
       setIsPreparing(true);
@@ -200,7 +294,12 @@ const ChatList = () => {
       isPreparing
     ) {
       chathubConnection
-        .invoke("SendMessagePreparingAsync", participant?.userId, isPreparing)
+        .invoke(
+          "SendMessagePreparingAsync",
+          participant?.userId,
+          isPreparing,
+          participant?.conversationId
+        )
         .catch((err) =>
           console.error("Error invoking SendMessagePreparingAsync: ", err)
         );
@@ -209,12 +308,30 @@ const ChatList = () => {
       !isPreparing
     ) {
       chathubConnection
-        .invoke("SendMessagePreparingAsync", participant?.userId, isPreparing)
+        .invoke(
+          "SendMessagePreparingAsync",
+          participant?.userId,
+          isPreparing,
+          participant?.conversationId
+        )
         .catch((err) =>
           console.error("Error invoking SendMessagePreparingAsync: ", err)
         );
     }
   }, [isPreparing]);
+
+  useEffect(() => {
+    chathubConnection.on("ReceivePreparing", (isPrepare, conversationId) => {
+      setUserPreparing((prev) => {
+        return {
+          ...prev,
+          isPreparing: isPrepare,
+          converPrepareId: conversationId,
+        };
+      });
+    });
+    return () => chathubConnection.off("ReceivePreparing");
+  }, [participant]);
 
   useEffect(() => {
     if (participant != null) {
@@ -234,21 +351,12 @@ const ChatList = () => {
   }, [participant]);
 
   useEffect(() => {
-    if (chathubConnection.state === signalR.HubConnectionState.Connected) {
-      chathubConnection
-        .invoke("GetListParticipantAsync", currentUser?.id)
-        .catch((err) =>
-          console.error("Error invoking GetListParticipantAsync: ", err)
-        );
-    }
-  }, [messages]);
-
-  useEffect(() => {
     setEditMessage(null);
     setReplyMessage(null);
     setMessage({
       content: "",
       files: [],
+      type: MESSAGE_TYPE.TEXT,
     });
   }, [params?.conversationId]);
 
@@ -306,7 +414,7 @@ const ChatList = () => {
             senderId: currentUser.id,
             conversationId: participant?.conversationId,
             messageContent: content,
-            messageType: MESSAGE_TYPE.TEXT,
+            messageType: message.type,
             originalMessageId: replyMessage ? replyMessage.messageId : null,
           };
           if (content) {
@@ -319,7 +427,6 @@ const ChatList = () => {
           if (files.length) {
             const messageImageDto = {
               messageDto,
-              messageType: MESSAGE_TYPE.IMAGE,
               images: files,
             };
             create(
@@ -350,11 +457,11 @@ const ChatList = () => {
               setEditMessage(null);
             });
         }
-
         setBlobs([]);
         setMessage({
           content: "",
           files: [],
+          type: "text",
         });
       }
     }
@@ -540,10 +647,11 @@ const ChatList = () => {
             <ChatBody
               ref={{ bodyChatWrapperRef, areaChatRef }}
               mode={mode}
-              isUserPreparing={isUserPreparing}
               messages={messages}
               messageState={messageState}
+              userPreparing={userPreparing}
               editMessage={editMessage}
+              participant={participant}
               currentUser={currentUser}
               setMessage={setMessage}
               setMessages={setMessages}

@@ -15,7 +15,8 @@ const ChatBody = forwardRef(
       currentUser,
       editMessage,
       messageState,
-      isUserPreparing,
+      participant,
+      userPreparing,
       setMessage,
       setMessages,
       setReplyMessage,
@@ -131,6 +132,7 @@ const ChatBody = forwardRef(
         }
       }
     };
+
     const handleScrollToMessage = (messageId) => {
       let messageElement = null;
       messageRefs.forEach((m) => {
@@ -242,19 +244,20 @@ const ChatBody = forwardRef(
                 />
               );
             })}
-            {isUserPreparing && (
-              <div className="d-flex flex-row align-items-center justify-content-start pt-1 gap-3">
-                <Avatar
-                  src={userPrepare?.sender?.url}
-                  alt={userPrepare?.sender?.avatar}
-                />
-                <div className="is-typing">
-                  <div className="jump1"></div>
-                  <div className="jump2"></div>
-                  <div className="jump3"></div>
+            {userPreparing.converPrepareId === participant?.conversationId &&
+              userPreparing.isPreparing && (
+                <div className="d-flex flex-row align-items-center justify-content-start pt-1 gap-3">
+                  <Avatar
+                    src={userPrepare?.sender?.url}
+                    alt={userPrepare?.sender?.avatar}
+                  />
+                  <div className="is-typing">
+                    <div className="jump1"></div>
+                    <div className="jump2"></div>
+                    <div className="jump3"></div>
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
           </Box>
         </Box>
       </Box>

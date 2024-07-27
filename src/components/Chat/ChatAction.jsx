@@ -56,8 +56,10 @@ const ChatAction = ({
               color: "#ccc",
             }}
           >
-            {replyMessage.messageType !== MESSAGE_TYPE.IMAGE
+            {replyMessage.messageType === MESSAGE_TYPE.TEXT
               ? messageContent
+              : replyMessage.messageType === MESSAGE_TYPE.AUDIO
+              ? "Audio"
               : "Image"}
           </Typography>
         )}
@@ -70,6 +72,7 @@ const ChatAction = ({
             setMessage({
               content: "",
               files: [],
+              type: "text",
             });
           }}
         >

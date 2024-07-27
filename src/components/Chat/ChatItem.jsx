@@ -16,6 +16,8 @@ const ChatItem = ({
   const navigate = useNavigate();
   const params = useParams();
 
+  const isSeen = p.conversation.isSeen;
+
   const { messageContent, messageType, sendAt, sender, isDeleted } =
     p.conversation?.lastMessage;
 
@@ -98,8 +100,13 @@ const ChatItem = ({
               textOverflow: "ellipsis",
               whiteSpace: "nowrap",
               maxWidth: "230px",
+              fontWeight: `${isSeen ? "500" : "600"}`,
               fontSize: "13px",
-              color: `${mode === "dark" ? "#d5d5d5" : "#838383"}`,
+              color: `${
+                mode === "dark"
+                  ? `${isSeen ? "#d5d5d5" : "#ffffff"}`
+                  : "#838383"
+              }`,
             }}
           >
             {sender?.userId === currentUser?.id
@@ -108,23 +115,36 @@ const ChatItem = ({
                     ? `: ${
                         messageType === MESSAGE_TYPE.TEXT
                           ? messageContent
+                          : messageType === MESSAGE_TYPE.AUDIO
+                          ? "send a voice message"
                           : "sent a photo"
                       }`
                     : `unsent a ${
-                        messageType === MESSAGE_TYPE.TEXT ? "message" : "photo"
+                        messageType === MESSAGE_TYPE.TEXT
+                          ? "message"
+                          : messageType === MESSAGE_TYPE.AUDIO
+                          ? "voice message"
+                          : "photo"
                       }`
                 }`
-              : `${
+              : `${sender.userName}: ${
                   !isDeleted
                     ? messageType === MESSAGE_TYPE.TEXT
                       ? messageContent
+                      : messageType === MESSAGE_TYPE.AUDIO
+                      ? "send a voice message"
                       : "sent a photo"
                     : `${sender.userName} unsent a ${
-                        messageType === MESSAGE_TYPE.TEXT ? "message" : "photo"
+                        messageType === MESSAGE_TYPE.TEXT
+                          ? "message"
+                          : messageType === MESSAGE_TYPE.AUDIO
+                          ? "voice message"
+                          : "photo"
                       }`
                 }`}
           </p>
         </Box>
+
         <Box
           sx={{
             display: "flex",
@@ -132,6 +152,21 @@ const ChatItem = ({
             gap: "3px",
           }}
         >
+          {!isSeen && (
+            <Box
+              sx={{
+                alignSelf: "center",
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                width: "13px",
+                height: "13px",
+                backgroundColor: "#0866ff",
+                borderRadius: "50%",
+                marginTop: "5px",
+              }}
+            ></Box>
+          )}
           <Typography
             sx={{
               fontSize: "13px",
@@ -145,19 +180,3 @@ const ChatItem = ({
   );
 };
 export default memo(ChatItem);
-
-{
-  /* <div
-    style={{
-      alignSelf: "flex-end",
-      display: "flex",
-      justifyContent: "center",
-      alignItems: "center",
-      width: "13px",
-      height: "13px",
-      backgroundColor: "#0866ff",
-      borderRadius: "50%",
-      marginTop: "5px",
-    }}
-    ></div> */
-}

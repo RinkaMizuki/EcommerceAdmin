@@ -41,6 +41,7 @@ const messageImageFromData = (params) => {
   formData.append("senderId", messageDto.senderId);
   formData.append("conversationId", messageDto.conversationId);
   formData.append("messageContent", messageDto.messageContent);
+  formData.append("messageType", messageDto.messageType);
   formData.append("originalMessageId", messageDto.originalMessageId || "");
   // Append Images
   for (let i = 0; i < files.length; i++) {

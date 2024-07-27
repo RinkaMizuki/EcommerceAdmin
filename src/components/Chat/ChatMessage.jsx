@@ -11,6 +11,7 @@ import "react-lazy-load-image-component/src/effects/blur.css";
 import "react-medium-image-zoom/dist/styles.css";
 import ZoomOutMapIcon from "@mui/icons-material/ZoomOutMap";
 import { useEffect } from "react";
+import { v4 as uuidv4 } from "uuid";
 import { MESSAGE_TYPE } from "./ChatList";
 
 const ChatMessage = forwardRef(
@@ -31,7 +32,6 @@ const ChatMessage = forwardRef(
     const [isShowMessagesHistory, setIsShowMessagesHistory] = useState(false);
     const [isZoomed, setIsZoomed] = useState(false);
     const [imgUrl, setImgUrl] = useState("");
-
     const handleZoomChange = useCallback((shouldZoom) => {
       setIsZoomed(shouldZoom);
     }, []);
@@ -53,7 +53,6 @@ const ChatMessage = forwardRef(
         convertMillisecondToSecond(aTime) !== convertMillisecondToSecond(bTime)
       );
     };
-
     const {
       sendAt,
       modifiedAt,
@@ -215,9 +214,7 @@ const ChatMessage = forwardRef(
                           alt={image.alt}
                           effect="blur"
                           className="me-3 mb-1 message-image"
-                          src={`${
-                            originalMessage.messageContent
-                          }?${Date.now()}`}
+                          src={`${originalMessage.messageContent}?${uuidv4()}`}
                           style={{
                             cursor: "pointer",
                             border: "1px solid #232323",
@@ -271,7 +268,8 @@ const ChatMessage = forwardRef(
                           sx={{
                             position: "relative",
                             zIndex: 2,
-                            alignSelf: "flex-end",
+                            display: "flex",
+                            alignItems: "center",
                           }}
                         >
                           <ChatMessageImage
@@ -437,7 +435,7 @@ const ChatMessageImage = forwardRef(
   ) => {
     return (
       <>
-        {!(messageType === MESSAGE_TYPE.IMAGE) ? (
+        {messageType === MESSAGE_TYPE.TEXT ? (
           <p
             id={messageId}
             className="small p-2 me-3 mb-1 text-white rounded-3 bg-primary"
@@ -448,6 +446,16 @@ const ChatMessageImage = forwardRef(
           >
             {messageContent}
           </p>
+        ) : messageType === MESSAGE_TYPE.AUDIO ? (
+          <audio
+            src={`data:audio/wav;base64,${messageContent}`}
+            controls
+            style={{
+              marginRight: "15px",
+              width: "250px",
+              height: "41px",
+            }}
+          />
         ) : (
           <ControlledZoom
             IconUnzoom={ZoomOutMapIcon}
@@ -461,7 +469,7 @@ const ChatMessageImage = forwardRef(
               <LazyLoadImage
                 effect="blur"
                 className="me-3 mb-1 message-image"
-                src={`${messageContent}?${Date.now()}`}
+                src={`${messageContent}?${uuidv4()}`}
                 style={{
                   cursor: "pointer",
                   border: "1px solid #232323",

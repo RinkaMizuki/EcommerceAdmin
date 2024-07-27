@@ -1,6 +1,5 @@
 import SendIcon from "@mui/icons-material/Send";
 import AddReactionIcon from "@mui/icons-material/AddReaction";
-import AddCircleIcon from "@mui/icons-material/AddCircle";
 import AddPhotoAlternateIcon from "@mui/icons-material/AddPhotoAlternate";
 import GifBoxIcon from "@mui/icons-material/GifBox";
 import { Box, ClickAwayListener, TextField } from "@mui/material";
@@ -8,8 +7,10 @@ import ThumbUpIcon from "@mui/icons-material/ThumbUp";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import EmojiPicker from "emoji-picker-react";
 import CancelIcon from "@mui/icons-material/Cancel";
+import KeyboardVoiceIcon from "@mui/icons-material/KeyboardVoice";
 import { forwardRef, useEffect, useRef, useState } from "react";
 import { TooltipTitle } from "./TooltipAction";
+import { MESSAGE_TYPE } from "./ChatList";
 
 const ChatBox = forwardRef(
   (
@@ -18,7 +19,14 @@ const ChatBox = forwardRef(
   ) => {
     const [isShowEmoji, setIsShowEmoji] = useState(false);
     const inputFileRef = useRef(null);
-    const { content, files } = message;
+
+    const [toggleVoice, setToggleVoice] = useState(false);
+    const mediaStream = useRef(null);
+    const mediaRecorder = useRef(null);
+    const chunks = useRef([]);
+
+    const { content, files, type } = message;
+
     const handleChooseImage = (e) => {
       const arrayFile = Array.from(e.target.files);
       const arrayBlob = arrayFile.map((f) => URL.createObjectURL(f));
@@ -27,6 +35,7 @@ const ChatBox = forwardRef(
         return {
           ...prevMessage,
           files: arrayFile,
+          type: MESSAGE_TYPE.IMAGE,
         };
       });
     };
@@ -43,9 +52,79 @@ const ChatBox = forwardRef(
       setBlobs((prevBlobs) => prevBlobs.filter((currB) => currB !== removedB));
     };
 
+    const startRecording = async () => {
+      try {
+        setToggleVoice(true);
+        const stream = await navigator.mediaDevices.getUserMedia({
+          audio: true,
+        });
+        mediaStream.current = stream;
+        mediaRecorder.current = new MediaRecorder(stream);
+        let recordingTimeout; // To store the timeout ID
+
+        //Listen record push data to state
+        mediaRecorder.current.ondataavailable = (e) => {
+          if (e.data.size > 0) {
+            chunks.current.push(e.data);
+          }
+        };
+
+        //Listen when stop recording and create blob
+        mediaRecorder.current.onstop = () => {
+          clearTimeout(recordingTimeout); // Clear the timeout if recording stops before 5 seconds
+          const recordedBlob = new Blob(chunks.current, { type: "audio/wav" });
+          const reader = new FileReader();
+          reader.readAsDataURL(recordedBlob);
+          reader.onloadend = () => {
+            const base64AudioMessage = reader.result.split(",")[1];
+            setMessage((prevMessage) => ({
+              ...prevMessage,
+              content: base64AudioMessage,
+              type: MESSAGE_TYPE.AUDIO,
+            }));
+          };
+          chunks.current = [];
+        };
+
+        mediaRecorder.current.start();
+
+        // Stop recording limit 10s seconds
+        recordingTimeout = setTimeout(() => {
+          if (mediaRecorder.current.state !== "inactive") {
+            mediaRecorder.current.stop();
+            setToggleVoice(false);
+          }
+        }, 10000); // 10,000 milliseconds = 10 seconds
+      } catch (error) {
+        console.error("Error accessing microphone:", error);
+      }
+    };
+
+    const stopRecording = () => {
+      if (
+        mediaRecorder.current &&
+        mediaRecorder.current.state === "recording"
+      ) {
+        mediaRecorder.current.stop();
+        setToggleVoice(false);
+      }
+      if (mediaStream.current) {
+        mediaStream.current.getTracks().forEach((track) => {
+          track.stop();
+        });
+      }
+    };
+
     useEffect(() => {
-      ref.current.style.paddingRight = "50px";
-      return () => blobs.forEach((b) => URL.revokeObjectURL(b));
+      if (ref?.current) {
+        ref.current.style.paddingRight = "50px";
+      }
+      return () => {
+        if (mediaRecorder.current?.state === "recording") {
+          mediaRecorder.current.stop();
+        }
+        blobs.forEach((b) => URL.revokeObjectURL(b));
+      };
     }, []);
 
     return (
@@ -63,6 +142,21 @@ const ChatBox = forwardRef(
           },
         }}
       >
+        {isShowEmoji ? (
+          <ClickAwayListener
+            onClickAway={() => {
+              setIsShowEmoji(false);
+            }}
+          >
+            <Box>
+              <EmojiPicker
+                open={isShowEmoji}
+                onEmojiClick={handleChooseEmoji}
+                style={{ zIndex: 9999 }}
+              />
+            </Box>
+          </ClickAwayListener>
+        ) : null}
         <Box
           sx={{
             position: "absolute",
@@ -140,109 +234,123 @@ const ChatBox = forwardRef(
                 gap: "10px",
               }}
             >
-              <TooltipTitle title="More actions">
-                <AddCircleIcon
-                  sx={{
+              <TooltipTitle title="Voice">
+                <span
+                  onClick={(e) => {
+                    if (toggleVoice) {
+                      stopRecording(e);
+                    } else {
+                      startRecording();
+                    }
+                  }}
+                  style={{
                     cursor: "pointer",
                   }}
-                />
-              </TooltipTitle>
-
-              <TooltipTitle title="Images">
-                <span
-                  style={{
-                    marginBottom: "3px",
-                  }}
-                  onClick={() => inputFileRef.current.click()}
                 >
-                  <AddPhotoAlternateIcon
-                    sx={{
-                      cursor: "pointer",
-                    }}
-                  />
-                  <input
-                    onChange={handleChooseImage}
-                    type="file"
-                    name="image"
-                    id="image"
-                    hidden
-                    multiple
-                    accept="image/png, image/jpg, image/jpeg"
-                    ref={inputFileRef}
-                  />
+                  {!toggleVoice ? <KeyboardVoiceIcon /> : <CancelIcon />}
                 </span>
               </TooltipTitle>
 
-              <TooltipTitle title="GIF">
-                <GifBoxIcon
-                  sx={{
-                    cursor: "pointer",
-                  }}
-                />
-              </TooltipTitle>
+              {!toggleVoice ? (
+                <>
+                  <TooltipTitle title="Images">
+                    <span
+                      style={{
+                        marginBottom: "3px",
+                      }}
+                      onClick={() => inputFileRef.current.click()}
+                    >
+                      <AddPhotoAlternateIcon
+                        sx={{
+                          cursor: "pointer",
+                        }}
+                      />
+                      <input
+                        onChange={handleChooseImage}
+                        type="file"
+                        name="image"
+                        id="image"
+                        hidden
+                        multiple
+                        accept="image/png, image/jpg, image/jpeg"
+                        ref={inputFileRef}
+                      />
+                    </span>
+                  </TooltipTitle>
+
+                  <TooltipTitle title="GIF">
+                    <GifBoxIcon
+                      sx={{
+                        cursor: "pointer",
+                      }}
+                    />
+                  </TooltipTitle>
+                </>
+              ) : null}
             </Box>
-            {isShowEmoji ? (
-              <ClickAwayListener
-                onClickAway={() => {
-                  setIsShowEmoji(false);
-                }}
-              >
-                <Box>
-                  <EmojiPicker
-                    open={isShowEmoji}
-                    onEmojiClick={handleChooseEmoji}
-                    style={{ zIndex: 9999 }}
-                  />
-                </Box>
-              </ClickAwayListener>
-            ) : null}
+
             <Box
               sx={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
                 position: "relative",
                 flex: 1,
               }}
             >
-              <TextField
-                inputRef={ref}
-                fullWidth
-                label="Message"
-                id="message-input"
-                size="small"
-                color="secondary"
-                autoFocus={true}
-                value={content}
-                onKeyDown={(e) => {
-                  setIsShowEmoji(false);
-                  handleSendMessage(e);
-                }}
-                onChange={(e) =>
-                  setMessage((prevMessage) => {
-                    return {
-                      ...prevMessage,
-                      content: e.target.value,
-                    };
-                  })
-                }
-              />
-            </Box>
-
-            <TooltipTitle title="Emojis">
-              <span
-                onClick={() => setIsShowEmoji(!isShowEmoji)}
-                style={{
-                  top: "55%",
-                  right: "55px",
-                  transform: "translateY(-60%)",
-                  position: "absolute",
-                }}
-              >
-                <AddReactionIcon
-                  sx={{
-                    cursor: "pointer",
+              {!toggleVoice ? (
+                <TextField
+                  inputRef={ref}
+                  fullWidth
+                  label="Message"
+                  id="message-input"
+                  size="small"
+                  color="secondary"
+                  autoFocus={true}
+                  value={type === MESSAGE_TYPE.TEXT ? content : ""}
+                  onKeyDown={(e) => {
+                    setIsShowEmoji(false);
+                    handleSendMessage(e);
+                  }}
+                  onChange={(e) =>
+                    setMessage((prevMessage) => {
+                      return {
+                        ...prevMessage,
+                        content: e.target.value,
+                      };
+                    })
+                  }
+                />
+              ) : (
+                <audio
+                  controls
+                  style={{
+                    width: "100%",
+                    height: "41px",
                   }}
                 />
-              </span>
-            </TooltipTitle>
+              )}
+            </Box>
+
+            {!toggleVoice && (
+              <TooltipTitle title="Emojis">
+                <span
+                  onClick={() => setIsShowEmoji(!isShowEmoji)}
+                  style={{
+                    top: "55%",
+                    right: "55px",
+                    transform: "translateY(-60%)",
+                    position: "absolute",
+                  }}
+                >
+                  <AddReactionIcon
+                    sx={{
+                      cursor: "pointer",
+                    }}
+                  />
+                </span>
+              </TooltipTitle>
+            )}
             <TooltipTitle
               title={
                 !editMessage
@@ -254,7 +362,8 @@ const ChatBox = forwardRef(
             >
               <div
                 onClick={(e) => {
-                  if (!!content.trim() || files?.length) {
+                  if (!!content.trim() || files?.length || toggleVoice) {
+                    stopRecording();
                     handleSendMessage(e);
                   }
                 }}
@@ -264,7 +373,7 @@ const ChatBox = forwardRef(
                 className="text-primary"
               >
                 {!editMessage ? (
-                  !!content.trim() || files.length ? (
+                  !!content.trim() || files.length || toggleVoice ? (
                     <SendIcon />
                   ) : (
                     <ThumbUpIcon />

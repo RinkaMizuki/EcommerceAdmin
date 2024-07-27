@@ -230,7 +230,7 @@ const ActionCpn = ({
                     >
                       {currentUser.id === msg.senderId && (
                         <Box>
-                          {msg.messageType !== MESSAGE_TYPE.IMAGE && (
+                          {msg.messageType === MESSAGE_TYPE.TEXT && (
                             <MenuItem
                               onClick={(e) => {
                                 handleClose(e);
