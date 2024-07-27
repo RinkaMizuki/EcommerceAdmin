@@ -15,10 +15,12 @@ const TooltipTime = ({
   offsetY = -14,
   enterDelay = 300,
   leaveDelay = 300,
+  disableHoverListener = false,
 }) => {
   const classes = useStyles();
   return (
     <Tooltip
+      disableHoverListener={disableHoverListener}
       leaveDelay={leaveDelay}
       enterDelay={enterDelay}
       disableInteractive

@@ -1,9 +1,17 @@
-import { Avatar, Box } from "@mui/material";
-import { createRef, forwardRef, memo, useEffect, useState } from "react";
+import { Avatar, Box, Skeleton } from "@mui/material";
+import {
+  createRef,
+  forwardRef,
+  memo,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
 import "./Chat.css";
 import { dataProvider } from "../../contexts/dataProvider";
 import { MESSAGE_STATE } from "./ChatList";
 import ChatMessage from "./ChatMessage";
+import { ParticipantContext } from "../../contexts/participantContext";
 
 export const LIMIT = 15;
 
@@ -11,6 +19,7 @@ const ChatBody = forwardRef(
   (
     {
       mode,
+      message,
       messages,
       currentUser,
       editMessage,
@@ -26,12 +35,11 @@ const ChatBody = forwardRef(
     ref
   ) => {
     const [scrollPosition, setScrollPosition] = useState(0);
-    const [isLoading, setIsLoading] = useState(false);
     const [messageRefs, setMessageRefs] = useState([]);
-
+    const [isLoading, setIsLoading] = useState(false);
+    const { imgLoading } = useContext(ParticipantContext);
     const { bodyChatWrapperRef, areaChatRef } = ref;
     const { getList } = dataProvider;
-
     const groupMessageDateAndTime = (dateTime) => {
       const dt = new Date(parseInt(new Date(dateTime).getTime()));
 
@@ -107,7 +115,6 @@ const ChatBody = forwardRef(
         limit: LIMIT,
       });
     };
-
     const handleScrollLoadMessages = async (e) => {
       if (e.target.scrollTop === 0 && messages.length >= LIMIT) {
         try {
@@ -244,6 +251,34 @@ const ChatBody = forwardRef(
                 />
               );
             })}
+
+            {imgLoading &&
+              Array(+localStorage.getItem("imageLoad"))
+                .fill(true)
+                .map((img, index) => (
+                  <Box
+                    key={index}
+                    sx={{
+                      mt: ".5rem",
+                      display: "flex",
+                      alignItems: "flex-end",
+                      justifyContent: "flex-end",
+                    }}
+                  >
+                    <Skeleton
+                      variant="rounded"
+                      className="d-flex flex-row justify-content-end pt-1"
+                      width={200}
+                      height={100}
+                      sx={{
+                        marginRight: "1rem",
+                        cursor: "not-allowed",
+                      }}
+                    />
+                    <Avatar src={currentUser.url} alt={currentUser.avatar} />
+                  </Box>
+                ))}
+
             {userPreparing.converPrepareId === participant?.conversationId &&
               userPreparing.isPreparing && (
                 <div className="d-flex flex-row align-items-center justify-content-start pt-1 gap-3">

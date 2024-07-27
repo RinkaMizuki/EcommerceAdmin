@@ -307,9 +307,11 @@ const TooltipAction = ({
   offsetY = -10,
   enterDelay = 300,
   leaveDelay = 300,
+  disableHoverListener = false,
 }) => {
   return (
     <Tooltip
+      disableHoverListener={disableHoverListener}
       leaveDelay={leaveDelay}
       enterDelay={enterDelay}
       title={

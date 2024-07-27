@@ -11,7 +11,6 @@ import "react-lazy-load-image-component/src/effects/blur.css";
 import "react-medium-image-zoom/dist/styles.css";
 import ZoomOutMapIcon from "@mui/icons-material/ZoomOutMap";
 import { useEffect } from "react";
-import { v4 as uuidv4 } from "uuid";
 import { MESSAGE_TYPE } from "./ChatList";
 
 const ChatMessage = forwardRef(
@@ -32,6 +31,7 @@ const ChatMessage = forwardRef(
     const [isShowMessagesHistory, setIsShowMessagesHistory] = useState(false);
     const [isZoomed, setIsZoomed] = useState(false);
     const [imgUrl, setImgUrl] = useState("");
+
     const handleZoomChange = useCallback((shouldZoom) => {
       setIsZoomed(shouldZoom);
     }, []);
@@ -214,7 +214,7 @@ const ChatMessage = forwardRef(
                           alt={image.alt}
                           effect="blur"
                           className="me-3 mb-1 message-image"
-                          src={`${originalMessage.messageContent}?${uuidv4()}`}
+                          src={`${originalMessage.messageContent}`}
                           style={{
                             cursor: "pointer",
                             border: "1px solid #232323",
@@ -469,7 +469,7 @@ const ChatMessageImage = forwardRef(
               <LazyLoadImage
                 effect="blur"
                 className="me-3 mb-1 message-image"
-                src={`${messageContent}?${uuidv4()}`}
+                src={`${messageContent}`}
                 style={{
                   cursor: "pointer",
                   border: "1px solid #232323",
@@ -477,7 +477,7 @@ const ChatMessageImage = forwardRef(
                   borderRadius: "20px",
                   maxWidth: "200px",
                   height: "100%",
-                  minHeight: "150px",
+                  minHeight: "300px",
                   objectFit: "fill",
                 }}
                 afterLoad={() => {

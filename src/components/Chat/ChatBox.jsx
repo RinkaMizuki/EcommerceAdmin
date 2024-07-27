@@ -307,7 +307,7 @@ const ChatBox = forwardRef(
                   size="small"
                   color="secondary"
                   autoFocus={true}
-                  value={type === MESSAGE_TYPE.TEXT ? content : ""}
+                  value={content}
                   onKeyDown={(e) => {
                     setIsShowEmoji(false);
                     handleSendMessage(e);
@@ -373,7 +373,7 @@ const ChatBox = forwardRef(
                 className="text-primary"
               >
                 {!editMessage ? (
-                  !!content.trim() || files.length || toggleVoice ? (
+                  !!content.trim() || toggleVoice || blobs.length ? (
                     <SendIcon />
                   ) : (
                     <ThumbUpIcon />

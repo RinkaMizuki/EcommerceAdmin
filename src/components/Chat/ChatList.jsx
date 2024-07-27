@@ -90,7 +90,8 @@ const ChatList = () => {
   const bodyChatWrapperRef = useRef(null);
   const inputMessageRef = useRef(null);
   const hasAdjustedHeight = useRef(false);
-  const { participant, setParticipant } = useContext(ParticipantContext);
+  const { participant, setParticipant, setImgLoading } =
+    useContext(ParticipantContext);
   const { getList, create } = dataProvider;
   const logout = useLogout();
   const navigate = useNavigate();
@@ -153,6 +154,19 @@ const ChatList = () => {
         const notiParticipant = participants.find(
           (p) => p.conversationId === newMessage.conversationId
         );
+        if (notiParticipant.conversationId === params?.conversationId) {
+          chathubConnection.invoke("SendUpdateConversation", {
+            ...notiParticipant.conversation,
+            isSeen: true,
+          });
+        } else {
+          if (notiParticipant.conversation?.isSeen) {
+            chathubConnection.invoke("SendUpdateConversation", {
+              ...notiParticipant.conversation,
+              isSeen: false,
+            });
+          }
+        }
         if (!notiParticipant?.conversation?.isMute) {
           setMessageNoti({
             isNoti: true,
@@ -162,9 +176,10 @@ const ChatList = () => {
             .play()
             .catch((error) => console.error("Play audio error: " + error));
         } else {
+          console.log(notiParticipant, "is muted");
         }
       }
-      if (participant.conversationId === newMessage.conversationId) {
+      if (params?.conversationId === newMessage.conversationId) {
         setMessages((prevMessages) => {
           return [...prevMessages, newMessage];
         });
@@ -172,10 +187,11 @@ const ChatList = () => {
       handleGetListParticipants();
     });
     return () => chathubConnection.off("ReceiveMessage");
-  }, [participants, participant]);
+  }, [participants, params?.conversationId]);
 
   useEffect(() => {
     chathubConnection.on("ReceiveMessagesImage", (listMessagesImage) => {
+      setImgLoading(false);
       setMessages((prevMessages) => {
         return [...prevMessages, ...listMessagesImage];
       });
@@ -188,6 +204,13 @@ const ChatList = () => {
           conversation,
         };
       });
+      setParticipants((prevPar) =>
+        prevPar.map((p) =>
+          p.conversationId === conversation.conversationId
+            ? { ...p, conversation }
+            : p
+        )
+      );
     });
 
     chathubConnection.on("ReceiveUpdateMessage", (updateMessage) => {
@@ -404,7 +427,7 @@ const ChatList = () => {
     inputMessageRef.current?.focus();
   }, [replyMessage, editMessage]);
 
-  const handleSendMessage = (e) => {
+  const handleSendMessage = async (e) => {
     const { content, files } = message;
     if (content || files.length) {
       if (e.type === "click" || (e.type === "keydown" && e.keyCode === 13)) {
@@ -418,27 +441,43 @@ const ChatList = () => {
             originalMessageId: replyMessage ? replyMessage.messageId : null,
           };
           if (content) {
+            setMessage({
+              content: "",
+              files: [],
+              type: "text",
+            });
             chathubConnection
-              .invoke("SendMessageAsync", participant?.userId, messageDto)
+              .invoke("SendMessageAsync", participant?.userId, {
+                ...messageDto,
+                messageType: MESSAGE_TYPE.TEXT,
+              })
               .catch((err) =>
                 console.error("Error invoking SendMessageAsync: ", err)
               );
           }
           if (files.length) {
+            localStorage.setItem("imageLoad", files.length);
+            setImgLoading(true);
+            setBlobs([]);
+            setMessage({
+              content: "",
+              files: [],
+              type: "text",
+            });
             const messageImageDto = {
               messageDto,
               images: files,
             };
-            create(
-              `conversations/${participant.conversationId}/images?receiveId=${participant?.userId}`,
-              {
-                data: { messageImageDto },
-              }
-            )
-              .then(({ data }) => {
-                console.log(data);
-              })
-              .catch((err) => console.log(err));
+            try {
+              await create(
+                `conversations/${participant.conversationId}/images?receiveId=${participant?.userId}`,
+                {
+                  data: { messageImageDto },
+                }
+              );
+            } catch (err) {
+              console.error("Error creating", err);
+            }
           }
           replyMessage && setReplyMessage(null);
           setMessageState(MESSAGE_STATE.ADD);
@@ -457,12 +496,6 @@ const ChatList = () => {
               setEditMessage(null);
             });
         }
-        setBlobs([]);
-        setMessage({
-          content: "",
-          files: [],
-          type: "text",
-        });
       }
     }
   };
@@ -647,6 +680,7 @@ const ChatList = () => {
             <ChatBody
               ref={{ bodyChatWrapperRef, areaChatRef }}
               mode={mode}
+              message={message}
               messages={messages}
               messageState={messageState}
               userPreparing={userPreparing}

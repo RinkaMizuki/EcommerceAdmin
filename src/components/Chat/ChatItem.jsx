@@ -3,6 +3,7 @@ import { format, parseISO } from "date-fns";
 import { memo, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { MESSAGE_STATE, MESSAGE_TYPE } from "./ChatList";
+import { chathubConnection } from "../../services/realtimeService";
 
 const ChatItem = ({
   p,
@@ -16,7 +17,7 @@ const ChatItem = ({
   const navigate = useNavigate();
   const params = useParams();
 
-  const isSeen = p.conversation.isSeen;
+  const { isSeen, conversationId } = p.conversation || {};
 
   const { messageContent, messageType, sendAt, sender, isDeleted } =
     p.conversation?.lastMessage;
@@ -29,9 +30,16 @@ const ChatItem = ({
   };
 
   useEffect(() => {
-    if (params?.conversationId === p?.conversation?.conversationId) {
+    if (params?.conversationId === conversationId) {
+      if (!isSeen) {
+        chathubConnection.invoke("SendUpdateConversation", {
+          ...p.conversation,
+          isSeen: true,
+        });
+      }
       setParticipant(p);
     }
+    return chathubConnection.off("SendUpdateConversation");
   }, [params?.conversationId]);
 
   return (
