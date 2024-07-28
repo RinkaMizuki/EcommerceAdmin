@@ -9,6 +9,7 @@ import { Controlled as ControlledZoom } from "react-medium-image-zoom";
 import { LazyLoadImage } from "react-lazy-load-image-component";
 import "react-lazy-load-image-component/src/effects/blur.css";
 import "react-medium-image-zoom/dist/styles.css";
+import AttachmentIcon from "@mui/icons-material/Attachment";
 import ZoomOutMapIcon from "@mui/icons-material/ZoomOutMap";
 import { useEffect } from "react";
 import { MESSAGE_TYPE } from "./ChatList";
@@ -196,12 +197,26 @@ const ChatMessage = forwardRef(
                             fontSize: "13px",
                             whiteSpace: "pre-wrap",
                           }}
-                          onClick={() =>
-                            handleScrollToMessage(originalMessage.messageId)
-                          }
+                          onClick={() => {
+                            handleScrollToMessage(originalMessage.messageId);
+                          }}
                         >
                           {!originalMessage.isDeleted ? (
-                            originalMessage?.messageContent
+                            originalMessage.messageType ===
+                            MESSAGE_TYPE.TEXT ? (
+                              originalMessage?.messageContent
+                            ) : (
+                              <>
+                                <i>Attachment</i>
+                                <AttachmentIcon
+                                  sx={{
+                                    marginLeft: "5px",
+                                    fontSize: "14px",
+                                    transform: "rotate(-45deg)",
+                                  }}
+                                />
+                              </>
+                            )
                           ) : (
                             <i>Message removed</i>
                           )}
@@ -402,16 +417,17 @@ const ChatMessage = forwardRef(
                 reverse={true}
                 morePlacement="top-start"
                 setEditMessage={setEditMessage}
+                setMessageState={setMessageState}
                 setReplyMessage={setReplyMessage}
               >
-                <>
-                  <ChatMessageItem msg={msg} />
-                </>
+                <Box>
+                  <ChatMessageItem msg={msg} ref={ref} />
+                </Box>
               </TooltipAction>
             ) : (
-              <>
-                <ChatMessageItem msg={msg} />
-              </>
+              <Box>
+                <ChatMessageItem msg={msg} ref={ref} />
+              </Box>
             )}
           </div>
         )}
@@ -448,9 +464,12 @@ const ChatMessageImage = forwardRef(
           </p>
         ) : messageType === MESSAGE_TYPE.AUDIO ? (
           <audio
+            ref={ref}
+            id={messageId}
             src={`data:audio/wav;base64,${messageContent}`}
             controls
             style={{
+              borderRadius: "20px",
               marginRight: "15px",
               width: "250px",
               height: "41px",
@@ -494,7 +513,7 @@ const ChatMessageImage = forwardRef(
   }
 );
 
-const ChatMessageItem = ({ msg }) => {
+const ChatMessageItem = forwardRef(({ msg }, ref) => {
   return (
     <span
       style={{
@@ -516,6 +535,8 @@ const ChatMessageItem = ({ msg }) => {
           }}
         >
           <p
+            ref={ref}
+            id={msg.messageId}
             className="small p-2 ms-3 mb-1 rounded-3"
             style={{
               color: "#000000",
@@ -530,6 +551,6 @@ const ChatMessageItem = ({ msg }) => {
       </TooltipTime>
     </span>
   );
-};
+});
 
 export default ChatMessage;

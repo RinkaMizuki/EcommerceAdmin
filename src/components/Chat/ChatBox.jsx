@@ -25,20 +25,22 @@ const ChatBox = forwardRef(
     const mediaRecorder = useRef(null);
     const chunks = useRef([]);
 
-    const { content, files, type } = message;
-
+    const { content, files } = message;
     const handleChooseImage = (e) => {
       const arrayFile = Array.from(e.target.files);
       const arrayBlob = arrayFile.map((f) => URL.createObjectURL(f));
+
       setBlobs(arrayBlob);
       setMessage((prevMessage) => {
         return {
-          ...prevMessage,
+          content:
+            prevMessage.type === MESSAGE_TYPE.AUDIO ? "" : prevMessage.content,
           files: arrayFile,
           type: MESSAGE_TYPE.IMAGE,
         };
       });
     };
+
     const handleChooseEmoji = (emojiObj, e) =>
       setMessage((prevMessage) => {
         return {
@@ -234,12 +236,18 @@ const ChatBox = forwardRef(
                 gap: "10px",
               }}
             >
-              <TooltipTitle title="Voice">
+              <TooltipTitle title="Voice" offsetY={-1}>
                 <span
                   onClick={(e) => {
                     if (toggleVoice) {
                       stopRecording(e);
                     } else {
+                      setBlobs([]);
+                      setMessage({
+                        content: "",
+                        files: [],
+                        type: "audio",
+                      });
                       startRecording();
                     }
                   }}
@@ -253,7 +261,7 @@ const ChatBox = forwardRef(
 
               {!toggleVoice ? (
                 <>
-                  <TooltipTitle title="Images">
+                  <TooltipTitle title="Images" offsetY={-2}>
                     <span
                       style={{
                         marginBottom: "3px",
@@ -298,6 +306,27 @@ const ChatBox = forwardRef(
                 flex: 1,
               }}
             >
+              {message.type === MESSAGE_TYPE.AUDIO && !toggleVoice && (
+                <span
+                  style={{
+                    position: "absolute",
+                    left: "80px",
+                    zIndex: "9999",
+                    transform: "translateY(2px)",
+                    cursor: "pointer",
+                  }}
+                  onClick={() => {
+                    setBlobs([]);
+                    setMessage({
+                      type: "text",
+                      content: "",
+                      files: [],
+                    });
+                  }}
+                >
+                  <CancelIcon />
+                </span>
+              )}
               {!toggleVoice ? (
                 <TextField
                   inputRef={ref}
@@ -307,7 +336,10 @@ const ChatBox = forwardRef(
                   size="small"
                   color="secondary"
                   autoFocus={true}
-                  value={content}
+                  disabled={message.type === MESSAGE_TYPE.AUDIO}
+                  value={
+                    message.type !== MESSAGE_TYPE.AUDIO ? content : "Audio 🔉"
+                  }
                   onKeyDown={(e) => {
                     setIsShowEmoji(false);
                     handleSendMessage(e);
@@ -360,28 +392,30 @@ const ChatBox = forwardRef(
                   : "Edit"
               }
             >
-              <div
-                onClick={(e) => {
-                  if (!!content.trim() || files?.length || toggleVoice) {
-                    stopRecording();
-                    handleSendMessage(e);
-                  }
-                }}
-                style={{
-                  cursor: "pointer",
-                }}
-                className="text-primary"
-              >
-                {!editMessage ? (
-                  !!content.trim() || toggleVoice || blobs.length ? (
-                    <SendIcon />
+              {!toggleVoice && (
+                <div
+                  onClick={(e) => {
+                    if (!!content.trim() || files?.length || toggleVoice) {
+                      stopRecording();
+                      handleSendMessage(e);
+                    }
+                  }}
+                  style={{
+                    cursor: "pointer",
+                  }}
+                  className="text-primary"
+                >
+                  {!editMessage ? (
+                    !!content.trim() || blobs.length ? (
+                      <SendIcon />
+                    ) : (
+                      <ThumbUpIcon />
+                    )
                   ) : (
-                    <ThumbUpIcon />
-                  )
-                ) : (
-                  <CheckCircleIcon />
-                )}
-              </div>
+                    <CheckCircleIcon />
+                  )}
+                </div>
+              )}
             </TooltipTitle>
           </Box>
         </Box>

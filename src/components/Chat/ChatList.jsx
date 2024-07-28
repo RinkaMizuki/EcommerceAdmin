@@ -262,8 +262,8 @@ const ChatList = () => {
       setParticipants((prevList) => [...prevList, newParticipant]);
     });
 
-    chathubConnection.on("ReceiveListUserStatus", (usersEmail) => {
-      setUsersStatus(usersEmail);
+    chathubConnection.on("ReceiveListUserStatus", (userIds) => {
+      setUsersStatus(userIds);
     });
 
     if (chathubConnection.state === signalR.HubConnectionState.Disconnected) {
@@ -426,9 +426,8 @@ const ChatList = () => {
 
     inputMessageRef.current?.focus();
   }, [replyMessage, editMessage]);
-
   const handleSendMessage = async (e) => {
-    const { content, files } = message;
+    const { content, files, type } = message;
     if (content || files.length) {
       if (e.type === "click" || (e.type === "keydown" && e.keyCode === 13)) {
         if (!editMessage) {
@@ -437,23 +436,23 @@ const ChatList = () => {
             senderId: currentUser.id,
             conversationId: participant?.conversationId,
             messageContent: content,
-            messageType: message.type,
+            messageType: type,
             originalMessageId: replyMessage ? replyMessage.messageId : null,
           };
           if (content) {
+            chathubConnection
+              .invoke("SendMessageAsync", participant?.userId, {
+                ...messageDto,
+                messageType: files.length ? MESSAGE_TYPE.TEXT : type,
+              })
+              .catch((err) =>
+                console.error("Error invoking SendMessageAsync: ", err)
+              );
             setMessage({
               content: "",
               files: [],
               type: "text",
             });
-            chathubConnection
-              .invoke("SendMessageAsync", participant?.userId, {
-                ...messageDto,
-                messageType: MESSAGE_TYPE.TEXT,
-              })
-              .catch((err) =>
-                console.error("Error invoking SendMessageAsync: ", err)
-              );
           }
           if (files.length) {
             localStorage.setItem("imageLoad", files.length);
@@ -466,6 +465,7 @@ const ChatList = () => {
             });
             const messageImageDto = {
               messageDto,
+              messageType: MESSAGE_TYPE.IMAGE,
               images: files,
             };
             try {
@@ -485,6 +485,7 @@ const ChatList = () => {
           const messageDto = {
             ...editMessage,
             messageContent: message.content,
+            messageType: MESSAGE_TYPE.TEXT,
           };
           chathubConnection
             .invoke("SendEditMessageAsync", participant?.userId, messageDto)
@@ -495,6 +496,11 @@ const ChatList = () => {
               setMessageState(MESSAGE_STATE.REP);
               setEditMessage(null);
             });
+          setMessage({
+            content: "",
+            files: [],
+            type: "text",
+          });
         }
       }
     }

@@ -18,9 +18,9 @@ const ChatItem = ({
   const params = useParams();
 
   const { isSeen, conversationId } = p.conversation || {};
-
+  const lastMessage = p?.conversation?.lastMessage;
   const { messageContent, messageType, sendAt, sender, isDeleted } =
-    p.conversation?.lastMessage;
+    lastMessage || {};
 
   const formatDate = (date) => {
     if (date) {
@@ -135,14 +135,14 @@ const ChatItem = ({
                           : "photo"
                       }`
                 }`
-              : `${sender.userName}: ${
+              : `${sender?.userName}: ${
                   !isDeleted
                     ? messageType === MESSAGE_TYPE.TEXT
                       ? messageContent
                       : messageType === MESSAGE_TYPE.AUDIO
                       ? "send a voice message"
                       : "sent a photo"
-                    : `${sender.userName} unsent a ${
+                    : `${sender?.userName} unsent a ${
                         messageType === MESSAGE_TYPE.TEXT
                           ? "message"
                           : messageType === MESSAGE_TYPE.AUDIO

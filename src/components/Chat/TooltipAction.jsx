@@ -130,7 +130,6 @@ const ActionCpn = ({
     }
     setReplyMessage(null);
   };
-
   const handleChooseReaction = (reaction, event) => {
     setIsShowReaction(false);
     const reactionDto = {

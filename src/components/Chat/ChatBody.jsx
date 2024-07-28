@@ -11,7 +11,9 @@ import "./Chat.css";
 import { dataProvider } from "../../contexts/dataProvider";
 import { MESSAGE_STATE } from "./ChatList";
 import ChatMessage from "./ChatMessage";
+import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
 import { ParticipantContext } from "../../contexts/participantContext";
+import video from "../../assets/sounds/messageVideo.mp4";
 
 export const LIMIT = 15;
 
@@ -19,7 +21,6 @@ const ChatBody = forwardRef(
   (
     {
       mode,
-      message,
       messages,
       currentUser,
       editMessage,
@@ -36,10 +37,12 @@ const ChatBody = forwardRef(
   ) => {
     const [scrollPosition, setScrollPosition] = useState(0);
     const [messageRefs, setMessageRefs] = useState([]);
+    const [scrollToBottom, setScrollToBottom] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const { imgLoading } = useContext(ParticipantContext);
     const { bodyChatWrapperRef, areaChatRef } = ref;
     const { getList } = dataProvider;
+
     const groupMessageDateAndTime = (dateTime) => {
       const dt = new Date(parseInt(new Date(dateTime).getTime()));
 
@@ -115,7 +118,15 @@ const ChatBody = forwardRef(
         limit: LIMIT,
       });
     };
+
+    console.log(scrollToBottom);
+
     const handleScrollLoadMessages = async (e) => {
+      setScrollToBottom(
+        Math.abs(
+          e.target.scrollHeight - e.target.clientHeight - e.target.scrollTop
+        ) > 100
+      );
       if (e.target.scrollTop === 0 && messages.length >= LIMIT) {
         try {
           setIsLoading(true);
@@ -140,7 +151,7 @@ const ChatBody = forwardRef(
       }
     };
 
-    const handleScrollToMessage = (messageId) => {
+    const handleScrollToMessage = (messageId, highlight = true) => {
       let messageElement = null;
       messageRefs.forEach((m) => {
         if (m?.current?.id === messageId) {
@@ -163,10 +174,12 @@ const ChatBody = forwardRef(
           block: "center",
         });
         const child = messageElement.current?.children[0]?.children[0];
-        if (child) {
-          child.style.border = "2px solid #fff";
+        if (child && highlight) {
+          child.style.border = "2px solid red";
         } else {
-          messageElement.current.style.border = "2px solid #fff";
+          if (highlight) {
+            messageElement.current.style.border = "2px solid red";
+          }
         }
       }
     };
@@ -199,8 +212,38 @@ const ChatBody = forwardRef(
       <Box
         height="calc(100% - 61px - 63px)"
         paddingY="10px"
+        sx={{
+          position: "relative",
+        }}
         ref={bodyChatWrapperRef}
       >
+        {scrollToBottom && (
+          <div
+            onClick={() =>
+              handleScrollToMessage(
+                messages[messages.length - 1]?.messageId,
+                false
+              )
+            }
+            style={{
+              position: "absolute",
+              zIndex: 99999999,
+              bottom: "40px",
+              left: "50%",
+              cursor: "pointer",
+              transform: "translateX(-50%)",
+              width: "40px",
+              height: "40px",
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              borderRadius: "50%",
+              backgroundColor: "#4b4c4f",
+            }}
+          >
+            <ArrowDownwardIcon className="text-primary" />
+          </div>
+        )}
         <Box
           className="card-body"
           ref={areaChatRef}
@@ -255,7 +298,7 @@ const ChatBody = forwardRef(
             {imgLoading &&
               Array(+localStorage.getItem("imageLoad"))
                 .fill(true)
-                .map((img, index) => (
+                .map((_, index) => (
                   <Box
                     key={index}
                     sx={{
