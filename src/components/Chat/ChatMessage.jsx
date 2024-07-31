@@ -475,6 +475,21 @@ const ChatMessageImage = forwardRef(
               height: "41px",
             }}
           />
+        ) : messageType === MESSAGE_TYPE.VIDEO ? (
+          <video
+            ref={ref}
+            id={messageId}
+            src={messageContent}
+            controls
+            style={{
+              cursor: "pointer",
+              border: "1px solid #232323",
+              overflow: "hidden",
+              borderRadius: "20px",
+              maxWidth: "250px",
+              height: "100%",
+            }}
+          />
         ) : (
           <ControlledZoom
             IconUnzoom={ZoomOutMapIcon}

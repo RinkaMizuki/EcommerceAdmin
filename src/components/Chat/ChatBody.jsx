@@ -13,7 +13,6 @@ import { MESSAGE_STATE } from "./ChatList";
 import ChatMessage from "./ChatMessage";
 import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
 import { ParticipantContext } from "../../contexts/participantContext";
-import video from "../../assets/sounds/messageVideo.mp4";
 
 export const LIMIT = 15;
 
@@ -119,8 +118,6 @@ const ChatBody = forwardRef(
       });
     };
 
-    console.log(scrollToBottom);
-
     const handleScrollLoadMessages = async (e) => {
       setScrollToBottom(
         Math.abs(
@@ -197,7 +194,10 @@ const ChatBody = forwardRef(
       if (areaChatRef.current && messageState === MESSAGE_STATE.LOAD) {
         areaChatRef.current.scrollTop =
           areaChatRef.current.scrollHeight - scrollPosition;
-      } else if (areaChatRef.current && messageState === MESSAGE_STATE.ADD) {
+      } else if (
+        areaChatRef.current &&
+        (messageState === MESSAGE_STATE.ADD || imgLoading)
+      ) {
         areaChatRef.current.scrollTop = areaChatRef.current.scrollHeight;
       }
       areaChatRef.current.addEventListener("scroll", handleScrollLoadMessages);
@@ -206,7 +206,7 @@ const ChatBody = forwardRef(
           "scroll",
           handleScrollLoadMessages
         );
-    }, [messages, messageState]);
+    }, [messages, messageState, imgLoading]);
 
     return (
       <Box
@@ -311,8 +311,8 @@ const ChatBody = forwardRef(
                     <Skeleton
                       variant="rounded"
                       className="d-flex flex-row justify-content-end pt-1"
-                      width={200}
-                      height={100}
+                      width={250}
+                      height={130}
                       sx={{
                         marginRight: "1rem",
                         cursor: "not-allowed",

@@ -29,6 +29,7 @@ export const MESSAGE_TYPE = {
   IMAGE: "image",
   AUDIO: "audio",
   ICON: "icon",
+  VIDEO: "video",
 };
 
 export const MESSAGE_STATE = {
@@ -426,6 +427,7 @@ const ChatList = () => {
 
     inputMessageRef.current?.focus();
   }, [replyMessage, editMessage]);
+
   const handleSendMessage = async (e) => {
     const { content, files, type } = message;
     if (content || files.length) {
@@ -456,19 +458,21 @@ const ChatList = () => {
           }
           if (files.length) {
             localStorage.setItem("imageLoad", files.length);
-            setImgLoading(true);
-            setBlobs([]);
-            setMessage({
-              content: "",
-              files: [],
-              type: "text",
-            });
             const messageImageDto = {
               messageDto,
               messageType: MESSAGE_TYPE.IMAGE,
               images: files,
             };
             try {
+              setImgLoading(true);
+              setBlobs([]);
+              setMessage({
+                content: "",
+                files: [],
+                type: "text",
+              });
+              setMessageState(MESSAGE_STATE.ADD);
+              replyMessage && setReplyMessage(null);
               await create(
                 `conversations/${participant.conversationId}/images?receiveId=${participant?.userId}`,
                 {
@@ -479,8 +483,6 @@ const ChatList = () => {
               console.error("Error creating", err);
             }
           }
-          replyMessage && setReplyMessage(null);
-          setMessageState(MESSAGE_STATE.ADD);
         } else {
           const messageDto = {
             ...editMessage,

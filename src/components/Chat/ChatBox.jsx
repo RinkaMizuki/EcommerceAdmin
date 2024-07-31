@@ -11,6 +11,7 @@ import KeyboardVoiceIcon from "@mui/icons-material/KeyboardVoice";
 import { forwardRef, useEffect, useRef, useState } from "react";
 import { TooltipTitle } from "./TooltipAction";
 import { MESSAGE_TYPE } from "./ChatList";
+import { useNotify } from "react-admin";
 
 const ChatBox = forwardRef(
   (
@@ -18,16 +19,23 @@ const ChatBox = forwardRef(
     ref
   ) => {
     const [isShowEmoji, setIsShowEmoji] = useState(false);
-    const inputFileRef = useRef(null);
-
     const [toggleVoice, setToggleVoice] = useState(false);
+    const notify = useNotify();
+    const inputFileRef = useRef(null);
     const mediaStream = useRef(null);
     const mediaRecorder = useRef(null);
     const chunks = useRef([]);
 
     const { content, files } = message;
     const handleChooseImage = (e) => {
-      const arrayFile = Array.from(e.target.files);
+      const files = e.target.files;
+      if (files.length > 5) {
+        notify("Only 5 files accepted.", {
+          type: "warning",
+        });
+        return;
+      }
+      const arrayFile = Array.from(files);
       const arrayBlob = arrayFile.map((f) => URL.createObjectURL(f));
 
       setBlobs(arrayBlob);
@@ -280,7 +288,7 @@ const ChatBox = forwardRef(
                         id="image"
                         hidden
                         multiple
-                        accept="image/png, image/jpg, image/jpeg"
+                        accept="image/png, image/jpg, image/jpeg, video/*"
                         ref={inputFileRef}
                       />
                     </span>
