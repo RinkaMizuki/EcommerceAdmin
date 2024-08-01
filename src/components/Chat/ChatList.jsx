@@ -150,7 +150,7 @@ const ChatList = () => {
   }, [searchDebounce]);
 
   useEffect(() => {
-    chathubConnection.on("ReceiveMessage", (newMessage) => {
+    const handleValidateConversation = (newMessage) => {
       if (newMessage.senderId !== currentUser.id) {
         const notiParticipant = participants.find(
           (p) => p.conversationId === newMessage.conversationId
@@ -180,24 +180,35 @@ const ChatList = () => {
           console.log(notiParticipant, "is muted");
         }
       }
+    };
+
+    chathubConnection.on("ReceiveMessagesImage", (listMessagesImage) => {
+      setImgLoading(false);
+      handleValidateConversation(listMessagesImage[0]);
+      if (params?.conversationId === listMessagesImage[0].conversationId) {
+        setMessages((prevMessages) => {
+          return [...prevMessages, ...listMessagesImage];
+        });
+      }
+    });
+
+    chathubConnection.on("ReceiveMessage", (newMessage) => {
+      handleValidateConversation(newMessage);
       if (params?.conversationId === newMessage.conversationId) {
+        //because body use same state
         setMessages((prevMessages) => {
           return [...prevMessages, newMessage];
         });
       }
-      handleGetListParticipants();
     });
-    return () => chathubConnection.off("ReceiveMessage");
+    handleGetListParticipants();
+    return () => {
+      chathubConnection.off("ReceiveMessagesImage");
+      chathubConnection.off("ReceiveMessage");
+    };
   }, [participants, params?.conversationId]);
 
   useEffect(() => {
-    chathubConnection.on("ReceiveMessagesImage", (listMessagesImage) => {
-      setImgLoading(false);
-      setMessages((prevMessages) => {
-        return [...prevMessages, ...listMessagesImage];
-      });
-    });
-
     chathubConnection.on("ReceiveUpdateConversation", (conversation) => {
       setParticipant((prevPar) => {
         return {
@@ -441,6 +452,7 @@ const ChatList = () => {
             messageType: type,
             originalMessageId: replyMessage ? replyMessage.messageId : null,
           };
+          setReplyMessage(null);
           if (content) {
             chathubConnection
               .invoke("SendMessageAsync", participant?.userId, {
@@ -472,7 +484,6 @@ const ChatList = () => {
                 type: "text",
               });
               setMessageState(MESSAGE_STATE.ADD);
-              replyMessage && setReplyMessage(null);
               await create(
                 `conversations/${participant.conversationId}/images?receiveId=${participant?.userId}`,
                 {

@@ -12,6 +12,7 @@ import { forwardRef, useEffect, useRef, useState } from "react";
 import { TooltipTitle } from "./TooltipAction";
 import { MESSAGE_TYPE } from "./ChatList";
 import { useNotify } from "react-admin";
+import PlayCircleOutlineIcon from "@mui/icons-material/PlayCircleOutline";
 
 const ChatBox = forwardRef(
   (
@@ -27,6 +28,9 @@ const ChatBox = forwardRef(
     const chunks = useRef([]);
 
     const { content, files } = message;
+
+    const isImage = (file) => !!file.type.match("image.*");
+
     const handleChooseImage = (e) => {
       const files = e.target.files;
       if (files.length > 5) {
@@ -36,7 +40,19 @@ const ChatBox = forwardRef(
         return;
       }
       const arrayFile = Array.from(files);
-      const arrayBlob = arrayFile.map((f) => URL.createObjectURL(f));
+      const arrayBlob = arrayFile.map((f) => {
+        const url = URL.createObjectURL(f);
+        if (isImage(f)) {
+          return {
+            url,
+            type: "image",
+          };
+        }
+        return {
+          url,
+          type: "video",
+        };
+      });
 
       setBlobs(arrayBlob);
       setMessage((prevMessage) => {
@@ -47,6 +63,7 @@ const ChatBox = forwardRef(
           type: MESSAGE_TYPE.IMAGE,
         };
       });
+      ref.current.focus();
     };
 
     const handleChooseEmoji = (emojiObj, e) =>
@@ -58,8 +75,10 @@ const ChatBox = forwardRef(
       });
 
     const handleRemoveImage = (removedB) => {
-      URL.revokeObjectURL(removedB);
-      setBlobs((prevBlobs) => prevBlobs.filter((currB) => currB !== removedB));
+      URL.revokeObjectURL(removedB.url);
+      setBlobs((prevBlobs) =>
+        prevBlobs.filter((currB) => currB.url !== removedB.url)
+      );
     };
 
     const startRecording = async () => {
@@ -133,7 +152,7 @@ const ChatBox = forwardRef(
         if (mediaRecorder.current?.state === "recording") {
           mediaRecorder.current.stop();
         }
-        blobs.forEach((b) => URL.revokeObjectURL(b));
+        blobs.forEach((b) => URL.revokeObjectURL(b.url));
       };
     }, []);
 
@@ -202,19 +221,7 @@ const ChatBox = forwardRef(
               >
                 <CancelIcon />
               </span>
-              <img
-                srcSet={b}
-                src={b}
-                alt={b}
-                loading="lazy"
-                style={{
-                  borderRadius: "10px",
-                  overflow: "hidden",
-                  width: "50px",
-                  height: "50px",
-                  objectFit: "cover",
-                }}
-              />
+              <PreviewItem b={b} />
             </Box>
           ))}
         </Box>
@@ -269,7 +276,7 @@ const ChatBox = forwardRef(
 
               {!toggleVoice ? (
                 <>
-                  <TooltipTitle title="Images" offsetY={-2}>
+                  <TooltipTitle title="Attachment" offsetY={-2}>
                     <span
                       style={{
                         marginBottom: "3px",
@@ -431,4 +438,43 @@ const ChatBox = forwardRef(
     );
   }
 );
+
+const PreviewItem = ({ b }) => {
+  return b.type === "image" ? (
+    <img
+      src={b.url}
+      loading="lazy"
+      style={{
+        borderRadius: "10px",
+        overflow: "hidden",
+        width: "50px",
+        height: "50px",
+        objectFit: "cover",
+      }}
+    />
+  ) : (
+    <>
+      <PlayCircleOutlineIcon
+        sx={{
+          position: "absolute",
+          top: "50%",
+          left: "50%",
+          transform: "translate(-50%, -50%)",
+        }}
+      />
+      <video
+        src={b.url}
+        loading="lazy"
+        style={{
+          borderRadius: "10px",
+          overflow: "hidden",
+          width: "50px",
+          height: "50px",
+          objectFit: "cover",
+        }}
+      />
+    </>
+  );
+};
+
 export default ChatBox;

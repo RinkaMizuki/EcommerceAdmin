@@ -485,8 +485,9 @@ const ChatMessageImage = forwardRef(
               cursor: "pointer",
               border: "1px solid #232323",
               overflow: "hidden",
+              marginRight: "15px",
               borderRadius: "20px",
-              maxWidth: "250px",
+              maxWidth: "200px",
               height: "100%",
             }}
           />

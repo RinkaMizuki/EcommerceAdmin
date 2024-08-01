@@ -60,6 +60,8 @@ const ChatAction = ({
               ? messageContent
               : replyMessage.messageType === MESSAGE_TYPE.AUDIO
               ? "Audio"
+              : replyMessage.messageType === MESSAGE_TYPE.VIDEO
+              ? "Video"
               : "Image"}
           </Typography>
         )}

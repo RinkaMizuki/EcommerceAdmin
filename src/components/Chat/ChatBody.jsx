@@ -15,6 +15,8 @@ import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
 import { ParticipantContext } from "../../contexts/participantContext";
 
 export const LIMIT = 15;
+let scrollerRef;
+let areaerRef;
 
 const ChatBody = forwardRef(
   (
@@ -119,11 +121,6 @@ const ChatBody = forwardRef(
     };
 
     const handleScrollLoadMessages = async (e) => {
-      setScrollToBottom(
-        Math.abs(
-          e.target.scrollHeight - e.target.clientHeight - e.target.scrollTop
-        ) > 100
-      );
       if (e.target.scrollTop === 0 && messages.length >= LIMIT) {
         try {
           setIsLoading(true);
@@ -201,12 +198,26 @@ const ChatBody = forwardRef(
         areaChatRef.current.scrollTop = areaChatRef.current.scrollHeight;
       }
       areaChatRef.current.addEventListener("scroll", handleScrollLoadMessages);
-      return () =>
-        areaChatRef.current?.removeEventListener(
-          "scroll",
-          handleScrollLoadMessages
-        );
+      areaerRef = areaChatRef.current;
+      return () => {
+        areaerRef.removeEventListener("scroll", handleScrollLoadMessages);
+      };
     }, [messages, messageState, imgLoading]);
+
+    useEffect(() => {
+      const handleScrollToggleButton = (e) => {
+        setScrollToBottom(
+          Math.abs(
+            e.target.scrollHeight - e.target.clientHeight - e.target.scrollTop
+          ) > 100
+        );
+      };
+      scrollerRef = areaChatRef.current;
+      areaChatRef.current.addEventListener("scroll", handleScrollToggleButton);
+      return () => {
+        scrollerRef.removeEventListener("scroll", handleScrollToggleButton);
+      };
+    }, []);
 
     return (
       <Box
