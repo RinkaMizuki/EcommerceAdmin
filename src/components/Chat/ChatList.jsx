@@ -206,7 +206,7 @@ const ChatList = () => {
       chathubConnection.off("ReceiveMessagesImage");
       chathubConnection.off("ReceiveMessage");
     };
-  }, [participants, params?.conversationId]);
+  }, [messages, params?.conversationId]);
 
   useEffect(() => {
     chathubConnection.on("ReceiveUpdateConversation", (conversation) => {
@@ -246,6 +246,7 @@ const ChatList = () => {
         })
       );
     });
+
     chathubConnection.on("ReceiveRemoveMessage", (messageDeletedId) => {
       setMessages((prevMessages) =>
         prevMessages.map((m) => {
@@ -438,7 +439,7 @@ const ChatList = () => {
 
     inputMessageRef.current?.focus();
   }, [replyMessage, editMessage]);
-
+  console.log(123);
   const handleSendMessage = async (e) => {
     const { content, files, type } = message;
     if (content || files.length) {
@@ -452,7 +453,7 @@ const ChatList = () => {
             messageType: type,
             originalMessageId: replyMessage ? replyMessage.messageId : null,
           };
-          setReplyMessage(null);
+          replyMessage && setReplyMessage(null);
           if (content) {
             chathubConnection
               .invoke("SendMessageAsync", participant?.userId, {

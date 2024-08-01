@@ -12,6 +12,8 @@ import { forwardRef, useEffect, useRef, useState } from "react";
 import { TooltipTitle } from "./TooltipAction";
 import { MESSAGE_TYPE } from "./ChatList";
 import { useNotify } from "react-admin";
+import SoundStatic from "../../assets/images/soundStatic.png";
+import SoundAnimation from "../../assets/images/soundAnimation.gif";
 import PlayCircleOutlineIcon from "@mui/icons-material/PlayCircleOutline";
 
 const ChatBox = forwardRef(
@@ -21,6 +23,7 @@ const ChatBox = forwardRef(
   ) => {
     const [isShowEmoji, setIsShowEmoji] = useState(false);
     const [toggleVoice, setToggleVoice] = useState(false);
+    const [isPlayVoice, setIsPlayVoice] = useState(false);
     const notify = useNotify();
     const inputFileRef = useRef(null);
     const mediaStream = useRef(null);
@@ -101,6 +104,7 @@ const ChatBox = forwardRef(
         //Listen when stop recording and create blob
         mediaRecorder.current.onstop = () => {
           clearTimeout(recordingTimeout); // Clear the timeout if recording stops before 5 seconds
+
           const recordedBlob = new Blob(chunks.current, { type: "audio/wav" });
           const reader = new FileReader();
           reader.readAsDataURL(recordedBlob);
@@ -119,10 +123,7 @@ const ChatBox = forwardRef(
 
         // Stop recording limit 10s seconds
         recordingTimeout = setTimeout(() => {
-          if (mediaRecorder.current.state !== "inactive") {
-            mediaRecorder.current.stop();
-            setToggleVoice(false);
-          }
+          stopRecording();
         }, 10000); // 10,000 milliseconds = 10 seconds
       } catch (error) {
         console.error("Error accessing microphone:", error);
@@ -155,6 +156,17 @@ const ChatBox = forwardRef(
         blobs.forEach((b) => URL.revokeObjectURL(b.url));
       };
     }, []);
+
+    useEffect(() => {
+      const voice = new Audio(`data:audio/wav;base64,${message.content}`);
+      if (isPlayVoice) {
+        voice.play();
+      }
+      voice.onended = () => {
+        setIsPlayVoice(false);
+      };
+      return () => voice.pause();
+    }, [isPlayVoice]);
 
     return (
       <Box
@@ -251,7 +263,10 @@ const ChatBox = forwardRef(
                 gap: "10px",
               }}
             >
-              <TooltipTitle title="Voice" offsetY={-1}>
+              <TooltipTitle
+                title={`${!toggleVoice ? "Voice" : "Cancel"}`}
+                offsetY={-1}
+              >
                 <span
                   onClick={(e) => {
                     if (toggleVoice) {
@@ -325,7 +340,7 @@ const ChatBox = forwardRef(
                 <span
                   style={{
                     position: "absolute",
-                    left: "80px",
+                    left: "85px",
                     zIndex: "9999",
                     transform: "translateY(2px)",
                     cursor: "pointer",
@@ -343,31 +358,49 @@ const ChatBox = forwardRef(
                 </span>
               )}
               {!toggleVoice ? (
-                <TextField
-                  inputRef={ref}
-                  fullWidth
-                  label="Message"
-                  id="message-input"
-                  size="small"
-                  color="secondary"
-                  autoFocus={true}
-                  disabled={message.type === MESSAGE_TYPE.AUDIO}
-                  value={
-                    message.type !== MESSAGE_TYPE.AUDIO ? content : "Audio 🔉"
-                  }
-                  onKeyDown={(e) => {
-                    setIsShowEmoji(false);
-                    handleSendMessage(e);
-                  }}
-                  onChange={(e) =>
-                    setMessage((prevMessage) => {
-                      return {
-                        ...prevMessage,
-                        content: e.target.value,
-                      };
-                    })
-                  }
-                />
+                <>
+                  <TextField
+                    inputRef={ref}
+                    fullWidth
+                    label="Message"
+                    id="message-input"
+                    size="small"
+                    color="secondary"
+                    autoFocus={true}
+                    disabled={message.type === MESSAGE_TYPE.AUDIO}
+                    value={
+                      message.type !== MESSAGE_TYPE.AUDIO ? content : "Audio"
+                    }
+                    onKeyDown={(e) => {
+                      setIsShowEmoji(false);
+                      handleSendMessage(e);
+                    }}
+                    onChange={(e) =>
+                      setMessage((prevMessage) => {
+                        return {
+                          ...prevMessage,
+                          content: e.target.value,
+                        };
+                      })
+                    }
+                  />
+                  {message.type === MESSAGE_TYPE.AUDIO && (
+                    <img
+                      onClick={() => {
+                        setIsPlayVoice(!isPlayVoice);
+                      }}
+                      src={!isPlayVoice ? SoundStatic : SoundAnimation}
+                      style={{
+                        position: "absolute",
+                        left: "63px",
+                        cursor: "pointer",
+                        top: "36%",
+                        width: "20px",
+                        height: "20px",
+                      }}
+                    />
+                  )}
+                </>
               ) : (
                 <audio
                   controls
@@ -424,7 +457,9 @@ const ChatBox = forwardRef(
                     !!content.trim() || blobs.length ? (
                       <SendIcon />
                     ) : (
-                      <ThumbUpIcon />
+                      <span onClick={handleSendMessage}>
+                        <ThumbUpIcon />
+                      </span>
                     )
                   ) : (
                     <CheckCircleIcon />
