@@ -1,62 +1,45 @@
 import {
-  Edit, SimpleForm, TextInput, DateInput, PasswordInput, BooleanInput, useRecordContext
-} from 'react-admin';
-import PreviewAvatarField from '../Field/PreviewAvatarField';
-import { Box, Grid } from '@mui/material';
+  Edit,
+  SimpleForm,
+  TextInput,
+  DateInput,
+  PasswordInput,
+  BooleanInput,
+  useRecordContext,
+} from "react-admin";
+import PreviewAvatarField from "../Field/PreviewAvatarField";
+import { Box, Grid } from "@mui/material";
 
 export const UserEdit = () => {
-
   return (
     <Edit title={<UserTitle />}>
       <SimpleForm>
         <div>
-          <Grid container width={{ xs: '100%', xl: 800 }} spacing={2}>
+          <Grid container width={{ xs: "100%", xl: 800 }} spacing={2}>
             <Grid item xs={12} md={8}>
-
-              <Box display={{ xs: 'block', sm: 'flex' }}>
-                <Box flex={1} mr={{ xs: 0, sm: '0.5em' }}>
-                  <TextInput
-                    source="userName"
-                    isRequired
-                  />
+              <Box display={{ xs: "block", sm: "flex" }}>
+                <Box flex={1} mr={{ xs: 0, sm: "0.5em" }}>
+                  <TextInput source="userName" isRequired />
                 </Box>
-                <TextInput
-                  type="email"
-                  source="email"
-                  isRequired
-                />
+                <TextInput type="email" source="email" isRequired />
               </Box>
-              <Box display={{ xs: 'block', sm: 'flex' }}>
-                <Box flex={1} mr={{ xs: 0, sm: '0.5em' }}>
-                  <DateInput
-                    source="birthDate"
-                    fullWidth
-                    helperText={false}
-                  />
+              <Box display={{ xs: "block", sm: "flex" }}>
+                <Box flex={1} mr={{ xs: 0, sm: "0.5em" }}>
+                  <DateInput source="birthDate" fullWidth helperText={false} />
                 </Box>
-                <Box flex={3} mr={{ xs: 0, sm: '0.5em' }} ml={{ xs: "10px" }}>
-                  <TextInput
-                    source="phone"
-                    fullWidth
-                    helperText={false}
-                  />
+                <Box flex={3} mr={{ xs: 0, sm: "0.5em" }} ml={{ xs: "10px" }}>
+                  <TextInput source="phone" fullWidth helperText={false} />
                 </Box>
-                <Box flex={2} ml={{ xs: 0, sm: '0.5em' }} />
+                <Box flex={2} ml={{ xs: 0, sm: "0.5em" }} />
               </Box>
 
               <Box mt="1em" />
-              <Box display={{ xs: 'block', sm: 'flex' }}>
-                <Box flex={1} mr={{ xs: 0, sm: '0.5em' }}>
-                  <PasswordInput
-                    source="password"
-                    fullWidth
-                  />
+              <Box display={{ xs: "block", sm: "flex" }}>
+                <Box flex={1} mr={{ xs: 0, sm: "0.5em" }}>
+                  <PasswordInput source="password" fullWidth />
                 </Box>
-                <Box flex={1} ml={{ xs: 0, sm: '0.5em' }}>
-                  <PasswordInput
-                    source="confirmPassword"
-                    fullWidth
-                  />
+                <Box flex={1} ml={{ xs: 0, sm: "0.5em" }}>
+                  <PasswordInput source="confirmPassword" fullWidth />
                 </Box>
               </Box>
 
@@ -71,7 +54,7 @@ export const UserEdit = () => {
       </SimpleForm>
     </Edit>
   );
-}
+};
 
 const UserTitle = () => {
   const record = useRecordContext();

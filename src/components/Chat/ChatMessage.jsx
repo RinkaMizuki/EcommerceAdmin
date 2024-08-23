@@ -42,7 +42,8 @@ const ChatMessage = forwardRef(
         const imgContainerElm = document.querySelector(
           "dialog[open] div[data-rmiz-modal-content]"
         );
-        imgContainerElm.style.setProperty("--bg", `url(${imgUrl})`);
+        const convertedUrl = imgUrl.replace(/ /g, "%20");
+        imgContainerElm.style.setProperty("--bg", `url(${convertedUrl})`);
       }
     }, [isZoomed, imgUrl]);
 
@@ -54,6 +55,7 @@ const ChatMessage = forwardRef(
         convertMillisecondToSecond(aTime) !== convertMillisecondToSecond(bTime)
       );
     };
+
     const {
       sendAt,
       modifiedAt,
@@ -123,7 +125,7 @@ const ChatMessage = forwardRef(
                   alignItems: "flex-end",
                 }}
               >
-                {originalMessage && !msg.isDeleted && (
+                {originalMessage && !isDeleted && (
                   <Box
                     sx={{
                       cursor: "pointer",
@@ -226,7 +228,6 @@ const ChatMessage = forwardRef(
                           onClick={() => {
                             handleScrollToMessage(originalMessage.messageId);
                           }}
-                          alt={image.alt}
                           effect="blur"
                           className="me-3 mb-1 message-image"
                           src={`${originalMessage.messageContent}`}
@@ -260,7 +261,7 @@ const ChatMessage = forwardRef(
                 {isShowMessagesHistory && (
                   <ChatHistory messagesHistory={msg.messageHistories} />
                 )}
-                {!editMessage && !isDeleted ? (
+                {!isDeleted ? (
                   <TooltipAction
                     msg={msg}
                     offsetX={-3}
@@ -268,6 +269,7 @@ const ChatMessage = forwardRef(
                     setEditMessage={setEditMessage}
                     setMessageState={setMessageState}
                     setReplyMessage={setReplyMessage}
+                    disableHoverListener={editMessage}
                   >
                     <div
                       style={{
@@ -289,8 +291,10 @@ const ChatMessage = forwardRef(
                         >
                           <ChatMessageImage
                             ref={ref}
+                            senderId={msg.senderId}
                             messageType={messageType}
                             messageId={msg.messageId}
+                            currentUser={currentUser}
                             messageContent={messageContent}
                             handleZoomChange={handleZoomChange}
                             isZoomed={isZoomed}
@@ -308,43 +312,22 @@ const ChatMessage = forwardRef(
                       zIndex: 2,
                     }}
                   >
-                    {!isDeleted ? (
-                      <TooltipTime date={msg?.sendAt}>
-                        <Box
-                          sx={{
-                            display: "flex",
-                          }}
-                        >
-                          <ChatMessageImage
-                            ref={ref}
-                            messageType={messageType}
-                            messageId={msg.messageId}
-                            messageContent={messageContent}
-                            handleZoomChange={handleZoomChange}
-                            isZoomed={isZoomed}
-                            setImgUrl={setImgUrl}
-                            reactions={msg.reactions}
-                          />
-                        </Box>
-                      </TooltipTime>
-                    ) : (
-                      <Box
-                        sx={{
-                          display: "flex",
-                          backgroundColor: "transparent",
+                    <Box
+                      sx={{
+                        display: "flex",
+                        backgroundColor: "transparent",
+                      }}
+                    >
+                      <p
+                        className="small p-2 me-3 mb-1 rounded-3"
+                        style={{
+                          border: "1px solid #505050",
+                          color: "#686868",
                         }}
                       >
-                        <p
-                          className="small p-2 me-3 mb-1 rounded-3"
-                          style={{
-                            border: "1px solid #505050",
-                            color: "#686868",
-                          }}
-                        >
-                          You unsent a message
-                        </p>
-                      </Box>
-                    )}
+                        You unsent a message
+                      </p>
+                    </Box>
                   </span>
                 )}
               </Box>
@@ -410,25 +393,24 @@ const ChatMessage = forwardRef(
                 </p>
               </Box>
             )}
-            {!editMessage ? (
-              <TooltipAction
-                msg={msg}
-                position="right-start"
-                reverse={true}
-                morePlacement="top-start"
-                setEditMessage={setEditMessage}
-                setMessageState={setMessageState}
-                setReplyMessage={setReplyMessage}
-              >
-                <Box>
-                  <ChatMessageItem msg={msg} ref={ref} />
-                </Box>
-              </TooltipAction>
-            ) : (
+            <TooltipAction
+              msg={msg}
+              position="right-start"
+              reverse={true}
+              morePlacement="top-start"
+              setEditMessage={setEditMessage}
+              setMessageState={setMessageState}
+              setReplyMessage={setReplyMessage}
+              disableHoverListener={editMessage}
+            >
               <Box>
-                <ChatMessageItem msg={msg} ref={ref} />
+                <ChatMessageItem
+                  msg={msg}
+                  ref={ref}
+                  currentUser={currentUser}
+                />
               </Box>
-            )}
+            </TooltipAction>
           </div>
         )}
       </div>
@@ -439,10 +421,12 @@ const ChatMessage = forwardRef(
 const ChatMessageImage = forwardRef(
   (
     {
+      senderId,
       messageId,
       messageType,
       messageContent,
       handleZoomChange,
+      currentUser,
       isZoomed,
       setImgUrl,
       reactions,
@@ -453,6 +437,7 @@ const ChatMessageImage = forwardRef(
       <>
         {messageType === MESSAGE_TYPE.TEXT ? (
           <p
+            data={senderId === currentUser.id ? "admin" : "user"}
             id={messageId}
             className="small p-2 me-3 mb-1 text-white rounded-3 bg-primary"
             style={{
@@ -466,6 +451,7 @@ const ChatMessageImage = forwardRef(
           <audio
             ref={ref}
             id={messageId}
+            data={senderId === currentUser.id ? "admin" : "user"}
             src={`data:audio/wav;base64,${messageContent}`}
             controls
             style={{
@@ -479,6 +465,7 @@ const ChatMessageImage = forwardRef(
           <video
             ref={ref}
             id={messageId}
+            data={senderId === currentUser.id ? "admin" : "user"}
             src={messageContent}
             controls
             style={{
@@ -502,6 +489,8 @@ const ChatMessageImage = forwardRef(
           >
             <div ref={ref} id={messageId}>
               <LazyLoadImage
+                visibleByDefault={true}
+                data={senderId === currentUser.id ? "admin" : "user"}
                 effect="blur"
                 className="me-3 mb-1 message-image"
                 src={`${messageContent}`}
@@ -512,11 +501,7 @@ const ChatMessageImage = forwardRef(
                   borderRadius: "20px",
                   maxWidth: "200px",
                   height: "100%",
-                  minHeight: "300px",
                   objectFit: "fill",
-                }}
-                afterLoad={() => {
-                  ref.current.children[0].children[0].style.minHeight = "unset";
                 }}
               />
             </div>
@@ -529,7 +514,7 @@ const ChatMessageImage = forwardRef(
   }
 );
 
-const ChatMessageItem = forwardRef(({ msg }, ref) => {
+const ChatMessageItem = forwardRef(({ msg, currentUser }, ref) => {
   return (
     <span
       style={{
@@ -552,6 +537,7 @@ const ChatMessageItem = forwardRef(({ msg }, ref) => {
         >
           <p
             ref={ref}
+            data={msg.senderId === currentUser.id ? "admin" : "user"}
             id={msg.messageId}
             className="small p-2 ms-3 mb-1 rounded-3"
             style={{

@@ -439,7 +439,7 @@ const ChatList = () => {
 
     inputMessageRef.current?.focus();
   }, [replyMessage, editMessage]);
-  console.log(123);
+
   const handleSendMessage = async (e) => {
     const { content, files, type } = message;
     if (content || files.length) {
@@ -475,6 +475,7 @@ const ChatList = () => {
               messageDto,
               messageType: MESSAGE_TYPE.IMAGE,
               images: files,
+              receiveId: participant?.userId,
             };
             try {
               setImgLoading(true);
@@ -486,7 +487,7 @@ const ChatList = () => {
               });
               setMessageState(MESSAGE_STATE.ADD);
               await create(
-                `conversations/${participant.conversationId}/images?receiveId=${participant?.userId}`,
+                `conversations/${participant.conversationId}/images`,
                 {
                   data: { messageImageDto },
                 }

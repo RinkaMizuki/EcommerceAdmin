@@ -145,14 +145,14 @@ const ChatBody = forwardRef(
       }
     };
 
-    const handleScrollToMessage = (messageId, highlight = true) => {
+    const handleScrollToMessage = (messageId, outline = true) => {
       let messageElement = null;
       messageRefs.forEach((m) => {
         if (m?.current?.id === messageId) {
           messageElement = m;
         } else {
           if (m.current) {
-            const child = m?.current?.children[0]?.children[0];
+            const child = m?.current?.children[0];
             if (child) {
               child.style.border = "unset !important";
             } else {
@@ -161,18 +161,25 @@ const ChatBody = forwardRef(
           }
         }
       });
+      const currentMsg = messageElement?.current;
       //message was already render in UI
-      if (messageElement?.current) {
-        messageElement.current.scrollIntoView({
+      if (currentMsg) {
+        currentMsg.scrollIntoView({
           behavior: "smooth",
           block: "center",
         });
-        const child = messageElement.current?.children[0]?.children[0];
-        if (child && highlight) {
-          child.style.border = "2px solid red";
+        const child = currentMsg.children[0];
+        if (child && outline) {
+          const color =
+            child.getAttribute("data") !== "user" ? "#ffffff" : "#3b71ca";
+          child.style.border = `2px solid ${color}`;
         } else {
-          if (highlight) {
-            messageElement.current.style.border = "2px solid red";
+          if (outline) {
+            const color =
+              currentMsg.getAttribute("data") !== "user"
+                ? "#ffffff"
+                : "#3b71ca";
+            currentMsg.style.border = `2px solid ${color}`;
           }
         }
       }

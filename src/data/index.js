@@ -40,6 +40,7 @@ const messageImageFromData = (params) => {
   formData.append("messageId", messageDto.messageId || "");
   formData.append("senderId", messageDto.senderId);
   formData.append("conversationId", messageDto.conversationId);
+  formData.append("receiveId", params.data.messageImageDto.receiveId);
   formData.append("messageContent", messageDto.messageContent);
   formData.append("messageType", messageDto.messageType);
   formData.append("originalMessageId", messageDto.originalMessageId || "");

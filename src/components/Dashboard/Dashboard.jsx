@@ -1,75 +1,84 @@
-import { useGetList } from 'react-admin';
-import { useMediaQuery } from '@mui/material';
-import { format, startOfMonth, endOfMonth } from 'date-fns';
+import { useGetList } from "react-admin";
+import { useMediaQuery } from "@mui/material";
+import { format, startOfMonth, endOfMonth } from "date-fns";
 
-import PendingReviews from './PendingReviews';
-import PendingOrders from './PendingOrders';
-import NewCustomers from './NewCustomers';
-import NbNewOrders from './NbNewOrders';
-import MonthlyRevenue from './MonthlyRevenue';
-import OrderChart from './OrderChart';
-import NbCancelOrders from './NbCancelOrders';
-import NbReturnOrders from './NbReturnOrders';
+import PendingReviews from "./PendingReviews";
+import PendingOrders from "./PendingOrders";
+import NewCustomers from "./NewCustomers";
+import NbNewOrders from "./NbNewOrders";
+import MonthlyRevenue from "./MonthlyRevenue";
+import OrderChart from "./OrderChart";
+import NbCancelOrders from "./NbCancelOrders";
+import NbReturnOrders from "./NbReturnOrders";
 
 const styles = {
-  flex: { display: 'flex' },
-  flexColumn: { display: 'flex', flexDirection: 'column' },
-  leftCol: { flex: 1, marginRight: '0.5em', flexBasis: '10%' },
-  rightCol: { flex: 1, marginLeft: '0.5em' },
-  singleCol: { marginTop: '1em', marginBottom: '1em' },
+  flex: { display: "flex" },
+  flexColumn: { display: "flex", flexDirection: "column" },
+  leftCol: { flex: 1, marginRight: "0.5em", flexBasis: "10%" },
+  rightCol: { flex: 1, marginLeft: "0.5em" },
+  singleCol: { marginTop: "1em", marginBottom: "1em" },
 };
 
-export const FORMAT_DATE = 'yyyy-MM-dd';
+export const FORMAT_DATE = "yyyy-MM-dd";
 
-const Spacer = () => <span style={{ width: '1em' }} />;
-const VerticalSpacer = () => <span style={{ height: '1em' }} />;
+const Spacer = () => <span style={{ width: "1em" }} />;
+const VerticalSpacer = () => <span style={{ height: "1em" }} />;
 
 const Dashboard = () => {
-  const isXSmall = useMediaQuery((theme) =>
-    theme.breakpoints.down('sm')
-  );
-  const isSmall = useMediaQuery((theme) =>
-    theme.breakpoints.down('lg')
-  );
+  const isXSmall = useMediaQuery((theme) => theme.breakpoints.down("sm"));
+  const isSmall = useMediaQuery((theme) => theme.breakpoints.down("lg"));
 
   const formatShortDate = (date) => {
     return format(date, FORMAT_DATE);
-  }
+  };
 
   const currDate = new Date();
   const nowDate = formatShortDate(currDate);
   const sinceDate = formatShortDate(startOfMonth(currDate));
   const beforeDate = formatShortDate(endOfMonth(currDate));
 
-  const { data: orders = [] } = useGetList('orders', {
+  const { data: orders = [] } = useGetList("orders", {
     filter: {
       orderedSince: sinceDate,
-      orderedBefore: beforeDate
+      orderedBefore: beforeDate,
     },
-    sort: { field: 'OrderDate', order: 'DESC' },
+    sort: { field: "OrderDate", order: "DESC" },
     pagination: { page: 1, perPage: 50 },
   });
-  const { pendingOrders, cancelledOrders, donedOrders, returnedOrders } = orders?.reduce((acc, order) => {
-    if (order.status === 'pending') {
-      acc.pendingOrders.push(order);
-    } else if (order.status === 'cancelled') {
-      acc.cancelledOrders.push(order);
-    } else if (order.returned) {
-      acc.returnedOrders.push(order);
-    } else {
-      acc.donedOrders.push(order);
-    }
-    return acc;
-  }, { pendingOrders: [], cancelledOrders: [], donedOrders: [], returnedOrders: [] });
+  const { pendingOrders, cancelledOrders, donedOrders, returnedOrders } =
+    orders?.reduce(
+      (acc, order) => {
+        if (order.status === "pending") {
+          acc.pendingOrders.push(order);
+        } else if (order.status === "cancelled") {
+          acc.cancelledOrders.push(order);
+        } else if (order.returned) {
+          acc.returnedOrders.push(order);
+        } else {
+          acc.donedOrders.push(order);
+        }
+        return acc;
+      },
+      {
+        pendingOrders: [],
+        cancelledOrders: [],
+        donedOrders: [],
+        returnedOrders: [],
+      }
+    );
   const revenue = donedOrders?.reduce((acc, order) => {
-    return acc + order.totalPrice
-  }, 0)
+    return acc + order.totalPrice;
+  }, 0);
   return isXSmall ? (
     <div>
       <div style={styles.flexColumn}>
         <MonthlyRevenue value={revenue} />
         <VerticalSpacer />
-        <NbNewOrders formatShortDate={formatShortDate} nowDate={nowDate} value={donedOrders} />
+        <NbNewOrders
+          formatShortDate={formatShortDate}
+          nowDate={nowDate}
+          value={donedOrders}
+        />
         <VerticalSpacer />
         <NbCancelOrders value={cancelledOrders.length} />
         <VerticalSpacer />
@@ -80,12 +89,15 @@ const Dashboard = () => {
     </div>
   ) : isSmall ? (
     <div style={styles.flexColumn}>
-      <div style={styles.singleCol}>
-      </div>
+      <div style={styles.singleCol}></div>
       <div style={styles.flex}>
         <MonthlyRevenue value={revenue} />
         <Spacer />
-        <NbNewOrders formatShortDate={formatShortDate} nowDate={nowDate} value={donedOrders} />
+        <NbNewOrders
+          formatShortDate={formatShortDate}
+          nowDate={nowDate}
+          value={donedOrders}
+        />
         <Spacer />
         <NbCancelOrders value={cancelledOrders.length} />
         <Spacer />
@@ -105,7 +117,11 @@ const Dashboard = () => {
           <div style={styles.flex}>
             <MonthlyRevenue value={revenue} />
             <Spacer />
-            <NbNewOrders formatShortDate={formatShortDate} nowDate={nowDate} value={donedOrders} />
+            <NbNewOrders
+              formatShortDate={formatShortDate}
+              nowDate={nowDate}
+              value={donedOrders}
+            />
           </div>
           <div style={{ ...styles.flex, marginTop: "20px" }}>
             <NbCancelOrders value={cancelledOrders.length} />
